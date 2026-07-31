@@ -1,0 +1,64 @@
+"use client";
+
+import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { NAV_ITEMS } from "@/constants/navigation";
+import { useAdmin } from "@/context/AdminContext";
+
+function getCurrentPageLabel(pathname: string): string {
+  return NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))?.label ?? "페이지";
+}
+
+export default function Header() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { currentUser, users, roles, switchDemoUser, isAdminAuthenticated, logoutAdmin } = useAdmin();
+  const roleLabel = roles
+    .filter((role) => currentUser.roleIds.includes(role.id))
+    .map((role) => role.name)
+    .join(", ");
+
+  return (
+    <header className="fixed top-0 left-60 right-0 z-20 h-14 bg-white border-b border-gray-200 flex items-center px-6 gap-4">
+      <div className="flex-1 min-w-0">
+        <h1 className="text-base font-semibold text-gray-800 truncate">{getCurrentPageLabel(pathname)}</h1>
+      </div>
+      <div className="flex items-center gap-4 flex-shrink-0">
+        <label className="hidden md:flex items-center gap-2 text-xs text-gray-500">
+          데모 사용자
+          <select
+            value={currentUser.id}
+            onChange={(event) => switchDemoUser(event.target.value)}
+            className="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700"
+            aria-label="데모 사용자 전환"
+          >
+            {users.filter((user) => user.status === "ACTIVE").map((user) => (
+              <option key={user.id} value={user.id}>{user.name}</option>
+            ))}
+          </select>
+        </label>
+        <div className="w-px h-6 bg-gray-200" aria-hidden="true" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
+            {currentUser.name.slice(0, 1)}
+          </div>
+          <div className="hidden sm:block max-w-52">
+            <p className="text-sm font-medium text-gray-800 leading-tight">{currentUser.name}</p>
+            <p className="text-xs text-gray-500 leading-tight truncate">{roleLabel}</p>
+          </div>
+        </div>
+        {isAdminAuthenticated && pathname.startsWith("/admin") && (
+          <button type="button" onClick={() => { logoutAdmin(); router.replace("/admin/login"); }}
+            className="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+            로그아웃
+          </button>
+        )}
+        {!isAdminAuthenticated && (
+          <Link href="/admin/login" className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100">
+            관리자 로그인
+          </Link>
+        )}
+      </div>
+    </header>
+  );
+}
