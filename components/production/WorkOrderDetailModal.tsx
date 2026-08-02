@@ -3,6 +3,8 @@ import type { WorkOrder } from "@/types/production";
 import { calculateMaterialRequirements } from "@/lib/production-calculations";
 import { WorkStatusBadge, MaterialIssueStatusBadge } from "./ProductionStatusBadge";
 import MaterialRequirementTable from "./MaterialRequirementTable";
+import { useMasterData } from "@/context/MasterDataContext";
+import { useMaterials } from "@/context/MaterialsContext";
 
 // ============================================================
 // 작업지시 상세 정보 및 작업지시서 서식 모달 컴포넌트
@@ -27,13 +29,16 @@ export default function WorkOrderDetailModal({
 }: WorkOrderDetailModalProps) {
   const [editingHandler, setEditingHandler] = useState("");
   const [isPrintView, setIsPrintView] = useState(false);
+  const { materials } = useMasterData();
+  const { outbounds, inventories } = useMaterials();
 
   if (!isOpen || !item) return null;
 
   const requirements = calculateMaterialRequirements(
     item.productCode,
     item.orderedQuantity,
-    item.workOrderNo
+    item.workOrderNo,
+    { materials, outbounds, inventories }
   );
 
   const handleSaveHandler = () => {
@@ -197,6 +202,14 @@ export default function WorkOrderDetailModal({
                 </span>
               </div>
             </div>
+
+            {item.pauseReason && (
+              <div className="rounded-lg border border-purple-200 bg-purple-50 p-3">
+                <p className="text-xs font-semibold text-purple-700">최근 일시정지 사유</p>
+                <p className="mt-1 text-sm text-gray-900">{item.pauseReason}</p>
+                {item.pausedAt && <p className="mt-1 text-xs text-gray-500">정지 시각: {item.pausedAt}</p>}
+              </div>
+            )}
 
             {/* 담당자 배정 입력 */}
             <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 flex items-center justify-between gap-3">

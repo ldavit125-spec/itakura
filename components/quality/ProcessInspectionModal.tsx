@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import type { ProcessInspection, ProcessCode, InspectionJudgment, InspectionItemResult } from "@/types/quality";
 import { useProduction } from "@/context/ProductionContext";
-import { PROCESS_INSPECTION_STANDARDS } from "@/data/inspection-standards.mock";
+import { PROCESS_INSPECTION_STANDARDS } from "@/data/inspection-standards";
 import { PROCESS_CODE_OPTIONS } from "@/constants/quality-labels";
 import InspectionItemForm from "./InspectionItemForm";
 import { useAdmin } from "@/context/AdminContext";

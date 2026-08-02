@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { IncomingInspection, InspectionItemResult, InspectionJudgment } from "@/types/quality";
-import { RAW_MATERIAL_INSPECTION_STANDARDS } from "@/data/inspection-standards.mock";
+import { RAW_MATERIAL_INSPECTION_STANDARDS } from "@/data/inspection-standards";
 import { useMasterData } from "@/context/MasterDataContext";
 import InspectionItemForm from "./InspectionItemForm";
 import { useAdmin } from "@/context/AdminContext";

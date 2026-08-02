@@ -15,6 +15,7 @@ interface MaterialInboundModalProps {
   onClose: () => void;
   onSubmit: (formData: Omit<MaterialInbound, "id" | "inboundNo" | "lotNo" | "inboundStatus">) => void;
   onUpdate?: (id: string, updated: Partial<MaterialInbound>) => void;
+  initialValues?: Partial<MaterialInbound>;
 }
 
 export default function MaterialInboundModal({
@@ -24,6 +25,7 @@ export default function MaterialInboundModal({
   onClose,
   onSubmit,
   onUpdate,
+  initialValues,
 }: MaterialInboundModalProps) {
   const { materials, suppliers } = useMasterData();
 
@@ -58,15 +60,16 @@ export default function MaterialInboundModal({
 
     if (mode === "create") {
       const firstMat = materials[0];
-      setInboundDate("2026-07-31");
-      setMaterialCode(firstMat ? firstMat.code : "");
-      setUnit(firstMat ? firstMat.unit : "kg");
-      setSupplierName(firstMat?.defaultSupplier || suppliers[0]?.name || "");
-      setQuantity(100);
+      const presetMaterial = materials.find((material) => material.code === initialValues?.materialCode);
+      setInboundDate(initialValues?.inboundDate || "2026-07-31");
+      setMaterialCode(presetMaterial?.code || firstMat?.code || "");
+      setUnit(initialValues?.unit || presetMaterial?.unit || firstMat?.unit || "kg");
+      setSupplierName(initialValues?.supplierName || presetMaterial?.defaultSupplier || firstMat?.defaultSupplier || suppliers[0]?.name || "");
+      setQuantity(initialValues?.quantity || 100);
       setManufactureDate("2026-07-31");
       setExpirationDate("2027-01-31");
       setInspectionStatus("PASSED");
-      setRemarks("");
+      setRemarks(initialValues?.remarks || "");
     } else if (item) {
       setInboundDate(item.inboundDate);
       setMaterialCode(item.materialCode);
@@ -78,7 +81,7 @@ export default function MaterialInboundModal({
       setInspectionStatus(item.inspectionStatus);
       setRemarks(item.remarks || "");
     }
-  }, [isOpen, mode, item, materials, suppliers]);
+  }, [isOpen, mode, item, materials, suppliers, initialValues]);
 
   if (!isOpen) return null;
 

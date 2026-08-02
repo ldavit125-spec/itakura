@@ -5,7 +5,7 @@ import type { BOMItem } from "@/types/production";
 // 주: 제품명/자재명 직접 저장 금지 (productCode / materialCode 참조)
 // ============================================================
 
-export const PRODUCT_BOM_MOCK: BOMItem[] = [
+export const PRODUCT_BOM: BOMItem[] = [
   // 1. 식빵 (PRD-001) 1,000개 기준
   { productCode: "PRD-001", materialCode: "MAT-001", baseQuantity: 350 },
   { productCode: "PRD-001", materialCode: "MAT-002", baseQuantity: 35 },

@@ -11,7 +11,6 @@ interface TraceSearchResultTableProps {
   results: TraceSearchResult[];
   onTriggerForward: (lotNo: string) => void;
   onTriggerBackward: (lotNo: string) => void;
-  onTriggerDiagram: (targetNo: string) => void;
   onOpenRecall: (lotNo: string, type: "RAW_MATERIAL_LOT" | "FINISHED_GOODS_LOT") => void;
 }
 
@@ -19,7 +18,6 @@ export default function TraceSearchResultTable({
   results,
   onTriggerForward,
   onTriggerBackward,
-  onTriggerDiagram,
   onOpenRecall,
 }: TraceSearchResultTableProps) {
   const router = useRouter();
@@ -129,12 +127,6 @@ export default function TraceSearchResultTable({
                           ← 역방향 추적
                         </button>
                       )}
-                      <button
-                        onClick={() => onTriggerDiagram(item.targetNo)}
-                        className="px-2.5 py-1 text-xs font-semibold text-purple-800 bg-purple-100 rounded hover:bg-purple-200"
-                      >
-                        관계도
-                      </button>
                       {(isRaw || isFG) && (
                         <button
                           onClick={() => onOpenRecall(item.lotNo, isRaw ? "RAW_MATERIAL_LOT" : "FINISHED_GOODS_LOT")}

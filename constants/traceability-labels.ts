@@ -67,7 +67,6 @@ export const TRACE_TAB_LABELS: Record<TraceTab, string> = {
   search: "통합 LOT 검색",
   forward: "원재료 정방향 추적",
   backward: "완제품 역방향 추적",
-  diagram: "LOT 관계도",
   history: "추적 이력",
 };
 
@@ -75,7 +74,6 @@ export const TRACE_TABS: TraceTab[] = [
   "search",
   "forward",
   "backward",
-  "diagram",
   "history",
 ];
 

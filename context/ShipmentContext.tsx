@@ -1,18 +1,21 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { INITIAL_SHIPMENTS } from "@/data/shipments.mock";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useAdmin } from "@/context/AdminContext";
 import { useProduction } from "@/context/ProductionContext";
 import { useQuality } from "@/context/QualityContext";
 import { generateShipmentNumber, getShipmentKpi, getShipmentLotAvailability } from "@/lib/shipment-selectors";
 import { getBusinessDate } from "@/lib/selectors/business-date";
 import type { Shipment, ShipmentInput, ShipmentLotAvailability, ShipmentMutationResult, ShipmentStatus } from "@/types/shipment";
+import { fetchShipments, saveShipment } from "@/lib/supabase/shipments";
 
 interface ShipmentContextValue {
   shipments: Shipment[];
   lotAvailability: ShipmentLotAvailability[];
   kpi: ReturnType<typeof getShipmentKpi>;
+  shipmentLoading: boolean;
+  shipmentError: string | null;
+  refreshShipments: () => Promise<void>;
   createShipment: (input: ShipmentInput) => ShipmentMutationResult;
   updateShipmentStatus: (id: string, status: ShipmentStatus) => ShipmentMutationResult;
   completeShipment: (id: string) => ShipmentMutationResult;
@@ -26,10 +29,23 @@ function localDateTime() {
 }
 
 export function ShipmentProvider({ children }: { children: React.ReactNode }) {
-  const [shipments, setShipments] = useState<Shipment[]>(INITIAL_SHIPMENTS);
+  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [shipmentLoading, setShipmentLoading] = useState(true);
+  const [shipmentError, setShipmentError] = useState<string | null>(null);
   const { fgLots } = useProduction();
   const { finished } = useQuality();
   const { hasPermission, recordAudit } = useAdmin();
+
+  const refreshShipments = useCallback(async () => {
+    setShipmentLoading(true);
+    try { setShipments(await fetchShipments()); setShipmentError(null); }
+    catch (error) { setShipmentError(error instanceof Error ? error.message : "출하 데이터를 불러오지 못했습니다."); }
+    finally { setShipmentLoading(false); }
+  }, []);
+  useEffect(() => { const timer=setTimeout(()=>void refreshShipments(),0); return()=>clearTimeout(timer); }, [refreshShipments]);
+  const persist = useCallback((operation: Promise<void>) => {
+    void operation.then(refreshShipments).catch(error => setShipmentError(error instanceof Error ? error.message : "출하 데이터 저장에 실패했습니다."));
+  }, [refreshShipments]);
 
   const lotAvailability = useMemo(
     () => fgLots.map((lot) => getShipmentLotAvailability(lot, finished, shipments)),
@@ -68,9 +84,10 @@ export function ShipmentProvider({ children }: { children: React.ReactNode }) {
       updatedAt: now,
     };
     setShipments((previous) => [shipment, ...previous]);
+    persist(saveShipment(shipment));
     recordAudit("SHIPMENT_CREATED", "SHIPMENT", shipment.id, `${shipment.shipmentNumber} 출하를 등록했습니다.`, undefined, JSON.stringify(shipment));
     return { success: true, message: "출하가 등록되었습니다.", shipmentId: shipment.id };
-  }, [fgLots, finished, hasPermission, recordAudit, shipments]);
+  }, [fgLots, finished, hasPermission, persist, recordAudit, shipments]);
 
   const updateShipmentStatus = useCallback((id: string, status: ShipmentStatus): ShipmentMutationResult => {
     if (!hasPermission("SHIPMENTS_UPDATE")) return { success: false, message: "출하 수정 권한이 없습니다." };
@@ -80,9 +97,10 @@ export function ShipmentProvider({ children }: { children: React.ReactNode }) {
     if (target.status === "COMPLETED" || target.status === "CANCELLED") return { success: false, message: "완료 또는 취소된 출하는 변경할 수 없습니다." };
     const updated = { ...target, status, updatedAt: localDateTime() };
     setShipments((previous) => previous.map((item) => item.id === id ? updated : item));
+    persist(saveShipment(updated));
     recordAudit("SHIPMENT_STATUS_UPDATED", "SHIPMENT", id, `${target.shipmentNumber} 상태를 변경했습니다.`, JSON.stringify(target), JSON.stringify(updated));
     return { success: true, message: "출하 상태가 변경되었습니다." };
-  }, [hasPermission, recordAudit, shipments]);
+  }, [hasPermission, persist, recordAudit, shipments]);
 
   const completeShipment = useCallback((id: string): ShipmentMutationResult => {
     if (!hasPermission("SHIPMENTS_COMPLETE")) return { success: false, message: "출하 완료 권한이 없습니다." };
@@ -102,13 +120,14 @@ export function ShipmentProvider({ children }: { children: React.ReactNode }) {
     const shippedDate = localDateTime();
     const updated: Shipment = { ...target, status: "COMPLETED", shippedDate, updatedAt: shippedDate };
     setShipments((previous) => previous.map((item) => item.id === id ? updated : item));
+    persist(saveShipment(updated));
     recordAudit("SHIPMENT_COMPLETED", "SHIPMENT", id, `${target.shipmentNumber} 출하를 완료하고 LOT 재고 ${target.quantity.toLocaleString()}개를 차감했습니다.`, JSON.stringify(target), JSON.stringify(updated));
     return { success: true, message: "출하 완료 및 재고 차감이 처리되었습니다." };
-  }, [fgLots, finished, hasPermission, recordAudit, shipments]);
+  }, [fgLots, finished, hasPermission, persist, recordAudit, shipments]);
 
   const cancelShipment = useCallback((id: string) => updateShipmentStatus(id, "CANCELLED"), [updateShipmentStatus]);
 
-  return <ShipmentContext.Provider value={{ shipments, lotAvailability, kpi, createShipment, updateShipmentStatus, completeShipment, cancelShipment }}>{children}</ShipmentContext.Provider>;
+  return <ShipmentContext.Provider value={{ shipments, lotAvailability, kpi, shipmentLoading, shipmentError, refreshShipments, createShipment, updateShipmentStatus, completeShipment, cancelShipment }}>{children}</ShipmentContext.Provider>;
 }
 
 export function useShipments() {

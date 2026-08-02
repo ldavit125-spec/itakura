@@ -9,7 +9,7 @@ export const DEFECT_TYPE_LABELS: Record<DefectType, string> = {
   SEALING: "밀봉 불량", LABEL: "라벨 불량", DAMAGE: "파손", OTHER: "기타",
 };
 
-export default function DefectHistoryTable({ items, onOpen }: { items: DefectHistory[]; onOpen: (item: DefectHistory) => void }) {
+export default function DefectHistoryTable({ items, onOpen, onCreate }: { items: DefectHistory[]; onOpen: (item: DefectHistory) => void; onCreate?: () => void }) {
   const [date, setDate] = useState("");
   const [lot, setLot] = useState("");
   const [product, setProduct] = useState("");
@@ -26,6 +26,7 @@ export default function DefectHistoryTable({ items, onOpen }: { items: DefectHis
   ), [date, inspector, items, lot, product, status, type]);
 
   return <div className="p-4 sm:p-6 space-y-4">
+    <div className="flex justify-end">{onCreate && <button onClick={onCreate} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700">불량품 이력 등록</button>}</div>
     <div className="grid gap-2 md:grid-cols-3 xl:grid-cols-6">
       <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm" />
       <input value={lot} onChange={(e) => setLot(e.target.value)} placeholder="LOT 번호" className="rounded-lg border border-gray-300 px-3 py-2 text-sm" />

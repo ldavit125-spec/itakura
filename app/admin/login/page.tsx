@@ -8,8 +8,6 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { loginAdmin, isAdminAuthenticated } = useAdmin();
   const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -19,11 +17,11 @@ export default function AdminLoginPage() {
   const submit = (event: FormEvent) => {
     event.preventDefault();
     setError("");
-    if (!identifier.trim() || !password) {
-      setError("사번 또는 이메일과 비밀번호를 입력하세요.");
+    if (!identifier.trim()) {
+      setError("사번 또는 이메일을 입력하세요.");
       return;
     }
-    const result = loginAdmin(identifier, password);
+    const result = loginAdmin(identifier);
     if (result.success) router.replace("/admin");
     else setError(result.message ?? "로그인에 실패했습니다.");
   };
@@ -42,20 +40,10 @@ export default function AdminLoginPage() {
             <input value={identifier} onChange={(event) => setIdentifier(event.target.value)}
               autoComplete="username" className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2.5 font-normal outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
           </label>
-          <label className="block text-sm font-semibold text-gray-700">
-            비밀번호
-            <div className="relative mt-2">
-              <input type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)}
-                autoComplete="current-password" className="w-full rounded-lg border border-gray-300 px-3 py-2.5 pr-16 font-normal outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
-              <button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute inset-y-0 right-3 text-xs font-semibold text-blue-600">
-                {showPassword ? "숨김" : "표시"}
-              </button>
-            </div>
-          </label>
           {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <button type="submit" className="w-full rounded-lg bg-blue-600 py-3 text-sm font-bold text-white hover:bg-blue-700">로그인</button>
         </form>
-        <p className="mt-5 text-center text-xs text-gray-400">데모 관리자: A001 / admin1234</p>
+        <p className="mt-5 text-center text-xs text-gray-400">데모 관리자 사번: A001</p>
       </div>
     </main>
   );

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import type { FinishedGoodsInspection, InspectionJudgment, InspectionItemResult } from "@/types/quality";
 import { useProduction } from "@/context/ProductionContext";
-import { FINISHED_GOODS_STANDARD_ITEMS } from "@/data/inspection-standards.mock";
+import { FINISHED_GOODS_STANDARD_ITEMS } from "@/data/inspection-standards";
 import { PRODUCT_WEIGHT_STANDARDS, isWeightWithinAllowedRange } from "@/constants/quality-rules";
 import InspectionItemForm from "./InspectionItemForm";
 import { useAdmin } from "@/context/AdminContext";

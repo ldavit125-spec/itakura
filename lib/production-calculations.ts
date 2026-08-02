@@ -1,9 +1,7 @@
 import type { MaterialRequirement, ProductionPlan } from "@/types/production";
 import type { Material } from "@/types/master-data";
 import type { MaterialOutbound, MaterialInventory } from "@/types/materials";
-import { PRODUCT_BOM_MOCK } from "@/data/production-bom.mock";
-import { INITIAL_MATERIALS } from "@/data/master-data.mock";
-import { INITIAL_MATERIAL_OUTBOUNDS, INITIAL_MATERIAL_INVENTORIES } from "@/data/materials.mock";
+import { PRODUCT_BOM } from "@/data/production-bom";
 import { calculateAchievementRate, calculateDefectRate } from "./selectors/production-selectors";
 
 export { calculateAchievementRate, calculateDefectRate };
@@ -57,11 +55,11 @@ export function calculateMaterialRequirements(
     inventories?: MaterialInventory[];
   }
 ): MaterialRequirement[] {
-  const materialsList = contextData?.materials || INITIAL_MATERIALS;
-  const outboundList = contextData?.outbounds || INITIAL_MATERIAL_OUTBOUNDS;
-  const inventoryList = contextData?.inventories || INITIAL_MATERIAL_INVENTORIES;
+  const materialsList = contextData?.materials ?? [];
+  const outboundList = contextData?.outbounds ?? [];
+  const inventoryList = contextData?.inventories ?? [];
 
-  const bomItems = PRODUCT_BOM_MOCK.filter((b) => b.productCode === productCode);
+  const bomItems = PRODUCT_BOM.filter((b) => b.productCode === productCode);
 
   return bomItems.map((bom) => {
     const matInfo = materialsList.find((m) => m.code === bom.materialCode);

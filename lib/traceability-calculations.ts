@@ -2,9 +2,6 @@ import type { TraceabilitySummary } from "@/types/traceability";
 import type { MaterialInventory } from "@/types/materials";
 import type { FinishedGoodsLot, WorkOrder } from "@/types/production";
 import type { CorrectiveAction } from "@/types/quality";
-import { INITIAL_MATERIAL_INVENTORIES } from "@/data/materials.mock";
-import { INITIAL_WORK_ORDERS, INITIAL_FINISHED_GOODS_LOTS } from "@/data/production.mock";
-import { INITIAL_CORRECTIVE_ACTIONS } from "@/data/quality.mock";
 
 // ============================================================
 // LOT 통합 추적관리 — 요약 집계 유틸리티 (Live Context 연동)
@@ -16,10 +13,10 @@ export function calculateTraceabilitySummary(contextData?: {
   workOrders?: WorkOrder[];
   actions?: CorrectiveAction[];
 }): TraceabilitySummary {
-  const inventories = contextData?.inventories || INITIAL_MATERIAL_INVENTORIES;
-  const fgLots = contextData?.fgLots || INITIAL_FINISHED_GOODS_LOTS;
-  const workOrders = contextData?.workOrders || INITIAL_WORK_ORDERS;
-  const actions = contextData?.actions || INITIAL_CORRECTIVE_ACTIONS;
+  const inventories = contextData?.inventories ?? [];
+  const fgLots = contextData?.fgLots ?? [];
+  const workOrders = contextData?.workOrders ?? [];
+  const actions = contextData?.actions ?? [];
 
   const totalRawLotCount = inventories.length;
   const totalFGLotCount = fgLots.length;

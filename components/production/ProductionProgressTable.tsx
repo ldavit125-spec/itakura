@@ -9,7 +9,7 @@ import { WorkStatusBadge, MaterialIssueStatusBadge } from "./ProductionStatusBad
 interface ProductionProgressTableProps {
   workOrders: WorkOrder[];
   onStartWork: (id: string) => void;
-  onPauseWork: (id: string) => void;
+  onPauseWork: (item: WorkOrder) => void;
   onResumeWork: (id: string) => void;
   onOpenQuantityModal: (item: WorkOrder) => void;
   onCompleteRequest: (id: string) => void;
@@ -183,7 +183,7 @@ export default function ProductionProgressTable({
                               실적 입력
                             </button>
                             <button
-                              onClick={() => onPauseWork(item.id)}
+                              onClick={() => onPauseWork(item)}
                               className="px-2 py-1 text-xs font-medium text-purple-700 bg-purple-50 rounded hover:bg-purple-100"
                             >
                               일시정지

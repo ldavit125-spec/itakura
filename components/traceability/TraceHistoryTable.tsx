@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from "react";
 import type { TraceHistoryItem, TraceDirection } from "@/types/traceability";
 import { TRACE_DIRECTION_LABELS } from "@/constants/traceability-labels";
-import { EMPLOYEE_NAMES } from "@/data/admin.mock";
 
 // ============================================================
 // Tab 5: 추적 수행 이력 로그 테이블 컴포넌트 (불변 로그)
@@ -23,6 +22,7 @@ export default function TraceHistoryTable({
   const [userFilter, setUserFilter] = useState<string>("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
+  const users = useMemo(() => Array.from(new Set(history.map(item => item.user))), [history]);
 
   const filteredData = useMemo(() => {
     return history.filter((item) => {
@@ -95,10 +95,7 @@ export default function TraceHistoryTable({
           className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
         >
           <option value="ALL">사용자 전체</option>
-          <option value={EMPLOYEE_NAMES.executive}>{EMPLOYEE_NAMES.executive} (시스템 관리자)</option>
-          <option value={EMPLOYEE_NAMES.productionPlanner}>{EMPLOYEE_NAMES.productionPlanner} (생산팀장)</option>
-          <option value={EMPLOYEE_NAMES.qualityManager}>{EMPLOYEE_NAMES.qualityManager} (품질팀장)</option>
-          <option value={EMPLOYEE_NAMES.materialManager}>{EMPLOYEE_NAMES.materialManager} (자재담당)</option>
+          {users.map(user => <option key={user} value={user}>{user}</option>)}
         </select>
       </div>
 

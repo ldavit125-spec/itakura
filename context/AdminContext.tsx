@@ -31,7 +31,7 @@ interface AdminContextValue {
   currentUser: AdminUser;
   authenticatedAdmin: AdminUser | null;
   isAdminAuthenticated: boolean;
-  loginAdmin: (identifier: string, password: string) => AdminLoginResult;
+  loginAdmin: (identifier: string) => AdminLoginResult;
   logoutAdmin: () => void;
   switchDemoUser: (userId: string) => void;
   hasPermission: (permission: PermissionCode) => boolean;
@@ -61,8 +61,7 @@ function nowText() {
 }
 
 function auditSnapshot(user: AdminUser) {
-  const { password: _password, ...safe } = user;
-  return JSON.stringify(safe);
+  return JSON.stringify(user);
 }
 
 export function AdminProvider({ children }: { children: React.ReactNode }) {
@@ -104,9 +103,9 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     }, ...previous]);
   }, []);
 
-  const loginAdmin = useCallback((identifier: string, password: string): AdminLoginResult => {
-    const auth = authenticateAdmin(users, roles, identifier, password);
-    if (auth.failure === "INVALID_CREDENTIALS") return { success: false, message: "사번 또는 이메일, 비밀번호를 확인하세요." };
+  const loginAdmin = useCallback((identifier: string): AdminLoginResult => {
+    const auth = authenticateAdmin(users, roles, identifier);
+    if (auth.failure === "INVALID_CREDENTIALS") return { success: false, message: "사번 또는 이메일을 확인하세요." };
     if (auth.failure === "INACTIVE") return { success: false, message: "비활성 계정은 로그인할 수 없습니다." };
     if (auth.failure === "NOT_ADMIN") return { success: false, message: "ADMIN 역할이 있는 계정만 관리자 화면에 로그인할 수 있습니다." };
     const user = auth.user;
@@ -156,7 +155,6 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       email,
       name,
       department: input.department.trim(),
-      password: input.password.trim() || "demo1234",
       productionLines: input.productionLines.length ? input.productionLines : [],
       status: "ACTIVE",
     };

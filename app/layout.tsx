@@ -1,18 +1,10 @@
 import type { Metadata } from "next";
-import { Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
 import { AdminProvider } from "@/context/AdminContext";
 
 // ============================================================
 // 루트 레이아웃
 // ============================================================
-
-const notoSansKr = Noto_Sans_KR({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-noto-sans-kr",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: {
@@ -29,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${notoSansKr.variable} h-full`}>
+    <html lang="ko" className="h-full">
       <body className="h-full font-sans antialiased">
         <AdminProvider>{children}</AdminProvider>
       </body>

@@ -49,7 +49,6 @@ export type TraceTab =
   | "search"
   | "forward"
   | "backward"
-  | "diagram"
   | "history";
 
 // ── 데이터 엔티티 ──────────────────────────────────────────────

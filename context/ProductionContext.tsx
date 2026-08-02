@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useMemo } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState, useMemo } from "react";
 import type {
   ProductionTab,
   ProductionPlan,
@@ -11,13 +11,16 @@ import type {
   ProductionToastState,
   WorkStatus,
 } from "@/types/production";
+import { useMasterData } from "./MasterDataContext";
+import { useMaterials } from "./MaterialsContext";
+import { useAdmin } from "./AdminContext";
 import {
-  INITIAL_PRODUCTION_PLANS,
-  INITIAL_WORK_ORDERS,
-  INITIAL_PRODUCTION_RESULTS,
-  INITIAL_FINISHED_GOODS_LOTS,
-} from "@/data/production.mock";
-import { EMPLOYEE_NAMES } from "@/data/admin.mock";
+  fetchProductionSnapshot,
+  saveFinishedGoodsLot,
+  saveProductionPlan,
+  saveProductionResult,
+  saveWorkOrder,
+} from "@/lib/supabase/production";
 
 import {
   calculateMaterialRequirements,
@@ -57,6 +60,9 @@ interface ProductionContextType {
   toast: ProductionToastState | null;
   showToast: (message: string, type?: "success" | "error") => void;
   closeToast: () => void;
+  productionLoading: boolean;
+  productionError: string | null;
+  refreshProduction: () => Promise<void>;
 
   // 탭 1: 생산계획
   addPlan: (plan: Omit<ProductionPlan, "id" | "planNo" | "planStatus" | "materialReadiness">) => boolean;
@@ -72,7 +78,7 @@ interface ProductionContextType {
 
   // 탭 3: 생산 진행
   startWorkOrder: (workOrderId: string) => boolean;
-  pauseWorkOrder: (workOrderId: string) => void;
+  pauseWorkOrder: (workOrderId: string, reason: string) => void;
   resumeWorkOrder: (workOrderId: string) => void;
   updateCurrentQuantity: (workOrderId: string, quantity: number) => void;
   completeWorkOrderRequest: (workOrderId: string) => void;
@@ -103,17 +109,50 @@ interface ProductionContextType {
 const ProductionContext = createContext<ProductionContextType | null>(null);
 
 export function ProductionProvider({ children }: { children: React.ReactNode }) {
+  const { materials } = useMasterData();
+  const { outbounds, inventories } = useMaterials();
+  const { currentUser } = useAdmin();
   const [activeTab, setActiveTab] = useState<ProductionTab>("plan");
-  const [plans, setPlans] = useState<ProductionPlan[]>(INITIAL_PRODUCTION_PLANS);
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(INITIAL_WORK_ORDERS);
-  const [results, setResults] = useState<ProductionResult[]>(INITIAL_PRODUCTION_RESULTS);
-  const [fgLots, setFgLots] = useState<FinishedGoodsLot[]>(INITIAL_FINISHED_GOODS_LOTS);
+  const [plans, setPlans] = useState<ProductionPlan[]>([]);
+  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
+  const [results, setResults] = useState<ProductionResult[]>([]);
+  const [fgLots, setFgLots] = useState<FinishedGoodsLot[]>([]);
   const [toast, setToast] = useState<ProductionToastState | null>(null);
+  const [productionLoading, setProductionLoading] = useState(true);
+  const [productionError, setProductionError] = useState<string | null>(null);
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToast({ id: Date.now(), message, type });
   };
   const closeToast = () => setToast(null);
+
+  const refreshProduction = useCallback(async () => {
+    await Promise.resolve();
+    setProductionLoading(true);
+    setProductionError(null);
+    try {
+      const snapshot = await fetchProductionSnapshot();
+      setPlans(snapshot.plans);
+      setWorkOrders(snapshot.workOrders);
+      setResults(snapshot.results);
+      setFgLots(snapshot.fgLots);
+    } catch (error) {
+      setProductionError(error instanceof Error ? error.message : "생산 데이터를 불러오지 못했습니다.");
+    } finally {
+      setProductionLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => void refreshProduction(), 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [refreshProduction]);
+
+  const persist = (operation: () => Promise<void>) => {
+    void operation()
+      .then(refreshProduction)
+      .catch((error) => showToast(error instanceof Error ? error.message : "Supabase 저장에 실패했습니다.", "error"));
+  };
 
   // ── 0. 동적 상단 요약 카드 집계 ─────────────────────────────
   const summary = useMemo<ProductionSummary>(() => {
@@ -152,6 +191,8 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
     status: WorkStatus,
     remarks?: string
   ) => {
+    const target = workOrders.find((workOrder) => workOrder.workOrderNo === workOrderNo);
+    if (target) persist(() => saveWorkOrder({ ...target, workStatus: status, remarks: remarks ?? target.remarks }));
     setWorkOrders((prev) =>
       prev.map((workOrder) =>
         workOrder.workOrderNo === workOrderNo
@@ -166,6 +207,8 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
     qualityStatus: FinishedGoodsLot["qualityStatus"],
     isReleaseAvailable: boolean
   ) => {
+    const target = fgLots.find((lot) => lot.fgLotNo === fgLotNo);
+    if (target) persist(() => saveFinishedGoodsLot({ ...target, qualityStatus, isReleaseAvailable }));
     setFgLots((prev) =>
       prev.map((lot) =>
         lot.fgLotNo === fgLotNo
@@ -207,6 +250,7 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
     };
 
     setPlans((prev) => [newPlan, ...prev]);
+    persist(() => saveProductionPlan(newPlan));
     showToast(`신규 생산계획(${planNo})이 정상 등록되었습니다.`);
     return true;
   };
@@ -238,6 +282,7 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
     }
 
     setPlans((prev) => prev.map((p) => (p.id === id ? merged : p)));
+    persist(() => saveProductionPlan(merged));
     showToast(`생산계획(${target.planNo}) 수정이 완료되었습니다.`);
     return true;
   };
@@ -262,14 +307,18 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
       return false;
     }
 
+    const confirmed = { ...target, planStatus: "CONFIRMED" as const };
     setPlans((prev) =>
       prev.map((p) => (p.id === id ? { ...p, planStatus: "CONFIRMED" } : p))
     );
+    persist(() => saveProductionPlan(confirmed));
     showToast(`생산계획(${target.planNo})이 확정 처리되었습니다.`);
     return true;
   };
 
   const cancelPlan = (id: string) => {
+    const target = plans.find((plan) => plan.id === id);
+    if (target) persist(() => saveProductionPlan({ ...target, planStatus: "CANCELLED" }));
     setPlans((prev) =>
       prev.map((p) => (p.id === id ? { ...p, planStatus: "CANCELLED" } : p))
     );
@@ -292,7 +341,11 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
     const workOrderNo = generateWorkOrderNo(plan.plannedDate, seq);
 
     // BOM 기준 자재 소요량 및 출고 현황 계산
-    const reqs = calculateMaterialRequirements(plan.productCode, plan.plannedQuantity, workOrderNo);
+    const reqs = calculateMaterialRequirements(plan.productCode, plan.plannedQuantity, workOrderNo, {
+      materials,
+      outbounds,
+      inventories,
+    });
 
     let issueStatus: WorkOrder["materialIssueStatus"] = "ISSUED";
     if (reqs.some((r) => r.status === "SHORTAGE")) {
@@ -313,7 +366,7 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
       unit: plan.unit,
       startTime: plan.startTime,
       endTime: plan.endTime,
-      handler: handler || EMPLOYEE_NAMES.productionPlanner,
+      handler: handler || currentUser.name,
       materialIssueStatus: issueStatus,
       workStatus: "WAITING",
       currentQuantity: 0,
@@ -321,11 +374,14 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
     };
 
     setWorkOrders((prev) => [newWO, ...prev]);
+    persist(() => saveWorkOrder(newWO));
     showToast(`확정계획(${plan.planNo}) 기반 작업지시서(${workOrderNo})가 성공적으로 발행되었습니다.`);
     return true;
   };
 
   const assignHandler = (workOrderId: string, handler: string) => {
+    const target = workOrders.find((workOrder) => workOrder.id === workOrderId);
+    if (target) persist(() => saveWorkOrder({ ...target, handler }));
     setWorkOrders((prev) =>
       prev.map((w) => (w.id === workOrderId ? { ...w, handler } : w))
     );
@@ -333,6 +389,8 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
   };
 
   const markWorkOrderReady = (workOrderId: string) => {
+    const target = workOrders.find((workOrder) => workOrder.id === workOrderId);
+    if (target) persist(() => saveWorkOrder({ ...target, workStatus: "READY" }));
     setWorkOrders((prev) =>
       prev.map((w) => (w.id === workOrderId ? { ...w, workStatus: "READY" } : w))
     );
@@ -340,6 +398,8 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
   };
 
   const cancelWorkOrder = (workOrderId: string) => {
+    const target = workOrders.find((workOrder) => workOrder.id === workOrderId);
+    if (target) persist(() => saveWorkOrder({ ...target, workStatus: "CANCELLED" }));
     setWorkOrders((prev) =>
       prev.map((w) => (w.id === workOrderId ? { ...w, workStatus: "CANCELLED" } : w))
     );
@@ -372,6 +432,16 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
     }
 
     const nowStr = new Date().toISOString().replace("T", " ").substring(0, 16);
+    const startedWorkOrder: WorkOrder = {
+      ...wo,
+      workStatus: "IN_PROGRESS",
+      actualStartTime: wo.actualStartTime || nowStr,
+    };
+    const linkedPlan = plans.find((plan) => plan.planNo === wo.planNo);
+    persist(async () => {
+      await saveWorkOrder(startedWorkOrder);
+      if (linkedPlan) await saveProductionPlan({ ...linkedPlan, planStatus: "IN_PROGRESS" });
+    });
 
     setWorkOrders((prev) =>
       prev.map((w) =>
@@ -394,14 +464,23 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
     return true;
   };
 
-  const pauseWorkOrder = (workOrderId: string) => {
+  const pauseWorkOrder = (workOrderId: string, reason: string) => {
+    const pausedAt = new Date().toISOString().replace("T", " ").substring(0, 16);
+    const target = workOrders.find((workOrder) => workOrder.id === workOrderId);
+    if (target) persist(() => saveWorkOrder({ ...target, workStatus: "PAUSED", pauseReason: reason, pausedAt }));
     setWorkOrders((prev) =>
-      prev.map((w) => (w.id === workOrderId ? { ...w, workStatus: "PAUSED" } : w))
+      prev.map((w) =>
+        w.id === workOrderId
+          ? { ...w, workStatus: "PAUSED", pauseReason: reason, pausedAt }
+          : w
+      )
     );
-    showToast("작업이 일시정지 되었습니다.");
+    showToast(`작업이 일시정지 되었습니다. 사유: ${reason}`);
   };
 
   const resumeWorkOrder = (workOrderId: string) => {
+    const target = workOrders.find((workOrder) => workOrder.id === workOrderId);
+    if (target) persist(() => saveWorkOrder({ ...target, workStatus: "IN_PROGRESS" }));
     setWorkOrders((prev) =>
       prev.map((w) => (w.id === workOrderId ? { ...w, workStatus: "IN_PROGRESS" } : w))
     );
@@ -409,6 +488,8 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
   };
 
   const updateCurrentQuantity = (workOrderId: string, quantity: number) => {
+    const target = workOrders.find((workOrder) => workOrder.id === workOrderId);
+    if (target) persist(() => saveWorkOrder({ ...target, currentQuantity: quantity }));
     setWorkOrders((prev) =>
       prev.map((w) => (w.id === workOrderId ? { ...w, currentQuantity: quantity } : w))
     );
@@ -416,6 +497,8 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
 
   const completeWorkOrderRequest = (workOrderId: string) => {
     const nowStr = new Date().toISOString().replace("T", " ").substring(0, 16);
+    const target = workOrders.find((workOrder) => workOrder.id === workOrderId);
+    if (target) persist(() => saveWorkOrder({ ...target, workStatus: "COMPLETED", actualEndTime: nowStr }));
     setWorkOrders((prev) =>
       prev.map((w) =>
         w.id === workOrderId
@@ -484,6 +567,7 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
     };
 
     setResults((prev) => [newResult, ...prev]);
+    persist(() => saveProductionResult(newResult));
     showToast(`생산실적(${resultNo})이 임시저장(DRAFT) 되었습니다.`);
     return true;
   };
@@ -531,6 +615,15 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
     };
 
     setFgLots((prev) => [newFGLot, ...prev]);
+    persist(async () => {
+      await saveProductionResult({ ...target, resultStatus: "CONFIRMED" });
+      if (wo) {
+        await saveWorkOrder({ ...wo, workStatus: "COMPLETED" });
+        const linkedPlan = plans.find((plan) => plan.planNo === wo.planNo);
+        if (linkedPlan) await saveProductionPlan({ ...linkedPlan, planStatus: "COMPLETED" });
+      }
+      await saveFinishedGoodsLot(newFGLot);
+    });
     showToast(`생산실적(${target.resultNo}) 확정 완료! 완제품 LOT [${fgLotNo}]가 자동 생성되었습니다.`);
     return true;
   };
@@ -548,6 +641,9 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
         toast,
         showToast,
         closeToast,
+        productionLoading,
+        productionError,
+        refreshProduction,
         addPlan,
         updatePlan,
         confirmPlan,

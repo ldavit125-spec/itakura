@@ -1,16 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState, useMemo } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState, useMemo } from "react";
 import type {
   TraceTab,
   TraceabilitySummary,
   TraceHistoryItem,
   RecallImpactResult,
 } from "@/types/traceability";
-import { INITIAL_TRACE_HISTORY } from "@/data/traceability.mock";
 import { calculateTraceabilitySummary } from "@/lib/traceability-calculations";
 import { calculateRecallImpact } from "@/lib/recall-impact";
-import { EMPLOYEE_NAMES } from "@/data/admin.mock";
+import { fetchTraceHistory, saveTraceHistory } from "@/lib/supabase/traceability";
 
 // ============================================================
 // LOT 통합 추적관리 Context 인터페이스
@@ -27,14 +26,13 @@ interface TraceabilityContextType {
   backwardTargetLotNo: string;
   setBackwardTargetLotNo: (lotNo: string) => void;
 
-  diagramTargetNo: string;
-  setDiagramTargetNo: (targetNo: string) => void;
-
   recentSearches: string[];
   addRecentSearch: (query: string) => void;
   clearRecentSearches: () => void;
 
   history: TraceHistoryItem[];
+  traceLoading: boolean;
+  traceError: string | null;
   addHistoryLog: (
     direction: TraceHistoryItem["direction"],
     searchQuery: string,
@@ -52,12 +50,12 @@ interface TraceabilityContextType {
 
   triggerForwardTrace: (lotNo: string) => void;
   triggerBackwardTrace: (lotNo: string) => void;
-  triggerDiagramView: (targetNo: string) => void;
 }
 
 import { useMaterials } from "./MaterialsContext";
 import { useProduction } from "./ProductionContext";
 import { useQuality } from "./QualityContext";
+import { useAdmin } from "./AdminContext";
 
 const TraceabilityContext = createContext<TraceabilityContextType | null>(null);
 
@@ -66,7 +64,6 @@ export function TraceabilityProvider({ children }: { children: React.ReactNode }
 
   const [forwardTargetLotNo, setForwardTargetLotNo] = useState("LOT-FLOUR-260730-A");
   const [backwardTargetLotNo, setBackwardTargetLotNo] = useState("FG-PRD001-20260730-001");
-  const [diagramTargetNo, setDiagramTargetNo] = useState("LOT-FLOUR-260730-A");
 
   const [recentSearches, setRecentSearches] = useState<string[]>([
     "LOT-FLOUR-260730-A",
@@ -75,7 +72,9 @@ export function TraceabilityProvider({ children }: { children: React.ReactNode }
     "IQC-20260715-001",
   ]);
 
-  const [history, setHistory] = useState<TraceHistoryItem[]>(INITIAL_TRACE_HISTORY);
+  const [history, setHistory] = useState<TraceHistoryItem[]>([]);
+  const [traceLoading, setTraceLoading] = useState(true);
+  const [traceError, setTraceError] = useState<string|null>(null);
 
   const [recallModal, setRecallModal] = useState<{
     isOpen: boolean;
@@ -84,20 +83,22 @@ export function TraceabilityProvider({ children }: { children: React.ReactNode }
 
   const { inventories, outbounds } = useMaterials();
   const { fgLots, workOrders } = useProduction();
-  const { correctiveActions: actions } = useQuality();
+  const { nonconformities, correctiveActions: actions } = useQuality();
+  const { currentUser } = useAdmin();
+  useEffect(()=>{const timer=setTimeout(()=>{void fetchTraceHistory().then(data=>{setHistory(data);setTraceError(null)}).catch(error=>setTraceError(error instanceof Error?error.message:"추적 이력을 불러오지 못했습니다.")).finally(()=>setTraceLoading(false));},0);return()=>clearTimeout(timer)},[]);
 
   const summary = useMemo(
     () => calculateTraceabilitySummary({ inventories, fgLots, workOrders, actions }),
     [inventories, fgLots, workOrders, actions]
   );
 
-  const addRecentSearch = (query: string) => {
+  const addRecentSearch = useCallback((query: string) => {
     if (!query.trim()) return;
     setRecentSearches((prev) => {
       const filtered = prev.filter((q) => q.toLowerCase() !== query.toLowerCase());
       return [query.trim(), ...filtered].slice(0, 8);
     });
-  };
+  }, []);
 
   const clearRecentSearches = () => setRecentSearches([]);
 
@@ -110,7 +111,7 @@ export function TraceabilityProvider({ children }: { children: React.ReactNode }
   ) => {
     const nowStr = new Date().toISOString().replace("T", " ").substring(0, 16);
     const newLog: TraceHistoryItem = {
-      id: `th-${Date.now()}`,
+      id: `th-${nowStr.replace(/[- :]/g,"")}-${history.length+1}`,
       traceTimestamp: nowStr,
       direction,
       searchQuery,
@@ -119,9 +120,10 @@ export function TraceabilityProvider({ children }: { children: React.ReactNode }
       relatedRawLotCount: 1,
       relatedFGLotCount: 1,
       hasQualityAnomaly,
-      user: EMPLOYEE_NAMES.executive,
+      user: currentUser.name,
     };
     setHistory((prev) => [newLog, ...prev]);
+    void saveTraceHistory(newLog,currentUser.id).catch(error=>setTraceError(error instanceof Error?error.message:"추적 이력을 저장하지 못했습니다."));
   };
 
   const triggerForwardTrace = (lotNo: string) => {
@@ -138,15 +140,15 @@ export function TraceabilityProvider({ children }: { children: React.ReactNode }
     addHistoryLog("BACKWARD", lotNo, lotNo, 4, false);
   };
 
-  const triggerDiagramView = (targetNo: string) => {
-    setDiagramTargetNo(targetNo);
-    setActiveTab("diagram");
-    addRecentSearch(targetNo);
-    addHistoryLog("RELATION_VIEW", targetNo, targetNo, 8, false);
-  };
-
   const openRecallModal = (lotNo: string, type: "RAW_MATERIAL_LOT" | "FINISHED_GOODS_LOT") => {
-    const result = calculateRecallImpact(lotNo, type, { inventories, outbounds, workOrders, fgLots });
+    const result = calculateRecallImpact(lotNo, type, {
+      inventories,
+      outbounds,
+      workOrders,
+      fgLots,
+      nonconformities,
+      correctiveActions: actions,
+    });
     setRecallModal({ isOpen: true, result });
   };
 
@@ -162,19 +164,18 @@ export function TraceabilityProvider({ children }: { children: React.ReactNode }
         setForwardTargetLotNo,
         backwardTargetLotNo,
         setBackwardTargetLotNo,
-        diagramTargetNo,
-        setDiagramTargetNo,
         recentSearches,
         addRecentSearch,
         clearRecentSearches,
         history,
+        traceLoading,
+        traceError,
         addHistoryLog,
         recallModal,
         openRecallModal,
         closeRecallModal,
         triggerForwardTrace,
         triggerBackwardTrace,
-        triggerDiagramView,
       }}
     >
       {children}

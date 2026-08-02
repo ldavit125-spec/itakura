@@ -67,7 +67,6 @@ export interface AdminUser {
   name: string;
   email: string;
   department: string;
-  password: string;
   status: "ACTIVE" | "INACTIVE";
   roleIds: string[];
   productionLines: string[];

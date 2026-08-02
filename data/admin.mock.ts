@@ -61,12 +61,12 @@ export const INITIAL_ADMIN_ROLES: AdminRole[] = [
 ];
 
 export const INITIAL_ADMIN_USERS: AdminUser[] = [
-  { id: "user-admin", employeeNo: "A001", name: EMPLOYEE_NAMES.executive, email: "admin@itakura.demo", department: "시스템운영", password: "admin1234", status: "ACTIVE", roleIds: ["role-admin"], productionLines: ["ALL"] },
-  { id: "user-material", employeeNo: "M101", name: EMPLOYEE_NAMES.materialManager, email: "material@itakura.demo", department: "자재관리", password: "demo1234", status: "ACTIVE", roleIds: ["role-material"], productionLines: ["ALL"] },
-  { id: "user-production", employeeNo: "P201", name: EMPLOYEE_NAMES.productionManager, email: "production@itakura.demo", department: "생산관리", password: "demo1234", status: "ACTIVE", roleIds: ["role-production"], productionLines: ["1호 라인", "2호 라인"] },
-  { id: "user-quality", employeeNo: "Q301", name: EMPLOYEE_NAMES.qualityManager, email: "quality@itakura.demo", department: "품질관리", password: "demo1234", status: "ACTIVE", roleIds: ["role-quality"], productionLines: ["ALL"] },
-  { id: "user-worker", employeeNo: "W401", name: EMPLOYEE_NAMES.worker, email: "worker@itakura.demo", department: "생산1팀", password: "demo1234", status: "ACTIVE", roleIds: ["role-worker"], productionLines: ["1호 라인"] },
-  { id: "user-multi", employeeNo: "C501", name: EMPLOYEE_NAMES.integratedManager, email: "combined@itakura.demo", department: "품질·자재지원", password: "demo1234", status: "ACTIVE", roleIds: ["role-material", "role-quality"], productionLines: ["2호 라인"] },
+  { id: "user-admin", employeeNo: "A001", name: EMPLOYEE_NAMES.executive, email: "admin@itakura.demo", department: "시스템운영", status: "ACTIVE", roleIds: ["role-admin"], productionLines: ["ALL"] },
+  { id: "user-material", employeeNo: "M101", name: EMPLOYEE_NAMES.materialManager, email: "material@itakura.demo", department: "자재관리", status: "ACTIVE", roleIds: ["role-material"], productionLines: ["ALL"] },
+  { id: "user-production", employeeNo: "P201", name: EMPLOYEE_NAMES.productionManager, email: "production@itakura.demo", department: "생산관리", status: "ACTIVE", roleIds: ["role-production"], productionLines: ["1호 라인", "2호 라인"] },
+  { id: "user-quality", employeeNo: "Q301", name: EMPLOYEE_NAMES.qualityManager, email: "quality@itakura.demo", department: "품질관리", status: "ACTIVE", roleIds: ["role-quality"], productionLines: ["ALL"] },
+  { id: "user-worker", employeeNo: "W401", name: EMPLOYEE_NAMES.worker, email: "worker@itakura.demo", department: "생산1팀", status: "ACTIVE", roleIds: ["role-worker"], productionLines: ["1호 라인"] },
+  { id: "user-multi", employeeNo: "C501", name: EMPLOYEE_NAMES.integratedManager, email: "combined@itakura.demo", department: "품질·자재지원", status: "ACTIVE", roleIds: ["role-material", "role-quality"], productionLines: ["2호 라인"] },
 ];
 
 export const INITIAL_AUDIT_LOGS: AuditLog[] = [

@@ -1,5 +1,4 @@
 import React from "react";
-import { useRouter } from "next/navigation";
 import type { BackwardTraceData } from "@/types/traceability";
 
 // ============================================================
@@ -10,17 +9,13 @@ interface BackwardTraceResultProps {
   data: BackwardTraceData;
   onTriggerForward: (lotNo: string) => void;
   onOpenRecall: (lotNo: string, type: "FINISHED_GOODS_LOT") => void;
-  onTriggerDiagram: (targetNo: string) => void;
 }
 
 export default function BackwardTraceResult({
   data,
   onTriggerForward,
   onOpenRecall,
-  onTriggerDiagram,
 }: BackwardTraceResultProps) {
-  const router = useRouter();
-
   return (
     <div className="space-y-6">
       {/* 1. 상단 완제품 기본 헤더 카드 */}
@@ -42,12 +37,6 @@ export default function BackwardTraceResult({
               className="px-3.5 py-2 text-xs font-extrabold text-white bg-red-600 hover:bg-red-500 rounded-lg shadow-md transition-all flex items-center gap-1.5"
             >
               <span>🚨 리콜 영향 범위 확인</span>
-            </button>
-            <button
-              onClick={() => onTriggerDiagram(data.fgLotNo)}
-              className="px-3.5 py-2 text-xs font-bold text-indigo-900 bg-white hover:bg-indigo-50 rounded-lg shadow transition-all"
-            >
-              관계도 다이어그램 ↗
             </button>
           </div>
         </div>

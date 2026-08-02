@@ -5,7 +5,7 @@
    ============================================================ */
 
 @theme inline {
-  --font-sans: var(--font-noto-sans-kr), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
@@ -30,4 +30,14 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
+}
+/* 담당자 이름은 목록 선택을 강제하지 않고 직접 입력한다. */
+input[list="defect-users"]::-webkit-calendar-picker-indicator,
+input[list="ca-users"]::-webkit-calendar-picker-indicator {
+  display: none !important;
+}
+
+input[list="defect-users"],
+input[list="ca-users"] {
+  appearance: none;
 }

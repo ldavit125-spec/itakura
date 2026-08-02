@@ -14,6 +14,9 @@ export type InventoryStatus = "NORMAL" | "LOW" | "CRITICAL" | "HOLD" | "EXPIRED"
 /** 출고 상태 코드 */
 export type OutboundStatus = "COMPLETED" | "CANCELLED";
 
+/** 부족 자재 발주 요청 상태 코드 */
+export type MaterialPurchaseRequestStatus = "REQUESTED" | "RECEIVED";
+
 /** 수불 이력 처리 유형 코드 */
 export type TransactionType =
   | "INBOUND"
@@ -110,7 +113,22 @@ export interface MaterialShortageItem {
   unit: string;
   defaultSupplier: string;
   inventoryStatus: InventoryStatus;
-  orderStatus: string; // "발주 필요" | "정상"
+  orderStatus: "REQUIRED" | "REQUESTED";
+}
+
+// ── 부족 자재 발주 요청 엔티티 ────────────────────────────────
+export interface MaterialPurchaseRequest {
+  id: string;
+  requestNo: string;
+  requestDate: string;
+  materialCode: string;
+  materialName: string;
+  supplierName: string;
+  requestedQuantity: number;
+  unit: string;
+  status: MaterialPurchaseRequestStatus;
+  requester: string;
+  receivedInboundNo?: string;
 }
 
 // ── 상단 요약 카드의 집계 데이터 ──────────────────────────────

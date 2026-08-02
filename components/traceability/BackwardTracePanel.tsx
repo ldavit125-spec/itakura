@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { getBackwardTraceByFinishedGoodsLot } from "@/lib/traceability-selectors";
 import BackwardTraceResult from "./BackwardTraceResult";
+import { useMaterials } from "@/context/MaterialsContext";
+import { useProduction } from "@/context/ProductionContext";
+import { useQuality } from "@/context/QualityContext";
 
 // ============================================================
 // 완제품 역방향 추적 패널 (검색 및 결과 연결)
@@ -11,7 +14,6 @@ interface BackwardTracePanelProps {
   onSearch: (lotNo: string) => void;
   onTriggerForward: (lotNo: string) => void;
   onOpenRecall: (lotNo: string, type: "FINISHED_GOODS_LOT") => void;
-  onTriggerDiagram: (targetNo: string) => void;
 }
 
 export default function BackwardTracePanel({
@@ -19,11 +21,10 @@ export default function BackwardTracePanel({
   onSearch,
   onTriggerForward,
   onOpenRecall,
-  onTriggerDiagram,
 }: BackwardTracePanelProps) {
   const [inputLot, setInputLot] = useState(targetLotNo);
-
-  const traceData = getBackwardTraceByFinishedGoodsLot(targetLotNo);
+  const {inventories,inbounds,outbounds}=useMaterials(); const {workOrders,results,fgLots}=useProduction(); const {incoming,processList,finished,nonconformities,correctiveActions}=useQuality();
+  const traceData = getBackwardTraceByFinishedGoodsLot(targetLotNo,{inventories,inbounds,outbounds,workOrders,results,fgLots,incoming,processList,finished,nonconformities,correctiveActions});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +67,6 @@ export default function BackwardTracePanel({
           data={traceData}
           onTriggerForward={onTriggerForward}
           onOpenRecall={onOpenRecall}
-          onTriggerDiagram={onTriggerDiagram}
         />
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-500">

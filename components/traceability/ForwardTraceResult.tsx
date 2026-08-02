@@ -9,13 +9,11 @@ import type { ForwardTraceData } from "@/types/traceability";
 interface ForwardTraceResultProps {
   data: ForwardTraceData;
   onOpenRecall: (lotNo: string, type: "RAW_MATERIAL_LOT") => void;
-  onTriggerDiagram: (targetNo: string) => void;
 }
 
 export default function ForwardTraceResult({
   data,
   onOpenRecall,
-  onTriggerDiagram,
 }: ForwardTraceResultProps) {
   const router = useRouter();
 
@@ -40,12 +38,6 @@ export default function ForwardTraceResult({
               className="px-3.5 py-2 text-xs font-extrabold text-white bg-red-600 hover:bg-red-500 rounded-lg shadow-md transition-all flex items-center gap-1.5"
             >
               <span>🚨 리콜 영향 범위 확인</span>
-            </button>
-            <button
-              onClick={() => onTriggerDiagram(data.rawMaterialLotNo)}
-              className="px-3.5 py-2 text-xs font-bold text-purple-900 bg-white hover:bg-purple-50 rounded-lg shadow transition-all"
-            >
-              관계도 다이어그램 ↗
             </button>
           </div>
         </div>

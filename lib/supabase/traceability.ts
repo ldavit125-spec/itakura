@@ -1,0 +1,6 @@
+import { supabase } from "@/lib/supabase/client";
+import type { TraceHistoryItem } from "@/types/traceability";
+
+function check(error:{message:string}|null){if(error)throw new Error(error.message);}
+export async function fetchTraceHistory():Promise<TraceHistoryItem[]>{const {data,error}=await supabase.from("trace_history").select("*").order("trace_timestamp",{ascending:false});check(error);return(data??[]).map(row=>({id:row.id,traceTimestamp:String(row.trace_timestamp).replace("T"," ").slice(0,16),direction:row.direction,searchQuery:row.search_query,startNo:row.start_no,resultCount:row.result_count,relatedRawLotCount:row.related_raw_lot_count,relatedFGLotCount:row.related_fg_lot_count,hasQualityAnomaly:row.has_quality_anomaly,user:row.user_name}));}
+export async function saveTraceHistory(item:TraceHistoryItem,userId?:string){const {error}=await supabase.from("trace_history").upsert({id:item.id,trace_timestamp:item.traceTimestamp,direction:item.direction,search_query:item.searchQuery,start_no:item.startNo,result_count:item.resultCount,related_raw_lot_count:item.relatedRawLotCount,related_fg_lot_count:item.relatedFGLotCount,has_quality_anomaly:item.hasQualityAnomaly,user_id:userId??null,user_name:item.user},{onConflict:"id"});check(error);}

@@ -16,21 +16,20 @@ const TABS: Array<{ id: ShipmentTab; label: string }> = [
 
 export default function ShipmentClient() {
   const [tab, setTab] = useState<ShipmentTab>("register");
-  const { shipments, lotAvailability, createShipment, updateShipmentStatus, completeShipment, cancelShipment } = useShipments();
-  const { activeUsers, roles, hasPermission, auditLogs } = useAdmin();
-  const managers = activeUsers.filter((user) => user.roleIds.some((roleId) => {
-    const code = roles.find((role) => role.id === roleId)?.code;
-    return code === "ADMIN" || code === "PRODUCTION_MANAGER";
-  }));
+  const { shipments, lotAvailability, shipmentLoading, shipmentError, refreshShipments, createShipment, updateShipmentStatus, completeShipment, cancelShipment } = useShipments();
+  const { currentUser, hasPermission, auditLogs } = useAdmin();
   const [lotNumber, setLotNumber] = useState("");
   const [quantity, setQuantity] = useState<number | "">("");
   const [customer, setCustomer] = useState("");
   const [plannedDate, setPlannedDate] = useState(getBusinessDate());
-  const [manager, setManager] = useState(managers[0]?.name ?? "");
+  const [manager, setManager] = useState(currentUser.name);
   const [memo, setMemo] = useState("");
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
   const [detail, setDetail] = useState<Shipment | null>(null);
   const selectedLot = lotAvailability.find((item) => item.lotNumber === lotNumber);
+
+  if (shipmentLoading) return <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500">출하 데이터를 불러오는 중입니다...</div>;
+  if (shipmentError) return <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center"><p className="mb-4 text-red-700">{shipmentError}</p><button onClick={() => void refreshShipments()} className="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white">다시 시도</button></div>;
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -67,7 +66,7 @@ export default function ShipmentClient() {
             <Field label="출하 수량 *"><input type="number" min={1} max={selectedLot?.availableQuantity} value={quantity} onChange={(e) => setQuantity(e.target.value === "" ? "" : Number(e.target.value))} required className={inputClass} /></Field>
             <Field label="거래처 *"><input value={customer} onChange={(e) => setCustomer(e.target.value)} required className={inputClass} placeholder="거래처명 입력" /></Field>
             <Field label="출하 예정일 *"><input type="date" value={plannedDate} onChange={(e) => setPlannedDate(e.target.value)} required className={inputClass} /></Field>
-            <Field label="출하 담당자 *"><select value={manager} onChange={(e) => setManager(e.target.value)} required className={inputClass}>{managers.map((user) => <option key={user.id} value={user.name}>{user.name} · {user.employeeNo}</option>)}</select></Field>
+            <Field label="출하 담당자 *"><input type="text" value={manager} onChange={(e) => setManager(e.target.value)} required className={inputClass} placeholder="출하 담당자 이름 입력" /></Field>
             <Field label="비고"><input value={memo} onChange={(e) => setMemo(e.target.value)} className={inputClass} placeholder="선택 입력" /></Field>
           </div>
           {selectedLot && <LotSummary lot={selectedLot} />}

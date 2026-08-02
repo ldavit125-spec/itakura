@@ -11,7 +11,6 @@ import TraceabilityTabs from "./TraceabilityTabs";
 import TraceSearchResultTable from "./TraceSearchResultTable";
 import ForwardTracePanel from "./ForwardTracePanel";
 import BackwardTracePanel from "./BackwardTracePanel";
-import LotRelationDiagram from "./LotRelationDiagram";
 import TraceHistoryTable from "./TraceHistoryTable";
 import RecallImpactModal from "./RecallImpactModal";
 import { useMaterials } from "@/context/MaterialsContext";
@@ -30,19 +29,18 @@ export default function TraceabilityClient() {
     setForwardTargetLotNo,
     backwardTargetLotNo,
     setBackwardTargetLotNo,
-    diagramTargetNo,
-    setDiagramTargetNo,
     recentSearches,
     addRecentSearch,
     clearRecentSearches,
     history,
+    traceLoading,
+    traceError,
     addHistoryLog,
     recallModal,
     openRecallModal,
     closeRecallModal,
     triggerForwardTrace,
     triggerBackwardTrace,
-    triggerDiagramView,
   } = useTraceability();
 
   const { inventories, inbounds } = useMaterials();
@@ -53,18 +51,21 @@ export default function TraceabilityClient() {
   const [qualityStatusFilter, setQualityStatusFilter] = useState("ALL");
 
   useEffect(() => {
-    const lot = new URLSearchParams(window.location.search).get("lot");
-    if (lot) {
-      setSearchTerm(lot);
-      addRecentSearch(lot);
-    }
-  }, []);
+    const timer = setTimeout(() => {
+      const lot = new URLSearchParams(window.location.search).get("lot");
+      if (lot) { setSearchTerm(lot); addRecentSearch(lot); }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [addRecentSearch]);
 
   const searchResults = getIntegratedSearchResults(searchTerm, targetTypeFilter, qualityStatusFilter, {
     inventories,
     inbounds,
     fgLots,
   });
+
+  if (traceLoading) return <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500">LOT 추적 데이터를 불러오는 중입니다...</div>;
+  if (traceError) return <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center text-red-700">{traceError}</div>;
 
   const handleGlobalSearch = (term: string) => {
     setSearchTerm(term);
@@ -140,7 +141,6 @@ export default function TraceabilityClient() {
               results={searchResults}
               onTriggerForward={triggerForwardTrace}
               onTriggerBackward={triggerBackwardTrace}
-              onTriggerDiagram={triggerDiagramView}
               onOpenRecall={openRecallModal}
             />
           </div>
@@ -152,7 +152,6 @@ export default function TraceabilityClient() {
             targetLotNo={forwardTargetLotNo}
             onSearch={setForwardTargetLotNo}
             onOpenRecall={openRecallModal}
-            onTriggerDiagram={triggerDiagramView}
           />
         )}
 
@@ -163,20 +162,10 @@ export default function TraceabilityClient() {
             onSearch={setBackwardTargetLotNo}
             onTriggerForward={triggerForwardTrace}
             onOpenRecall={openRecallModal}
-            onTriggerDiagram={triggerDiagramView}
           />
         )}
 
-        {/* 탭 4: LOT 관계도 */}
-        {activeTab === "diagram" && (
-          <LotRelationDiagram
-            diagramTargetNo={diagramTargetNo}
-            onTriggerForward={triggerForwardTrace}
-            onTriggerBackward={triggerBackwardTrace}
-          />
-        )}
-
-        {/* 탭 5: 추적 이력 */}
+        {/* 탭 4: 추적 이력 */}
         {activeTab === "history" && (
           <TraceHistoryTable
             history={history}

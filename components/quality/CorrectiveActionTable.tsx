@@ -17,12 +17,14 @@ interface CorrectiveActionTableProps {
   correctiveActions: CorrectiveAction[];
   onOpenDetail: (item: CorrectiveAction) => void;
   onCloseCA: (caId: string) => void;
+  onCreate?: () => void;
 }
 
 export default function CorrectiveActionTable({
   correctiveActions,
   onOpenDetail,
   onCloseCA,
+  onCreate,
 }: CorrectiveActionTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<CorrectiveActionStatus | "ALL">("ALL");
@@ -93,7 +95,8 @@ export default function CorrectiveActionTable({
           </select>
         </div>
 
-        <div className="text-xs text-gray-500 font-medium">
+        <div className="flex items-center gap-3 text-xs text-gray-500 font-medium">
+          {onCreate && <button onClick={onCreate} className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700">시정조치 등록</button>}
           미완료 CAPA: <strong className="text-amber-600">{correctiveActions.filter(c => c.caStatus !== "CLOSED").length}건</strong>
         </div>
       </div>

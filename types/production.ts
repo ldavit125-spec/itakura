@@ -95,6 +95,8 @@ export interface WorkOrder {
   actualStartTime?: string;
   actualEndTime?: string;
   currentQuantity: number;
+  pauseReason?: string;
+  pausedAt?: string;
   remarks?: string;
 }
 

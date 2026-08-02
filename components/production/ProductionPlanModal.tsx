@@ -314,13 +314,11 @@ export default function ProductionPlanModal({
             <label className="block text-xs font-semibold text-gray-700 mb-1">담당 생산관리자</label>
             <input
               type="text"
-              list="production-manager-options"
               value={manager}
               onChange={(e) => setManager(e.target.value)}
               placeholder="담당자 이름"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <datalist id="production-manager-options">{managers.map((user) => <option key={user.id} value={user.name} />)}</datalist>
           </div>
 
           {/* 비고 */}

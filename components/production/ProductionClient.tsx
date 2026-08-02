@@ -10,6 +10,7 @@ import type {
   ResultModalState,
   FGLotDetailModalState,
   ProductionPlan,
+  WorkOrder,
 } from "@/types/production";
 
 import ProductionSummaryCards from "./ProductionSummaryCards";
@@ -24,6 +25,7 @@ import WorkOrderDetailModal from "./WorkOrderDetailModal";
 
 import ProductionProgressTable from "./ProductionProgressTable";
 import ProductionProgressModal from "./ProductionProgressModal";
+import ProductionPauseModal from "./ProductionPauseModal";
 
 import ProductionResultModal from "./ProductionResultModal";
 import ProductionPerformanceAnalytics from "./ProductionPerformanceAnalytics";
@@ -34,7 +36,6 @@ import FinishedGoodsLotDetailModal from "./FinishedGoodsLotDetailModal";
 import ProductionToast from "./ProductionToast";
 import { useAdmin } from "@/context/AdminContext";
 import { useQuality } from "@/context/QualityContext";
-import { EMPLOYEE_NAMES } from "@/data/admin.mock";
 
 // ============================================================
 // 생산관리 통합 클라이언트 컨테이너
@@ -42,7 +43,7 @@ import { EMPLOYEE_NAMES } from "@/data/admin.mock";
 
 export default function ProductionClient() {
   const router = useRouter();
-  const { canAccessProductionLine, hasPermission } = useAdmin();
+  const { canAccessProductionLine, hasPermission, currentUser } = useAdmin();
   const { defectHistory } = useQuality();
   const {
     activeTab,
@@ -54,6 +55,9 @@ export default function ProductionClient() {
     summary,
     toast,
     closeToast,
+    productionLoading,
+    productionError,
+    refreshProduction,
     addPlan,
     updatePlan,
     confirmPlan,
@@ -82,6 +86,7 @@ export default function ProductionClient() {
   const [workOrderModal, setWorkOrderModal] = useState<WorkOrderModalState>({ isOpen: false, mode: "detail" });
 
   const [progressModal, setProgressModal] = useState<ProgressModalState>({ isOpen: false });
+  const [pauseTarget, setPauseTarget] = useState<WorkOrder | null>(null);
 
   const [resultModal, setResultModal] = useState<ResultModalState>({ isOpen: false, mode: "create" });
   const [fgLotDetailModal, setFgLotDetailModal] = useState<FGLotDetailModalState>({ isOpen: false });
@@ -93,7 +98,7 @@ export default function ProductionClient() {
 
   // 확정 계획에서 작업지시 생성 핸들러
   const handleCreateWorkOrderFromPlan = (plan: ProductionPlan) => {
-    const success = createWorkOrderFromPlan(plan.id, plan.manager || EMPLOYEE_NAMES.productionPlanner);
+    const success = createWorkOrderFromPlan(plan.id, plan.manager || currentUser.name);
     if (success) {
       setActiveTab("work-order");
     }
@@ -103,6 +108,20 @@ export default function ProductionClient() {
     <div className="space-y-6">
       {/* 1. 상단 6종 요약 카드 */}
       <ProductionSummaryCards summary={summary} />
+
+      {productionLoading && (
+        <p className="rounded-lg border border-gray-200 bg-white px-5 py-3 text-sm text-gray-500">
+          Supabase 생산 데이터를 불러오는 중입니다...
+        </p>
+      )}
+      {productionError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700">
+          생산 데이터를 불러오지 못했습니다: {productionError}
+          <button type="button" onClick={() => void refreshProduction()} className="ml-3 font-bold underline">
+            다시 시도
+          </button>
+        </div>
+      )}
 
       {/* 2. 메인 탭 래퍼 카드 */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -142,7 +161,7 @@ export default function ProductionClient() {
           <ProductionProgressTable
             workOrders={scopedWorkOrders}
             onStartWork={(id) => hasPermission("PRODUCTION_EXECUTE") && startWorkOrder(id)}
-            onPauseWork={(id) => hasPermission("PRODUCTION_EXECUTE") && pauseWorkOrder(id)}
+            onPauseWork={(item) => hasPermission("PRODUCTION_EXECUTE") && setPauseTarget(item)}
             onResumeWork={(id) => hasPermission("PRODUCTION_EXECUTE") && resumeWorkOrder(id)}
             onOpenQuantityModal={(item) => setProgressModal({ isOpen: true, item })}
             onCompleteRequest={(id) => {
@@ -211,6 +230,17 @@ export default function ProductionClient() {
         onClose={() => setProgressModal({ isOpen: false })}
         onSubmit={updateCurrentQuantity}
       />
+
+      {pauseTarget && (
+        <ProductionPauseModal
+          item={pauseTarget}
+          onClose={() => setPauseTarget(null)}
+          onSubmit={(workOrderId, reason) => {
+            pauseWorkOrder(workOrderId, reason);
+            setPauseTarget(null);
+          }}
+        />
+      )}
 
       <ProductionResultModal
         isOpen={resultModal.isOpen}

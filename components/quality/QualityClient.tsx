@@ -42,6 +42,8 @@ import { useAdmin } from "@/context/AdminContext";
 import DefectHistoryTable from "./DefectHistoryTable";
 import DefectHistoryDetailModal from "./DefectHistoryDetailModal";
 import QualityStatistics from "./QualityStatistics";
+import DefectHistoryCreateModal from "./DefectHistoryCreateModal";
+import CorrectiveActionCreateModal from "./CorrectiveActionCreateModal";
 
 // ============================================================
 // 품질관리 클라이언트 통합 메인 컨테이너
@@ -60,7 +62,11 @@ export default function QualityClient() {
     correctiveActions,
     defectHistory,
     defectSummary,
+    qualityLoading,
+    qualityError,
+    refreshQuality,
     updateDefectStatus,
+    createDefectHistory,
     summary,
     toast,
     closeToast,
@@ -72,6 +78,7 @@ export default function QualityClient() {
     createNonconformity,
     updateNonconformityStatus,
     createCorrectiveActionFromNC,
+    createCorrectiveAction,
     updateCorrectiveAction,
     verifyCorrectiveAction,
     closeCorrectiveAction,
@@ -96,6 +103,11 @@ export default function QualityClient() {
   const [resultView, setResultView] = useState<"incoming" | "process" | "finished">("incoming");
   const [defectView, setDefectView] = useState<"history" | "nonconformity" | "corrective">("history");
   const [defectDetail, setDefectDetail] = useState<DefectHistory | undefined>();
+  const [defectCreateOpen, setDefectCreateOpen] = useState(false);
+  const [correctiveCreateOpen, setCorrectiveCreateOpen] = useState(false);
+
+  if (qualityLoading) return <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500">품질 데이터를 불러오는 중입니다...</div>;
+  if (qualityError) return <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center"><p className="mb-4 text-red-700">{qualityError}</p><button onClick={() => void refreshQuality()} className="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white">다시 시도</button></div>;
 
   return (
     <div className="space-y-6">
@@ -163,7 +175,7 @@ export default function QualityClient() {
             ))}
           </div>
         )}
-        {activeTab === "defects" && defectView === "history" && <DefectHistoryTable items={defectHistory} onOpen={setDefectDetail} />}
+        {activeTab === "defects" && defectView === "history" && <DefectHistoryTable items={defectHistory} onOpen={setDefectDetail} onCreate={() => hasPermission("QUALITY_CREATE") && setDefectCreateOpen(true)} />}
         {activeTab === "defects" && defectView === "nonconformity" && (
           <NonconformityTable
             nonconformities={nonconformities}
@@ -183,6 +195,7 @@ export default function QualityClient() {
             correctiveActions={correctiveActions}
             onOpenDetail={(item) => setCaDetailModal({ isOpen: true, item })}
             onCloseCA={closeCorrectiveAction}
+            onCreate={() => hasPermission("QUALITY_CREATE") && setCorrectiveCreateOpen(true)}
           />
         )}
         {activeTab === "statistics" && <QualityStatistics quality={summary} defects={defectHistory} />}
@@ -268,6 +281,9 @@ export default function QualityClient() {
           setDefectDetail({ ...defectDetail, status });
         }}
       />
+
+      <DefectHistoryCreateModal isOpen={defectCreateOpen} onClose={() => setDefectCreateOpen(false)} onSubmit={createDefectHistory} />
+      <CorrectiveActionCreateModal isOpen={correctiveCreateOpen} onClose={() => setCorrectiveCreateOpen(false)} nonconformities={nonconformities} onSubmit={createCorrectiveAction} />
 
       {/* 4. 알림 Toast */}
       {toast && <QualityToast toast={toast} onClose={closeToast} />}

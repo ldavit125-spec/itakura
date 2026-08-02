@@ -14,11 +14,22 @@ import type {
   InventoryDetailModalState,
   OutboundModalState,
   InventoryStatus,
+  MaterialPurchaseRequest,
 } from "@/types/materials";
 import { useMaterials } from "@/context/MaterialsContext";
 import { useMasterData } from "@/context/MasterDataContext";
 import { getShortageMaterials } from "@/lib/common-selectors";
 import { useAdmin } from "@/context/AdminContext";
+import { getBusinessDate } from "@/lib/selectors/business-date";
+import {
+  cancelInboundBundle,
+  cancelOutboundBundle,
+  createInboundBundle,
+  createOutboundBundle,
+  createPurchaseRequests,
+  updateInboundRecord,
+  updateShortageThreshold,
+} from "@/lib/supabase/materials";
 
 import MaterialTabs from "./MaterialTabs";
 import MaterialInboundTable from "./MaterialInboundTable";
@@ -29,6 +40,7 @@ import MaterialOutboundTable from "./MaterialOutboundTable";
 import MaterialOutboundModal from "./MaterialOutboundModal";
 import MaterialTransactionTable from "./MaterialTransactionTable";
 import MaterialShortageTable from "./MaterialShortageTable";
+import MaterialShortageRegistrationModal from "./MaterialShortageRegistrationModal";
 import MaterialToast from "./MaterialToast";
 
 // ============================================================
@@ -46,12 +58,12 @@ export default function MaterialClient() {
     inventories,
     outbounds,
     transactions,
-    setInbounds,
-    setInventories,
-    setOutbounds,
-    setTransactions,
+    purchaseRequests,
+    materialsLoading,
+    materialsError,
+    refreshMaterials,
   } = useMaterials();
-  const { materials } = useMasterData();
+  const { materials, refreshMasterData } = useMasterData();
 
   // ── 3. 모달 State ────────────────────────────────────────────
   const [inboundModal, setInboundModal] = useState<InboundModalState>({
@@ -67,6 +79,9 @@ export default function MaterialClient() {
     isOpen: false,
     mode: "create",
   });
+
+  const [shortageModalOpen, setShortageModalOpen] = useState(false);
+  const [receivingRequestId, setReceivingRequestId] = useState<string | null>(null);
 
   // ── 4. Toast 알림 State ──────────────────────────────────────
   const [toast, setToast] = useState<MaterialToastState | null>(null);
@@ -90,10 +105,12 @@ export default function MaterialClient() {
           materials.find((material) => material.code === item.materialCode)
             ?.defaultSupplier || "",
         inventoryStatus,
-        orderStatus: "발주 필요",
+        orderStatus: purchaseRequests.some(
+          (request) => request.materialCode === item.materialCode && request.status === "REQUESTED"
+        ) ? "REQUESTED" : "REQUIRED",
       };
     });
-  }, [inventories, materials]);
+  }, [inventories, materials, purchaseRequests]);
 
   const summary = useMemo<MaterialSummary>(() => {
     const totalShortageCount = shortageItems.length;
@@ -119,7 +136,7 @@ export default function MaterialClient() {
   }, [shortageItems, inventories]);
 
   // ── 6. 입고 등록 핸들러 (연동 처리) ───────────────────────────
-  const handleCreateInbound = (
+  const handleCreateInbound = async (
     formData: Omit<MaterialInbound, "id" | "inboundNo" | "lotNo" | "inboundStatus">
   ) => {
     const dateTag = formData.inboundDate.replace(/-/g, "");
@@ -137,9 +154,6 @@ export default function MaterialClient() {
       inboundStatus: "RECEIVED",
       ...formData,
     };
-
-    // 1. 입고 목록 추가
-    setInbounds((prev) => [newInbound, ...prev]);
 
     // 2. 재고 현황 생성/업데이트
     const availableQty = formData.inspectionStatus === "PASSED" ? formData.quantity : 0;
@@ -170,8 +184,6 @@ export default function MaterialClient() {
       supplierName: formData.supplierName,
     };
 
-    setInventories((prev) => [newInventory, ...prev]);
-
     // 3. 수불 이력 기록
     const nowStr = new Date().toISOString().replace("T", " ").substring(0, 19);
     const newTxn: MaterialTransaction = {
@@ -189,49 +201,39 @@ export default function MaterialClient() {
       remarks: `입고 등록 (${inboundNo})`,
     };
 
-    setTransactions((prev) => [newTxn, ...prev]);
-
-    setInboundModal({ isOpen: false, mode: "create" });
-    showToast(`신규 입고(${inboundNo}) 및 LOT가 정상 등록되고 재고에 반영되었습니다.`);
+    try {
+      await createInboundBundle({
+        inbound: newInbound,
+        inventory: newInventory,
+        transaction: newTxn,
+        purchaseRequestId: receivingRequestId,
+      });
+      await refreshMaterials();
+      setReceivingRequestId(null);
+      setInboundModal({ isOpen: false, mode: "create" });
+      showToast(`신규 입고(${inboundNo}) 및 LOT가 정상 등록되고 재고에 반영되었습니다.`);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "입고 등록에 실패했습니다.", "error");
+    }
   };
 
   // ── 7. 입고 정보 수정 핸들러 ──────────────────────────────────
-  const handleUpdateInbound = (id: string, updated: Partial<MaterialInbound>) => {
-    setInbounds((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...updated } : item))
-    );
-    setInboundModal({ isOpen: false, mode: "create" });
-    showToast("입고 정보가 수정되었습니다.");
+  const handleUpdateInbound = async (id: string, updated: Partial<MaterialInbound>) => {
+    try {
+      await updateInboundRecord(id, updated);
+      await refreshMaterials();
+      setInboundModal({ isOpen: false, mode: "create" });
+      showToast("입고 정보가 수정되었습니다.");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "입고 수정에 실패했습니다.", "error");
+    }
   };
 
   // ── 8. 입고 취소 핸들러 (연동 처리) ───────────────────────────
-  const handleCancelInbound = (inbound: MaterialInbound) => {
+  const handleCancelInbound = async (inbound: MaterialInbound) => {
     if (!window.confirm(`입고 건 [${inbound.inboundNo}]을 취소하시겠습니까?\n취소 시 재고가 차감 처리됩니다.`)) {
       return;
     }
-
-    // 1. 입고 상태 변경
-    setInbounds((prev) =>
-      prev.map((item) =>
-        item.id === inbound.id ? { ...item, inboundStatus: "CANCELLED" } : item
-      )
-    );
-
-    // 2. 재고 LOT 차감
-    setInventories((prev) =>
-      prev.map((inv) => {
-        if (inv.lotNo === inbound.lotNo) {
-          const newCurrent = Math.max(0, inv.currentStock - inbound.quantity);
-          const newAvailable = Math.max(0, inv.availableStock - inbound.quantity);
-          return {
-            ...inv,
-            currentStock: newCurrent,
-            availableStock: newAvailable,
-          };
-        }
-        return inv;
-      })
-    );
 
     // 3. 수불 이력 추가
     const nowStr = new Date().toISOString().replace("T", " ").substring(0, 19);
@@ -251,12 +253,17 @@ export default function MaterialClient() {
       remarks: `입고 취소 (${inbound.inboundNo})`,
     };
 
-    setTransactions((prev) => [newTxn, ...prev]);
-    showToast(`입고 [${inbound.inboundNo}] 건이 취소 처리되었습니다.`);
+    try {
+      await cancelInboundBundle(inbound, newTxn);
+      await refreshMaterials();
+      showToast(`입고 [${inbound.inboundNo}] 건이 취소 처리되었습니다.`);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "입고 취소에 실패했습니다.", "error");
+    }
   };
 
   // ── 9. 출고 등록 핸들러 (FEFO 차감 연동 처리) ─────────────────
-  const handleCreateOutbound = (
+  const handleCreateOutbound = async (
     formData: Omit<MaterialOutbound, "id" | "outboundNo" | "outboundStatus">
   ) => {
     const dateTag = formData.outboundDate.replace(/-/g, "");
@@ -270,35 +277,10 @@ export default function MaterialClient() {
       ...formData,
     };
 
-    // 1. 출고 목록 추가
-    setOutbounds((prev) => [newOutbound, ...prev]);
-
-    // 2. 재고 차감 처리
-    let updatedBalance = 0;
-    setInventories((prev) =>
-      prev.map((inv) => {
-        if (inv.lotNo === formData.lotNo) {
-          const newCurrent = Math.max(0, inv.currentStock - formData.quantity);
-          const newAvailable = Math.max(0, inv.availableStock - formData.quantity);
-          updatedBalance = newCurrent;
-
-          let newStatus = inv.inventoryStatus;
-          if (newCurrent < inv.safetyStock * 0.5) {
-            newStatus = "CRITICAL";
-          } else if (newCurrent < inv.safetyStock) {
-            newStatus = "LOW";
-          }
-
-          return {
-            ...inv,
-            currentStock: newCurrent,
-            availableStock: newAvailable,
-            inventoryStatus: newStatus,
-          };
-        }
-        return inv;
-      })
-    );
+    const sourceInventory = inventories.find((inventory) => inventory.lotNo === formData.lotNo);
+    const updatedBalance = sourceInventory
+      ? Math.max(0, sourceInventory.currentStock - formData.quantity)
+      : 0;
 
     // 3. 수불 이력 추가
     const nowStr = new Date().toISOString().replace("T", " ").substring(0, 19);
@@ -317,14 +299,18 @@ export default function MaterialClient() {
       remarks: `생산 출고 (${outboundNo}) / ${formData.productionLine}`,
     };
 
-    setTransactions((prev) => [newTxn, ...prev]);
-
-    setOutboundModal({ isOpen: false, mode: "create" });
-    showToast(`출고 [${outboundNo}] 처리 완료! 재고 ${formData.quantity}${formData.unit} 차감되었습니다.`);
+    try {
+      await createOutboundBundle(newOutbound, newTxn);
+      await refreshMaterials();
+      setOutboundModal({ isOpen: false, mode: "create" });
+      showToast(`출고 [${outboundNo}] 처리 완료! 재고 ${formData.quantity}${formData.unit} 차감되었습니다.`);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "출고 처리에 실패했습니다.", "error");
+    }
   };
 
   // ── 10. 출고 취소 핸들러 (재고 복원 연동 처리) ────────────────
-  const handleCancelOutbound = (outbound: MaterialOutbound) => {
+  const handleCancelOutbound = async (outbound: MaterialOutbound) => {
     if (
       !window.confirm(
         `출고 건 [${outbound.outboundNo}]을 취소하시겠습니까?\n취소 시 차감되었던 재고가 다시 복원됩니다.`
@@ -333,41 +319,10 @@ export default function MaterialClient() {
       return;
     }
 
-    // 1. 출고 상태 취소로 변경
-    setOutbounds((prev) =>
-      prev.map((item) =>
-        item.id === outbound.id ? { ...item, outboundStatus: "CANCELLED" } : item
-      )
-    );
-
-    // 2. 재고 복원
-    let restoredBalance = 0;
-    setInventories((prev) =>
-      prev.map((inv) => {
-        if (inv.lotNo === outbound.lotNo) {
-          const newCurrent = inv.currentStock + outbound.quantity;
-          const newAvailable = inv.availableStock + outbound.quantity;
-          restoredBalance = newCurrent;
-
-          let newStatus = inv.inventoryStatus;
-          if (newCurrent >= inv.safetyStock) {
-            newStatus = "NORMAL";
-          } else if (newCurrent < inv.safetyStock * 0.5) {
-            newStatus = "CRITICAL";
-          } else {
-            newStatus = "LOW";
-          }
-
-          return {
-            ...inv,
-            currentStock: newCurrent,
-            availableStock: newAvailable,
-            inventoryStatus: newStatus,
-          };
-        }
-        return inv;
-      })
-    );
+    const sourceInventory = inventories.find((inventory) => inventory.lotNo === outbound.lotNo);
+    const restoredBalance = sourceInventory
+      ? sourceInventory.currentStock + outbound.quantity
+      : outbound.quantity;
 
     // 3. 수불 이력 추가
     const nowStr = new Date().toISOString().replace("T", " ").substring(0, 19);
@@ -387,9 +342,83 @@ export default function MaterialClient() {
       remarks: `출고 취소 복원 (${outbound.outboundNo})`,
     };
 
-    setTransactions((prev) => [newTxn, ...prev]);
-    showToast(`출고 [${outbound.outboundNo}] 건이 취소되어 재고가 복원되었습니다.`);
+    try {
+      await cancelOutboundBundle(outbound, newTxn);
+      await refreshMaterials();
+      showToast(`출고 [${outbound.outboundNo}] 건이 취소되어 재고가 복원되었습니다.`);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "출고 취소에 실패했습니다.", "error");
+    }
   };
+
+  const handleRegisterShortage = async (
+    materialCode: string,
+    requiredStock: number,
+    remarks: string
+  ) => {
+    const material = materials.find((item) => item.code === materialCode);
+    if (!material) {
+      showToast("선택한 자재를 찾을 수 없습니다.", "error");
+      return;
+    }
+
+    try {
+      await updateShortageThreshold(materialCode, requiredStock);
+      await Promise.all([refreshMasterData(), refreshMaterials()]);
+      setShortageModalOpen(false);
+      showToast(
+        `${material.name}의 필요 재고 기준을 ${requiredStock.toLocaleString()}${material.unit}로 등록했습니다.${remarks ? ` (${remarks})` : ""}`
+      );
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "부족 기준 등록에 실패했습니다.", "error");
+    }
+  };
+
+  const handleRequestPurchase = async (materialCodes: string[]) => {
+    const requestableItems = shortageItems.filter(
+      (item) => materialCodes.includes(item.materialCode) && item.orderStatus === "REQUIRED"
+    );
+    if (requestableItems.length === 0) return;
+
+    const requestDate = getBusinessDate();
+    const dateTag = requestDate.replace(/-/g, "");
+    const createdAt = Date.now();
+    const newRequests: MaterialPurchaseRequest[] = requestableItems.map((item, index) => ({
+      id: `purchase-${createdAt}-${index}`,
+      requestNo: `PO-${dateTag}-${String(purchaseRequests.length + index + 1).padStart(3, "0")}`,
+      requestDate,
+      materialCode: item.materialCode,
+      materialName: item.materialName,
+      supplierName: item.defaultSupplier,
+      requestedQuantity: item.shortageQty,
+      unit: item.unit,
+      status: "REQUESTED",
+      requester: currentUser.name,
+    }));
+
+    try {
+      await createPurchaseRequests(newRequests);
+      await refreshMaterials();
+      showToast(`${newRequests.length}건의 부족 자재를 발주 요청했습니다.`);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "발주 요청에 실패했습니다.", "error");
+    }
+  };
+
+  const handleReceiveRequestedMaterial = (materialCode: string) => {
+    const request = purchaseRequests.find(
+      (item) => item.materialCode === materialCode && item.status === "REQUESTED"
+    );
+    if (!request) {
+      showToast("입고 대기 중인 발주 요청을 찾을 수 없습니다.", "error");
+      return;
+    }
+
+    setReceivingRequestId(request.id);
+    setInboundModal({ isOpen: true, mode: "create" });
+  };
+
+  const receivingRequest = purchaseRequests.find((request) => request.id === receivingRequestId);
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -399,6 +428,18 @@ export default function MaterialClient() {
         onChange={setActiveTab}
         shortageCount={summary.totalShortageCount}
       />
+
+      {materialsLoading && (
+        <p className="px-6 py-3 text-sm text-gray-500">Supabase 자재 데이터를 불러오는 중입니다...</p>
+      )}
+      {materialsError && (
+        <div className="mx-6 my-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          자재 데이터를 불러오지 못했습니다: {materialsError}
+          <button type="button" onClick={() => void refreshMaterials()} className="ml-3 font-bold underline">
+            다시 시도
+          </button>
+        </div>
+      )}
 
       {/* 2. 탭별 메인 뷰 컨텐츠 */}
       {activeTab === "inbound" && (
@@ -432,7 +473,16 @@ export default function MaterialClient() {
       )}
 
       {activeTab === "shortage" && (
-        <MaterialShortageTable shortageItems={shortageItems} summary={summary} />
+        <MaterialShortageTable
+          shortageItems={shortageItems}
+          summary={summary}
+          onRequestPurchase={handleRequestPurchase}
+          onReceiveMaterial={handleReceiveRequestedMaterial}
+          canManage={hasPermission("MATERIALS_CREATE")}
+          onOpenCreate={
+            hasPermission("MATERIALS_UPDATE") ? () => setShortageModalOpen(true) : undefined
+          }
+        />
       )}
 
       {/* 3. 각 탭 모달 */}
@@ -440,9 +490,21 @@ export default function MaterialClient() {
         isOpen={inboundModal.isOpen}
         mode={inboundModal.mode}
         item={inboundModal.item}
-        onClose={() => setInboundModal({ isOpen: false, mode: "create" })}
+        onClose={() => {
+          setInboundModal({ isOpen: false, mode: "create" });
+          setReceivingRequestId(null);
+        }}
         onSubmit={handleCreateInbound}
         onUpdate={handleUpdateInbound}
+        initialValues={receivingRequest ? {
+          inboundDate: getBusinessDate(),
+          materialCode: receivingRequest.materialCode,
+          materialName: receivingRequest.materialName,
+          supplierName: receivingRequest.supplierName,
+          quantity: receivingRequest.requestedQuantity,
+          unit: receivingRequest.unit,
+          remarks: `발주 요청 ${receivingRequest.requestNo} 입고`,
+        } : undefined}
       />
 
       <MaterialInventoryDetailModal
@@ -459,6 +521,16 @@ export default function MaterialClient() {
         onClose={() => setOutboundModal({ isOpen: false, mode: "create" })}
         onSubmit={handleCreateOutbound}
       />
+
+      {shortageModalOpen && (
+        <MaterialShortageRegistrationModal
+          isOpen
+          materials={materials}
+          inventories={inventories}
+          onClose={() => setShortageModalOpen(false)}
+          onSubmit={handleRegisterShortage}
+        />
+      )}
 
       {/* 4. Toast 알림 */}
       {toast && <MaterialToast toast={toast} onClose={() => setToast(null)} />}

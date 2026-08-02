@@ -1,14 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { Product, Material, Supplier, ProductionLine } from "@/types/master-data";
-import {
-  INITIAL_PRODUCTS,
-  INITIAL_MATERIALS,
-  INITIAL_SUPPLIERS,
-  INITIAL_PRODUCTION_LINES,
-} from "@/data/master-data.mock";
 import { EMPLOYEE_NAMES } from "@/data/admin.mock";
+import { fetchMasterData } from "@/lib/supabase/master-data";
 
 export interface Worker {
   id: string;
@@ -31,6 +26,9 @@ interface MasterDataContextType {
   suppliers: Supplier[];
   productionLines: ProductionLine[];
   workers: Worker[];
+  masterDataLoading: boolean;
+  masterDataError: string | null;
+  refreshMasterData: () => Promise<void>;
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   setMaterials: React.Dispatch<React.SetStateAction<Material[]>>;
   setSuppliers: React.Dispatch<React.SetStateAction<Supplier[]>>;
@@ -41,11 +39,39 @@ interface MasterDataContextType {
 const MasterDataContext = createContext<MasterDataContextType | undefined>(undefined);
 
 export function MasterDataProvider({ children }: { children: React.ReactNode }) {
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
-  const [materials, setMaterials] = useState<Material[]>(INITIAL_MATERIALS);
-  const [suppliers, setSuppliers] = useState<Supplier[]>(INITIAL_SUPPLIERS);
-  const [productionLines, setProductionLines] = useState<ProductionLine[]>(INITIAL_PRODUCTION_LINES);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
   const [workers, setWorkers] = useState<Worker[]>(INITIAL_WORKERS);
+  const [masterDataLoading, setMasterDataLoading] = useState(true);
+  const [masterDataError, setMasterDataError] = useState<string | null>(null);
+
+  const refreshMasterData = useCallback(async () => {
+    await Promise.resolve();
+    setMasterDataLoading(true);
+    setMasterDataError(null);
+    try {
+      const snapshot = await fetchMasterData();
+      setProducts(snapshot.products);
+      setMaterials(snapshot.materials);
+      setSuppliers(snapshot.suppliers);
+      setProductionLines(snapshot.productionLines);
+    } catch (error) {
+      setMasterDataError(
+        error instanceof Error ? error.message : "기준정보를 불러오지 못했습니다.",
+      );
+    } finally {
+      setMasterDataLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void refreshMasterData();
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [refreshMasterData]);
 
   return (
     <MasterDataContext.Provider
@@ -55,6 +81,9 @@ export function MasterDataProvider({ children }: { children: React.ReactNode }) 
         suppliers,
         productionLines,
         workers,
+        masterDataLoading,
+        masterDataError,
+        refreshMasterData,
         setProducts,
         setMaterials,
         setSuppliers,

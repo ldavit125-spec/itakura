@@ -20,7 +20,6 @@ export default function UserAccountModal({
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [department, setDepartment] = useState(user?.department ?? "");
-  const [password, setPassword] = useState(user?.password ?? "");
   const [roleIds, setRoleIds] = useState<string[]>(user?.roleIds ?? []);
   const [lines, setLines] = useState<string[]>(user?.productionLines ?? []);
   const [error, setError] = useState("");
@@ -45,7 +44,6 @@ export default function UserAccountModal({
       name,
       email,
       department,
-      password,
       roleIds,
       productionLines: lines,
     });
@@ -66,7 +64,6 @@ export default function UserAccountModal({
           <Field label="이름 *" value={name} onChange={setName} />
           <Field label="이메일 *" type="email" value={email} onChange={setEmail} />
           <Field label="부서" value={department} onChange={setDepartment} />
-          <Field label={user ? "비밀번호" : "임시 비밀번호"} type="password" value={password} onChange={setPassword} placeholder={user ? "" : "미입력 시 demo1234"} />
         </div>
         <h3 className="mt-6 text-sm font-bold text-gray-800">역할 *</h3>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">

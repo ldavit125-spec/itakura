@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { getForwardTraceByRawMaterialLot } from "@/lib/traceability-selectors";
 import ForwardTraceResult from "./ForwardTraceResult";
+import { useMaterials } from "@/context/MaterialsContext";
+import { useProduction } from "@/context/ProductionContext";
+import { useQuality } from "@/context/QualityContext";
 
 // ============================================================
 // 원재료 정방향 추적 패널 (검색 및 결과 연결)
@@ -10,18 +13,16 @@ interface ForwardTracePanelProps {
   targetLotNo: string;
   onSearch: (lotNo: string) => void;
   onOpenRecall: (lotNo: string, type: "RAW_MATERIAL_LOT") => void;
-  onTriggerDiagram: (targetNo: string) => void;
 }
 
 export default function ForwardTracePanel({
   targetLotNo,
   onSearch,
   onOpenRecall,
-  onTriggerDiagram,
 }: ForwardTracePanelProps) {
   const [inputLot, setInputLot] = useState(targetLotNo);
-
-  const traceData = getForwardTraceByRawMaterialLot(targetLotNo);
+  const {inventories,inbounds,outbounds}=useMaterials(); const {workOrders,results,fgLots}=useProduction(); const {incoming,processList,finished,nonconformities,correctiveActions}=useQuality();
+  const traceData = getForwardTraceByRawMaterialLot(targetLotNo,{inventories,inbounds,outbounds,workOrders,results,fgLots,incoming,processList,finished,nonconformities,correctiveActions});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +64,6 @@ export default function ForwardTracePanel({
         <ForwardTraceResult
           data={traceData}
           onOpenRecall={onOpenRecall}
-          onTriggerDiagram={onTriggerDiagram}
         />
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-500">

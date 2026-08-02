@@ -14,8 +14,13 @@ import {
   ProductionLineFormModal,
 } from "@/components/master-data/MasterDataFormModal";
 import Toast from "@/components/master-data/Toast";
-
-
+import {
+  saveMaterial,
+  saveProduct,
+  saveProductionLine,
+  saveSupplier,
+  updateMasterDataStatus,
+} from "@/lib/supabase/master-data";
 
 import type {
   Product,
@@ -43,13 +48,12 @@ export default function MasterDataClient() {
   // ── 엔티티 상태 (MasterDataContext 전역 연동) ─────────────────────
   const {
     products,
-    setProducts,
     materials,
-    setMaterials,
     suppliers,
-    setSuppliers,
     productionLines: lines,
-    setProductionLines: setLines,
+    masterDataLoading,
+    masterDataError,
+    refreshMasterData,
   } = useMasterData();
 
   // ── 모달·Toast 상태 ──────────────────────────────────────────
@@ -67,111 +71,107 @@ export default function MasterDataClient() {
     status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
 
   // ── 제품 핸들러 ──────────────────────────────────────────────
-  const handleProductSave = (data: Omit<Product, "id">) => {
-    if (modal?.type === "product" && modal.mode === "edit") {
-      const targetId = modal.item.id;
-      setProducts((prev) =>
-        prev.map((p) => (p.id === targetId ? { ...data, id: targetId } : p))
-      );
-      showToast("제품 정보가 수정되었습니다.", "success");
-    } else {
-      setProducts((prev) => [
-        ...prev,
-        { ...data, id: `prd-${Date.now()}` },
-      ]);
-      showToast("새 제품이 등록되었습니다.", "success");
+  const handleProductSave = async (data: Omit<Product, "id">) => {
+    const isEdit = modal?.type === "product" && modal.mode === "edit";
+    const item = { ...data, id: isEdit ? modal.item.id : crypto.randomUUID() };
+    try {
+      await saveProduct(item, lines);
+      await refreshMasterData();
+      showToast(isEdit ? "제품 정보가 수정되었습니다." : "새 제품이 등록되었습니다.", "success");
+      closeModal();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "제품 저장에 실패했습니다.", "error");
     }
-    closeModal();
   };
 
-  const handleProductToggle = (id: string) => {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, status: toggleStatus(p.status) } : p
-      )
-    );
-    showToast("사용 여부가 변경되었습니다.", "success");
+  const handleProductToggle = async (id: string) => {
+    const item = products.find((product) => product.id === id);
+    if (!item) return;
+    try {
+      await updateMasterDataStatus("products", id, toggleStatus(item.status));
+      await refreshMasterData();
+      showToast("사용 여부가 변경되었습니다.", "success");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "상태 변경에 실패했습니다.", "error");
+    }
   };
 
   // ── 원재료 핸들러 ────────────────────────────────────────────
-  const handleMaterialSave = (data: Omit<Material, "id">) => {
-    if (modal?.type === "material" && modal.mode === "edit") {
-      const targetId = modal.item.id;
-      setMaterials((prev) =>
-        prev.map((m) => (m.id === targetId ? { ...data, id: targetId } : m))
-      );
-      showToast("원재료 정보가 수정되었습니다.", "success");
-    } else {
-      setMaterials((prev) => [
-        ...prev,
-        { ...data, id: `mat-${Date.now()}` },
-      ]);
-      showToast("새 원재료가 등록되었습니다.", "success");
+  const handleMaterialSave = async (data: Omit<Material, "id">) => {
+    const isEdit = modal?.type === "material" && modal.mode === "edit";
+    const item = { ...data, id: isEdit ? modal.item.id : crypto.randomUUID() };
+    try {
+      await saveMaterial(item, suppliers);
+      await refreshMasterData();
+      showToast(isEdit ? "원재료 정보가 수정되었습니다." : "새 원재료가 등록되었습니다.", "success");
+      closeModal();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "원재료 저장에 실패했습니다.", "error");
     }
-    closeModal();
   };
 
-  const handleMaterialToggle = (id: string) => {
-    setMaterials((prev) =>
-      prev.map((m) =>
-        m.id === id ? { ...m, status: toggleStatus(m.status) } : m
-      )
-    );
-    showToast("사용 여부가 변경되었습니다.", "success");
+  const handleMaterialToggle = async (id: string) => {
+    const item = materials.find((material) => material.id === id);
+    if (!item) return;
+    try {
+      await updateMasterDataStatus("materials", id, toggleStatus(item.status));
+      await refreshMasterData();
+      showToast("사용 여부가 변경되었습니다.", "success");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "상태 변경에 실패했습니다.", "error");
+    }
   };
 
   // ── 거래처 핸들러 ────────────────────────────────────────────
-  const handleSupplierSave = (data: Omit<Supplier, "id">) => {
-    if (modal?.type === "supplier" && modal.mode === "edit") {
-      const targetId = modal.item.id;
-      setSuppliers((prev) =>
-        prev.map((s) => (s.id === targetId ? { ...data, id: targetId } : s))
-      );
-      showToast("거래처 정보가 수정되었습니다.", "success");
-    } else {
-      setSuppliers((prev) => [
-        ...prev,
-        { ...data, id: `sup-${Date.now()}` },
-      ]);
-      showToast("새 거래처가 등록되었습니다.", "success");
+  const handleSupplierSave = async (data: Omit<Supplier, "id">) => {
+    const isEdit = modal?.type === "supplier" && modal.mode === "edit";
+    const item = { ...data, id: isEdit ? modal.item.id : crypto.randomUUID() };
+    try {
+      await saveSupplier(item);
+      await refreshMasterData();
+      showToast(isEdit ? "거래처 정보가 수정되었습니다." : "새 거래처가 등록되었습니다.", "success");
+      closeModal();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "거래처 저장에 실패했습니다.", "error");
     }
-    closeModal();
   };
 
-  const handleSupplierToggle = (id: string) => {
-    setSuppliers((prev) =>
-      prev.map((s) =>
-        s.id === id ? { ...s, status: toggleStatus(s.status) } : s
-      )
-    );
-    showToast("사용 여부가 변경되었습니다.", "success");
+  const handleSupplierToggle = async (id: string) => {
+    const item = suppliers.find((supplier) => supplier.id === id);
+    if (!item) return;
+    try {
+      await updateMasterDataStatus("suppliers", id, toggleStatus(item.status));
+      await refreshMasterData();
+      showToast("사용 여부가 변경되었습니다.", "success");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "상태 변경에 실패했습니다.", "error");
+    }
   };
 
   // ── 생산라인 핸들러 ──────────────────────────────────────────
-  const handleLineSave = (data: Omit<ProductionLine, "id">) => {
-    if (modal?.type === "line" && modal.mode === "edit") {
-      const targetId = modal.item.id;
-      setLines((prev) =>
-        prev.map((l) => (l.id === targetId ? { ...data, id: targetId } : l))
-      );
-      showToast("생산라인 정보가 수정되었습니다.", "success");
-    } else {
-      setLines((prev) => [
-        ...prev,
-        { ...data, id: `line-${Date.now()}` },
-      ]);
-      showToast("새 생산라인이 등록되었습니다.", "success");
+  const handleLineSave = async (data: Omit<ProductionLine, "id">) => {
+    const isEdit = modal?.type === "line" && modal.mode === "edit";
+    const item = { ...data, id: isEdit ? modal.item.id : crypto.randomUUID() };
+    try {
+      await saveProductionLine(item);
+      await refreshMasterData();
+      showToast(isEdit ? "생산라인 정보가 수정되었습니다." : "새 생산라인이 등록되었습니다.", "success");
+      closeModal();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "생산라인 저장에 실패했습니다.", "error");
     }
-    closeModal();
   };
 
-  const handleLineToggle = (id: string) => {
-    setLines((prev) =>
-      prev.map((l) =>
-        l.id === id ? { ...l, status: toggleStatus(l.status) } : l
-      )
-    );
-    showToast("사용 여부가 변경되었습니다.", "success");
+  const handleLineToggle = async (id: string) => {
+    const item = lines.find((line) => line.id === id);
+    if (!item) return;
+    try {
+      await updateMasterDataStatus("production_lines", id, toggleStatus(item.status));
+      await refreshMasterData();
+      showToast("사용 여부가 변경되었습니다.", "success");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "상태 변경에 실패했습니다.", "error");
+    }
   };
 
   // ── 코드 목록 (중복 체크용, 편집 중인 항목 제외) ─────────────
@@ -194,6 +194,18 @@ export default function MasterDataClient() {
 
       <div className="bg-white rounded-lg border border-gray-200">
         <MasterDataTabs activeTab={activeTab} onChange={setActiveTab} />
+
+        {masterDataLoading && (
+          <p className="px-6 pt-5 text-sm text-gray-500">Supabase 기준정보를 불러오는 중입니다...</p>
+        )}
+        {masterDataError && (
+          <div className="mx-6 mt-5 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            기준정보를 불러오지 못했습니다: {masterDataError}
+            <button type="button" onClick={() => void refreshMasterData()} className="ml-3 font-bold underline">
+              다시 시도
+            </button>
+          </div>
+        )}
 
         <div
           className="p-6"

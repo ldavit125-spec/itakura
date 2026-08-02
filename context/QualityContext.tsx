@@ -14,17 +14,8 @@ import type {
   DefectHistory,
   DefectHistorySummary,
 } from "@/types/quality";
-import {
-  INITIAL_INSPECTION_QUEUE,
-  INITIAL_INCOMING_INSPECTIONS,
-  INITIAL_PROCESS_INSPECTIONS,
-  INITIAL_FINISHED_GOODS_INSPECTIONS,
-  INITIAL_NONCONFORMITIES,
-  INITIAL_CORRECTIVE_ACTIONS,
-} from "@/data/quality.mock";
-import { INITIAL_DEFECT_HISTORY } from "@/data/defect-history.mock";
+import { fetchQualitySnapshot, saveCorrectiveAction, saveDefectHistory, saveFinishedInspection, saveIncomingInspection, saveInspectionRequest, saveNonconformity, saveProcessInspection } from "@/lib/supabase/quality";
 import { getDefectHistorySummary } from "@/lib/defect-history";
-import { createDefectHistoryFromProductionResult } from "@/lib/production-defect-history";
 
 import {
   calculatePassRate,
@@ -57,7 +48,11 @@ interface QualityContextType {
   correctiveActions: CorrectiveAction[];
   defectHistory: DefectHistory[];
   defectSummary: DefectHistorySummary;
+  qualityLoading: boolean;
+  qualityError: string | null;
+  refreshQuality: () => Promise<void>;
   updateDefectStatus: (id: string, status: DefectHistory["status"]) => void;
+  createDefectHistory: (data: Omit<DefectHistory, "id" | "defectNo" | "createdAt" | "updatedAt">) => boolean;
   summary: QualitySummary;
   toast: QualityToastState | null;
   showToast: (message: string, type?: "success" | "error") => void;
@@ -90,6 +85,7 @@ interface QualityContextType {
 
   // 탭 6: 시정조치 (CAPA)
   createCorrectiveActionFromNC: (ncNo: string, handler: string) => boolean;
+  createCorrectiveAction: (data: Omit<CorrectiveAction, "id" | "caNo" | "caStatus" | "verificationStatus">) => boolean;
   updateCorrectiveAction: (caId: string, updated: Partial<CorrectiveAction>) => boolean;
   verifyCorrectiveAction: (
     caId: string,
@@ -104,48 +100,58 @@ const QualityContext = createContext<QualityContextType | null>(null);
 
 export function QualityProvider({ children }: { children: React.ReactNode }) {
   const { setInventories } = useMaterials();
-  const { results, fgLots, updateWorkOrderQualityStatus, updateFinishedGoodsLotQuality } =
+  const { updateWorkOrderQualityStatus, updateFinishedGoodsLotQuality } =
     useProduction();
   const [activeTab, setActiveTab] = useState<QualityTab>("inspection");
-  const [queue, setQueue] = useState<InspectionQueueItem[]>(INITIAL_INSPECTION_QUEUE);
-  const [incoming, setIncoming] = useState<IncomingInspection[]>(INITIAL_INCOMING_INSPECTIONS);
-  const [processList, setProcessList] = useState<ProcessInspection[]>(INITIAL_PROCESS_INSPECTIONS);
-  const [finished, setFinished] = useState<FinishedGoodsInspection[]>(INITIAL_FINISHED_GOODS_INSPECTIONS);
-  const [nonconformities, setNonconformities] = useState<Nonconformity[]>(INITIAL_NONCONFORMITIES);
-  const [correctiveActions, setCorrectiveActions] = useState<CorrectiveAction[]>(INITIAL_CORRECTIVE_ACTIONS);
-  const [defectHistory, setDefectHistory] = useState<DefectHistory[]>(INITIAL_DEFECT_HISTORY);
-  useEffect(() => {
-    setDefectHistory((previous) => {
-      const existingLots = new Set(previous.map((item) => item.lotNumber));
-      const additions: DefectHistory[] = [];
-
-      results
-        .filter((result) => result.resultStatus === "CONFIRMED" && result.defectQuantity > 0)
-        .forEach((result) => {
-          const lot = fgLots.find((item) => item.resultNo === result.resultNo);
-          if (!lot || existingLots.has(lot.fgLotNo)) return;
-
-          additions.push(
-            ...createDefectHistoryFromProductionResult(
-              result,
-              lot,
-              previous.length + additions.length + 1
-            )
-          );
-          existingLots.add(lot.fgLotNo);
-        });
-
-      return additions.length > 0 ? [...additions, ...previous] : previous;
-    });
-  }, [fgLots, results]);
+  const [queue, setQueue] = useState<InspectionQueueItem[]>([]);
+  const [incoming, setIncoming] = useState<IncomingInspection[]>([]);
+  const [processList, setProcessList] = useState<ProcessInspection[]>([]);
+  const [finished, setFinished] = useState<FinishedGoodsInspection[]>([]);
+  const [nonconformities, setNonconformities] = useState<Nonconformity[]>([]);
+  const [correctiveActions, setCorrectiveActions] = useState<CorrectiveAction[]>([]);
+  const [defectHistory, setDefectHistory] = useState<DefectHistory[]>([]);
+  const [qualityLoading, setQualityLoading] = useState(true);
+  const [qualityError, setQualityError] = useState<string | null>(null);
+  const refreshQuality = async () => {
+    setQualityLoading(true);
+    try {
+      const data = await fetchQualitySnapshot();
+      setQueue(data.queue); setIncoming(data.incoming); setProcessList(data.processList);
+      setFinished(data.finished); setNonconformities(data.nonconformities);
+      setCorrectiveActions(data.correctiveActions); setDefectHistory(data.defectHistory);
+      setQualityError(null);
+    } catch (error) { setQualityError(error instanceof Error ? error.message : "품질 데이터를 불러오지 못했습니다."); }
+    finally { setQualityLoading(false); }
+  };
+  useEffect(() => { const timer=setTimeout(()=>void refreshQuality(),0); return()=>clearTimeout(timer); }, []);
+  const persist = (operation: Promise<void>) => { void operation.then(refreshQuality).catch(error => { setQualityError(error instanceof Error ? error.message : "품질 데이터 저장에 실패했습니다."); showToast("품질 데이터 저장에 실패했습니다.", "error"); }); };
   const defectSummary = useMemo(() => getDefectHistorySummary(defectHistory), [defectHistory]);
   const updateDefectStatus = (id: string, status: DefectHistory["status"]) => {
+    const target = defectHistory.find(item => item.id === id);
     setDefectHistory((previous) => previous.map((item) =>
       item.id === id
         ? { ...item, status, updatedAt: new Date().toISOString().replace("T", " ").substring(0, 16) }
         : item
     ));
+    if (target) persist(saveDefectHistory({ ...target, status, updatedAt: new Date().toISOString() }));
     showToast("불량품 처리 상태를 변경했습니다.");
+  };
+
+  const createDefectHistory = (data: Omit<DefectHistory, "id" | "defectNo" | "createdAt" | "updatedAt">): boolean => {
+    const now = new Date().toISOString();
+    const cleanDate = data.inspectionDate.slice(0, 10).replace(/-/g, "");
+    const defectNo = `DEF-${cleanDate}-${String(defectHistory.length + 1).padStart(3, "0")}`;
+    const item: DefectHistory = {
+      ...data,
+      id: `def-${cleanDate}-${String(defectHistory.length + 1).padStart(3, "0")}`,
+      defectNo,
+      createdAt: now,
+      updatedAt: now,
+    };
+    setDefectHistory(previous => [item, ...previous]);
+    persist(saveDefectHistory(item));
+    showToast(`불량품 이력 ${item.defectNo}가 등록되었습니다.`);
+    return true;
   };
 
   const [toast, setToast] = useState<QualityToastState | null>(null);
@@ -199,9 +205,11 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
 
   // ── 탭 1: 검사 대기 핸들러 ────────────────────────────────────
   const assignInspector = (queueId: string, inspector: string) => {
+    const target = queue.find(q => q.id === queueId);
     setQueue((prev) =>
       prev.map((q) => (q.id === queueId ? { ...q, inspector, status: "ASSIGNED" } : q))
     );
+    if (target) persist(saveInspectionRequest({ ...target, inspector, status: "ASSIGNED" }));
     showToast("검사 담당자가 성공적으로 배정되었습니다.");
   };
 
@@ -221,6 +229,7 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
     setQueue((prev) =>
       prev.map((q) => (q.id === queueId ? { ...q, status: "IN_PROGRESS" } : q))
     );
+    persist(saveInspectionRequest({ ...target, status: "IN_PROGRESS" }));
 
     // 해당 탭으로 자동 이동 안내
     setActiveTab("results");
@@ -228,6 +237,7 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
     showToast(`검사 [${target.requestNo}] 가 시작 상태(IN_PROGRESS)로 변경되었습니다.`);
     return true;
   };
+
 
   // ── 탭 2: 원재료 입고검사 핸들러 (자재 모듈 연동) ─────────────
   const submitIncomingInspection = (
@@ -258,6 +268,7 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
     };
 
     setIncoming((prev) => [newIQC, ...prev]);
+    persist(saveIncomingInspection(newIQC));
 
     // 자재관리의 해당 LOT 검사 상태 연동 업데이트
     let newMatStatus: "PASSED" | "HOLD" | "FAILED" = "PASSED";
@@ -311,6 +322,7 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
       };
 
       setNonconformities((prev) => [newNC, ...prev]);
+      persist(saveNonconformity(newNC));
     }
 
     // 대기열 상태도 COMPLETED 로 전환
@@ -359,6 +371,7 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
     };
 
     setProcessList((prev) => [newPQC, ...prev]);
+    persist(saveProcessInspection(newPQC));
 
     // 생산관리 연동: HOLD 또는 FAILED 시 생산 작업지시 PAUSED(일시정지)로 변경
     if (data.judgment === "HOLD" || data.judgment === "FAILED") {
@@ -397,6 +410,7 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
       };
 
       setNonconformities((prev) => [newNC, ...prev]);
+      persist(saveNonconformity(newNC));
     }
 
     setQueue((prev) =>
@@ -438,6 +452,7 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
     };
 
     setFinished((prev) => [newFQC, ...prev]);
+    persist(saveFinishedInspection(newFQC));
 
     // 완제품 LOT 품질 상태 및 출고 가능 여부 연동 반영
     let newQualityStatus: "PASSED" | "HOLD" | "FAILED" = "PASSED";
@@ -471,6 +486,7 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
       };
 
       setNonconformities((prev) => [newNC, ...prev]);
+      persist(saveNonconformity(newNC));
     }
 
     setQueue((prev) =>
@@ -498,6 +514,7 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
 
     // CRITICAL 또는 MAJOR 인 경우 시정조치(CAPA) 자동 요청
     let caNoStr = "";
+    let autoCA: CorrectiveAction | null = null;
     if (data.severity === "CRITICAL" || data.severity === "MAJOR") {
       const caSeq = correctiveActions.length + 1;
       caNoStr = generateCANo(dateStr, caSeq);
@@ -517,18 +534,22 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
       };
 
       setCorrectiveActions((prev) => [newCA, ...prev]);
+      autoCA = newCA;
       newNC.correctiveActionNo = caNoStr;
     }
 
     setNonconformities((prev) => [newNC, ...prev]);
+    persist(saveNonconformity(newNC).then(() => autoCA ? saveCorrectiveAction(autoCA) : undefined));
     showToast(`부적합 내역(${ncNo})이 등록되었습니다. ${caNoStr ? `(시정조치 ${caNoStr} 자동 발행)` : ""}`);
     return true;
   };
 
   const updateNonconformityStatus = (ncId: string, status: Nonconformity["ncStatus"]) => {
+    const target = nonconformities.find(nc => nc.id === ncId);
     setNonconformities((prev) =>
       prev.map((nc) => (nc.id === ncId ? { ...nc, ncStatus: status } : nc))
     );
+    if (target) persist(saveNonconformity({ ...target, ncStatus: status }));
     showToast("부적합 처리 상태가 변경되었습니다.");
   };
 
@@ -556,19 +577,41 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
     };
 
     setCorrectiveActions((prev) => [newCA, ...prev]);
+    persist(saveCorrectiveAction(newCA));
 
     setNonconformities((prev) =>
       prev.map((n) => (n.ncNo === ncNo ? { ...n, correctiveActionNo: caNo } : n))
     );
+    persist(saveNonconformity({ ...nc, correctiveActionNo: caNo }));
 
     showToast(`시정조치(${caNo})가 생성되었습니다.`);
     return true;
   };
 
+  const createCorrectiveAction = (data: Omit<CorrectiveAction, "id" | "caNo" | "caStatus" | "verificationStatus">): boolean => {
+    const nc = nonconformities.find(item => item.ncNo === data.ncNo);
+    if (!nc) { showToast("연결할 부적합 내역을 선택하세요.", "error"); return false; }
+    const caNo = generateCANo(data.requestDate, correctiveActions.length + 1);
+    const item: CorrectiveAction = {
+      ...data,
+      id: `ca-${Date.now()}`,
+      caNo,
+      caStatus: "REQUESTED",
+      verificationStatus: "NOT_VERIFIED",
+    };
+    setCorrectiveActions(previous => [item, ...previous]);
+    setNonconformities(previous => previous.map(value => value.id === nc.id ? { ...value, correctiveActionNo: caNo } : value));
+    persist(saveCorrectiveAction(item));
+    showToast(`시정조치 ${caNo}가 등록되었습니다.`);
+    return true;
+  };
+
   const updateCorrectiveAction = (caId: string, updated: Partial<CorrectiveAction>): boolean => {
+    const target = correctiveActions.find(ca => ca.id === caId);
     setCorrectiveActions((prev) =>
       prev.map((ca) => (ca.id === caId ? { ...ca, ...updated } : ca))
     );
+    if (target) persist(saveCorrectiveAction({ ...target, ...updated }));
     showToast("시정조치 계획/원인 분석이 수정되었습니다.");
     return true;
   };
@@ -579,6 +622,7 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
     content: string,
     verifier: string
   ): boolean => {
+    const target = correctiveActions.find(ca => ca.id === caId);
     const dateStr = getBusinessDate();
     let newCAStatus: CorrectiveAction["caStatus"] = "VERIFIED";
 
@@ -600,6 +644,7 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
           : ca
       )
     );
+    if (target) persist(saveCorrectiveAction({ ...target, verificationStatus, verificationContent: content, verifier, verificationDate: dateStr, caStatus: newCAStatus }));
 
     showToast(
       `효과 검증이 [${verificationStatus}]로 등록되었습니다. ${
@@ -626,6 +671,7 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
     setCorrectiveActions((prev) =>
       prev.map((ca) => (ca.id === caId ? { ...ca, caStatus: "CLOSED" } : ca))
     );
+    persist(saveCorrectiveAction({ ...target, caStatus: "CLOSED" }));
 
     showToast(`시정조치 [${target.caNo}]가 최종 종결(CLOSED) 되었습니다.`);
     return true;
@@ -644,7 +690,11 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
         correctiveActions,
         defectHistory,
         defectSummary,
+        qualityLoading,
+        qualityError,
+        refreshQuality,
         updateDefectStatus,
+        createDefectHistory,
         summary,
         toast,
         showToast,
@@ -657,6 +707,7 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
         createNonconformity,
         updateNonconformityStatus,
         createCorrectiveActionFromNC,
+        createCorrectiveAction,
         updateCorrectiveAction,
         verifyCorrectiveAction,
         closeCorrectiveAction,
