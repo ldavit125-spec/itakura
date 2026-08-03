@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 모달 공통 래퍼 — 배경 클릭·Esc 키로 닫기 지원
@@ -17,6 +18,7 @@ export default function MasterDataModal({
   onClose,
   children,
 }: MasterDataModalProps) {
+  const { t } = useLanguage();
   // Esc 키 닫기
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -39,12 +41,12 @@ export default function MasterDataModal({
       <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
         {/* 헤더 */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
-          <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+          <h2 className="text-base font-semibold text-gray-900">{t(title)}</h2>
           <button
             id="modal-close-btn"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
-            aria-label="닫기"
+            aria-label={t("action.close")}
           >
             <svg
               className="w-5 h-5"

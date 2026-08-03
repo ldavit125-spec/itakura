@@ -38,10 +38,12 @@ import type {
 // ============================================================
 
 import { useMasterData } from "@/context/MasterDataContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 let toastIdCounter = 0;
 
 export default function MasterDataClient() {
+  const { t } = useLanguage();
   // ── 탭 상태 ─────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<MasterDataTab>("product");
 
@@ -77,10 +79,10 @@ export default function MasterDataClient() {
     try {
       await saveProduct(item, lines);
       await refreshMasterData();
-      showToast(isEdit ? "제품 정보가 수정되었습니다." : "새 제품이 등록되었습니다.", "success");
+      showToast(isEdit ? "master.toast.productUpdated" : "master.toast.productCreated", "success");
       closeModal();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "제품 저장에 실패했습니다.", "error");
+      showToast("master.toast.productSaveFailed", "error");
     }
   };
 
@@ -90,9 +92,9 @@ export default function MasterDataClient() {
     try {
       await updateMasterDataStatus("products", id, toggleStatus(item.status));
       await refreshMasterData();
-      showToast("사용 여부가 변경되었습니다.", "success");
+      showToast("master.toast.statusUpdated", "success");
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "상태 변경에 실패했습니다.", "error");
+      showToast("master.toast.statusUpdateFailed", "error");
     }
   };
 
@@ -103,10 +105,10 @@ export default function MasterDataClient() {
     try {
       await saveMaterial(item, suppliers);
       await refreshMasterData();
-      showToast(isEdit ? "원재료 정보가 수정되었습니다." : "새 원재료가 등록되었습니다.", "success");
+      showToast(isEdit ? "master.toast.materialUpdated" : "master.toast.materialCreated", "success");
       closeModal();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "원재료 저장에 실패했습니다.", "error");
+      showToast("master.toast.materialSaveFailed", "error");
     }
   };
 
@@ -116,9 +118,9 @@ export default function MasterDataClient() {
     try {
       await updateMasterDataStatus("materials", id, toggleStatus(item.status));
       await refreshMasterData();
-      showToast("사용 여부가 변경되었습니다.", "success");
+      showToast("master.toast.statusUpdated", "success");
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "상태 변경에 실패했습니다.", "error");
+      showToast("master.toast.statusUpdateFailed", "error");
     }
   };
 
@@ -129,10 +131,10 @@ export default function MasterDataClient() {
     try {
       await saveSupplier(item);
       await refreshMasterData();
-      showToast(isEdit ? "거래처 정보가 수정되었습니다." : "새 거래처가 등록되었습니다.", "success");
+      showToast(isEdit ? "master.toast.supplierUpdated" : "master.toast.supplierCreated", "success");
       closeModal();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "거래처 저장에 실패했습니다.", "error");
+      showToast("master.toast.supplierSaveFailed", "error");
     }
   };
 
@@ -142,9 +144,9 @@ export default function MasterDataClient() {
     try {
       await updateMasterDataStatus("suppliers", id, toggleStatus(item.status));
       await refreshMasterData();
-      showToast("사용 여부가 변경되었습니다.", "success");
+      showToast("master.toast.statusUpdated", "success");
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "상태 변경에 실패했습니다.", "error");
+      showToast("master.toast.statusUpdateFailed", "error");
     }
   };
 
@@ -155,10 +157,10 @@ export default function MasterDataClient() {
     try {
       await saveProductionLine(item);
       await refreshMasterData();
-      showToast(isEdit ? "생산라인 정보가 수정되었습니다." : "새 생산라인이 등록되었습니다.", "success");
+      showToast(isEdit ? "master.toast.lineUpdated" : "master.toast.lineCreated", "success");
       closeModal();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "생산라인 저장에 실패했습니다.", "error");
+      showToast("master.toast.lineSaveFailed", "error");
     }
   };
 
@@ -168,9 +170,9 @@ export default function MasterDataClient() {
     try {
       await updateMasterDataStatus("production_lines", id, toggleStatus(item.status));
       await refreshMasterData();
-      showToast("사용 여부가 변경되었습니다.", "success");
+      showToast("master.toast.statusUpdated", "success");
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "상태 변경에 실패했습니다.", "error");
+      showToast("master.toast.statusUpdateFailed", "error");
     }
   };
 
@@ -187,22 +189,20 @@ export default function MasterDataClient() {
   return (
     <>
       <PageHeader
-        title="기준정보 관리"
-        description="생산과 자재 업무에 공통으로 사용되는 기본 정보를 관리합니다."
-        breadcrumb={["기준정보 관리"]}
+        title="nav.masterData" description="master.page.description" breadcrumb={["nav.masterData"]}
       />
 
       <div className="bg-white rounded-lg border border-gray-200">
         <MasterDataTabs activeTab={activeTab} onChange={setActiveTab} />
 
         {masterDataLoading && (
-          <p className="px-6 pt-5 text-sm text-gray-500">Supabase 기준정보를 불러오는 중입니다...</p>
+          <p className="px-6 pt-5 text-sm text-gray-500">{t("master.loading")}</p>
         )}
         {masterDataError && (
           <div className="mx-6 mt-5 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            기준정보를 불러오지 못했습니다: {masterDataError}
+            {t("master.loadFailed")} {masterDataError}
             <button type="button" onClick={() => void refreshMasterData()} className="ml-3 font-bold underline">
-              다시 시도
+              {t("action.retry")}
             </button>
           </div>
         )}

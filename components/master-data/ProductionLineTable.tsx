@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import type { ProductionLine, StatusFilter } from "@/types/master-data";
 import { LINE_PROCESS_LABELS } from "@/types/master-data";
 import StatusBadge from "@/components/master-data/StatusBadge";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 생산라인 관리 테이블
@@ -24,6 +25,7 @@ export default function ProductionLineTable({
   onEdit,
   onToggleStatus,
 }: ProductionLineTableProps) {
+  const { t } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [page, setPage] = useState(1);
@@ -73,7 +75,7 @@ export default function ProductionLineTable({
               type="text"
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
-              placeholder="라인 코드 또는 생산라인명 검색"
+              placeholder={t("master.search.line")}
               className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -83,9 +85,7 @@ export default function ProductionLineTable({
             onChange={(e) => handleFilter(e.target.value as StatusFilter)}
             className="text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           >
-            <option value="ALL">전체</option>
-            <option value="ACTIVE">사용</option>
-            <option value="INACTIVE">미사용</option>
+            <option value="ALL">{t("common.all")}</option><option value="ACTIVE">{t("status.active")}</option><option value="INACTIVE">{t("status.inactive")}</option>
           </select>
         </div>
         <button
@@ -96,7 +96,7 @@ export default function ProductionLineTable({
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5} aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
-          신규 등록
+          {t("action.newRegister")}
         </button>
       </div>
 
@@ -105,20 +105,14 @@ export default function ProductionLineTable({
         <table className="w-full min-w-[920px] text-sm table-fixed">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-left px-4 py-3 font-medium text-gray-600 w-28">라인 코드</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">생산라인명</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">담당 공정</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-600 w-28">최대 생산량</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 w-16">단위</th>
-              <th className="text-center px-4 py-3 font-medium text-gray-600 w-28 whitespace-nowrap">사용 여부</th>
-              <th className="text-center px-4 py-3 font-medium text-gray-600 w-44 whitespace-nowrap">작업</th>
+              {[["master.field.lineCode","text-left w-28"],["master.field.lineName","text-left"],["master.field.process","text-left"],["master.field.maxCapacity","text-right w-28"],["common.unit","text-left w-16"],["master.field.useStatus","text-center w-28 whitespace-nowrap"],["common.work","text-center w-44 whitespace-nowrap"]].map(([key, align]) => <th key={key} className={`${align} px-4 py-3 font-medium text-gray-600`}>{t(key)}</th>)}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {paginated.length === 0 ? (
               <tr>
                 <td colSpan={7} className="text-center py-12 text-gray-400 text-sm">
-                  검색 결과가 없습니다.
+                  {t("empty.search")}
                 </td>
               </tr>
             ) : (
@@ -126,7 +120,7 @@ export default function ProductionLineTable({
                 <tr key={item.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-mono text-xs text-gray-600">{item.code}</td>
                   <td className="px-4 py-3 font-medium text-gray-900">{item.name}</td>
-                  <td className="px-4 py-3 text-gray-600">{LINE_PROCESS_LABELS[item.process]}</td>
+                  <td className="px-4 py-3 text-gray-600">{LINE_PROCESS_LABELS[item.process] ? t(LINE_PROCESS_LABELS[item.process]) : item.process}</td>
                   <td className="px-4 py-3 text-right text-gray-600">
                     {item.maxCapacity.toLocaleString()}
                   </td>
@@ -140,7 +134,7 @@ export default function ProductionLineTable({
                         onClick={() => onEdit(item)}
                         className="text-xs px-3 py-1.5 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition-colors whitespace-nowrap"
                       >
-                        수정
+                        {t("action.edit")}
                       </button>
                       <button
                         onClick={() => onToggleStatus(item.id)}
@@ -150,7 +144,7 @@ export default function ProductionLineTable({
                             : "border-green-200 text-green-600 hover:bg-green-50"
                         }`}
                       >
-                        {item.status === "ACTIVE" ? "사용 중지" : "사용"}
+                        {t(item.status === "ACTIVE" ? "action.stopUsing" : "status.active")}
                       </button>
                     </div>
                   </td>
@@ -164,8 +158,7 @@ export default function ProductionLineTable({
       {/* 페이지네이션 */}
       <div className="flex items-center justify-between mt-3">
         <p className="text-xs text-gray-500">
-          총 {filtered.length}개
-          {filtered.length !== items.length && ` (전체 ${items.length}개)`}
+          {t("common.total")} {filtered.length}{t("unit.item")}{filtered.length !== items.length && ` (${t("common.all")} ${items.length}${t("unit.item")})`}
         </p>
         {totalPages > 1 && (
           <div className="flex gap-1">
@@ -174,7 +167,7 @@ export default function ProductionLineTable({
               disabled={page === 1}
               className="px-2.5 py-1 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              이전
+              {t("action.previous")}
             </button>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
               <button
@@ -194,7 +187,7 @@ export default function ProductionLineTable({
               disabled={page === totalPages}
               className="px-2.5 py-1 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              다음
+              {t("action.next")}
             </button>
           </div>
         )}

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import type { MaterialOutbound } from "@/types/materials";
 import { useMasterData } from "@/context/MasterDataContext";
 import { OutboundStatusBadge } from "./MaterialStatusBadge";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 자재 출고 목록 테이블 컴포넌트
@@ -20,6 +21,7 @@ export default function MaterialOutboundTable({
   onOpenDetail,
   onCancelOutbound,
 }: MaterialOutboundTableProps) {
+  const { t } = useLanguage();
   const { productionLines } = useMasterData();
   const [searchTerm, setSearchTerm] = useState("");
   const [dateSearch, setDateSearch] = useState("");
@@ -60,7 +62,7 @@ export default function MaterialOutboundTable({
           <div className="relative min-w-[200px] flex-1">
             <input
               type="text"
-              placeholder="자재명, 코드, LOT번호, 출고번호 검색..."
+              placeholder={t("materials.outbound.search")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -94,7 +96,7 @@ export default function MaterialOutboundTable({
           <div className="relative min-w-[150px]">
             <input
               type="text"
-              placeholder="작업지시 번호..."
+              placeholder={t("materials.outbound.workOrderSearch")}
               value={workOrderSearch}
               onChange={(e) => setWorkOrderSearch(e.target.value)}
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
@@ -107,7 +109,7 @@ export default function MaterialOutboundTable({
             onChange={(e) => setLineFilter(e.target.value)}
             className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           >
-            <option value="ALL">생산라인 전체</option>
+            <option value="ALL">{t("materials.outbound.allLines")}</option>
             {productionLines.map((line) => (
               <option key={line.id} value={line.name}>
                 {line.name}
@@ -124,7 +126,7 @@ export default function MaterialOutboundTable({
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          <span>생산 자재 출고 등록</span>
+          <span>{t("materials.outbound.new")}</span>
         </button>
       </div>
 
@@ -133,25 +135,14 @@ export default function MaterialOutboundTable({
         <table className="w-full text-sm text-left text-gray-700 min-w-[1050px]">
           <thead className="text-xs uppercase bg-gray-50 text-gray-500 border-b border-gray-200">
             <tr>
-              <th className="px-4 py-3 font-semibold">출고 번호</th>
-              <th className="px-4 py-3 font-semibold">출고일</th>
-              <th className="px-4 py-3 font-semibold">자재 코드</th>
-              <th className="px-4 py-3 font-semibold">자재명</th>
-              <th className="px-4 py-3 font-semibold">LOT 번호</th>
-              <th className="px-4 py-3 font-semibold text-right">출고 수량</th>
-              <th className="px-4 py-3 font-semibold">단위</th>
-              <th className="px-4 py-3 font-semibold">사용 생산라인</th>
-              <th className="px-4 py-3 font-semibold">작업지시 번호</th>
-              <th className="px-4 py-3 font-semibold">담당자</th>
-              <th className="px-4 py-3 font-semibold text-center">출고 상태</th>
-              <th className="px-4 py-3 font-semibold text-center">작업</th>
+              {["materials.outbound.number","materials.outbound.date","master.field.materialCode","master.field.materialName","materials.lotNumber","materials.outbound.quantity","common.unit","materials.outbound.line","materials.outbound.workOrder","master.field.manager","materials.outbound.status","common.work"].map((key) => <th key={key} className="px-4 py-3 font-semibold">{t(key)}</th>)}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {filteredData.length === 0 ? (
               <tr>
                 <td colSpan={12} className="px-4 py-12 text-center text-gray-500">
-                  출고 내역이 없습니다.
+                  {t("materials.outbound.empty")}
                 </td>
               </tr>
             ) : (
@@ -191,14 +182,14 @@ export default function MaterialOutboundTable({
                           onClick={() => onOpenDetail(item)}
                           className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
                         >
-                          상세
+                          {t("action.detail")}
                         </button>
                         {!isCancelled && (
                           <button
                             onClick={() => onCancelOutbound(item)}
                             className="px-2 py-1 text-xs font-medium text-red-700 bg-red-50 rounded hover:bg-red-100 transition-colors"
                           >
-                            출고 취소
+                            {t("materials.outbound.cancel")}
                           </button>
                         )}
                       </div>

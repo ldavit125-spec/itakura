@@ -1,5 +1,6 @@
 import type { ActiveStatus } from "@/types/master-data";
 import { ACTIVE_STATUS_LABELS } from "@/types/master-data";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 사용/미사용 상태 뱃지
@@ -10,6 +11,7 @@ interface StatusBadgeProps {
 }
 
 export default function StatusBadge({ status }: StatusBadgeProps) {
+  const { t } = useLanguage();
   const isActive = status === "ACTIVE";
   return (
     <span
@@ -25,7 +27,7 @@ export default function StatusBadge({ status }: StatusBadgeProps) {
         }`}
         aria-hidden="true"
       />
-      {ACTIVE_STATUS_LABELS[status]}
+      {t(ACTIVE_STATUS_LABELS[status])}
     </span>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import type { MaterialInventory, InventoryStatus } from "@/types/materials";
 import { INVENTORY_STATUS_OPTIONS, STORAGE_LOCATIONS } from "@/constants/material-labels";
 import { InventoryStatusBadge } from "./MaterialStatusBadge";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 재고 현황 목록 테이블 컴포넌트
@@ -16,6 +17,7 @@ export default function MaterialInventoryTable({
   inventories,
   onOpenDetail,
 }: MaterialInventoryTableProps) {
+  const { t } = useLanguage();
   const [materialSearch, setMaterialSearch] = useState("");
   const [lotSearch, setLotSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<InventoryStatus | "ALL">("ALL");
@@ -61,7 +63,7 @@ export default function MaterialInventoryTable({
         <div className="relative">
           <input
             type="text"
-            placeholder="자재명 / 자재코드 검색..."
+            placeholder={t("materials.inventory.searchMaterial")}
             value={materialSearch}
             onChange={(e) => setMaterialSearch(e.target.value)}
             className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -80,7 +82,7 @@ export default function MaterialInventoryTable({
         <div className="relative">
           <input
             type="text"
-            placeholder="LOT 번호 검색..."
+            placeholder={t("materials.inventory.searchLot")}
             value={lotSearch}
             onChange={(e) => setLotSearch(e.target.value)}
             className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
@@ -103,7 +105,7 @@ export default function MaterialInventoryTable({
         >
           {INVENTORY_STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
-              {opt.label}
+              {t(opt.label)}
             </option>
           ))}
         </select>
@@ -114,7 +116,7 @@ export default function MaterialInventoryTable({
           onChange={(e) => setLocationFilter(e.target.value)}
           className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
         >
-          <option value="ALL">보관 위치 전체</option>
+          <option value="ALL">{t("materials.inventory.allLocations")}</option>
           {STORAGE_LOCATIONS.map((loc) => (
             <option key={loc} value={loc}>
               {loc}
@@ -134,7 +136,7 @@ export default function MaterialInventoryTable({
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span>유통기한 임박 (30일)</span>
+          <span>{t("materials.inventory.expiring30")}</span>
         </button>
       </div>
 
@@ -143,25 +145,14 @@ export default function MaterialInventoryTable({
         <table className="w-full text-sm text-left text-gray-700 min-w-[1050px]">
           <thead className="text-xs uppercase bg-gray-50 text-gray-500 border-b border-gray-200">
             <tr>
-              <th className="px-4 py-3 font-semibold">자재 코드</th>
-              <th className="px-4 py-3 font-semibold">자재명</th>
-              <th className="px-4 py-3 font-semibold">LOT 번호</th>
-              <th className="px-4 py-3 font-semibold text-right">현재 재고</th>
-              <th className="px-4 py-3 font-semibold text-right">사용 가능</th>
-              <th className="px-4 py-3 font-semibold text-right text-purple-700">보류 재고</th>
-              <th className="px-4 py-3 font-semibold">단위</th>
-              <th className="px-4 py-3 font-semibold text-right">안전 재고</th>
-              <th className="px-4 py-3 font-semibold">보관 위치</th>
-              <th className="px-4 py-3 font-semibold">유통기한</th>
-              <th className="px-4 py-3 font-semibold text-center">재고 상태</th>
-              <th className="px-4 py-3 font-semibold text-center">작업</th>
+              {["master.field.materialCode","master.field.materialName","materials.lotNumber","materials.inventory.current","materials.inventory.available","materials.inventory.holdStock","common.unit","master.field.safetyStock","materials.inventory.location","materials.expirationDate","materials.inventory.status","common.work"].map((key) => <th key={key} className="px-4 py-3 font-semibold">{t(key)}</th>)}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {filteredData.length === 0 ? (
               <tr>
                 <td colSpan={12} className="px-4 py-12 text-center text-gray-500">
-                  조건에 일치하는 재고 내역이 없습니다.
+                  {t("materials.inventory.empty")}
                 </td>
               </tr>
             ) : (
@@ -212,7 +203,7 @@ export default function MaterialInventoryTable({
                         onClick={() => onOpenDetail(item)}
                         className="px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
                       >
-                        상세
+                        {t("action.detail")}
                       </button>
                     </td>
                   </tr>

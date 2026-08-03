@@ -1,112 +1,181 @@
-# 🚨 Codex 작업 인계 및 DM 가이드 문서 (CODEX_HANDOVER_GUIDE.md)
+# Antigravity 작업 인수인계 가이드
 
-> **문서 목적**: 본 문서는 Codex AI 및 다음 개발자가 본 저장소(`itakura-git`)에서 안심하고 개발, 마이그레이션, 유지보수 작업을 수행할 수 있도록 작성된 **통합 작업 인계 및 핵심 주의사항 지침서(DM Guide)**입니다.
+작성일: 2026-08-03  
+프로젝트 경로: `D:\이임원\04_바이브코딩\itakura`
 
----
+## 1. 현재 제출본의 기준 상태
 
-## ⚠️ 1. 가장 중요한 주의사항 & 절대 금지 수칙 (CRITICAL WARNINGS)
+이 프로젝트는 교육원 제출을 위해 **한국어 단일 언어 상태**로 복구했다.
 
-이 프로젝트에서 작업할 때는 다음 규칙을 **반드시 엄수**해야 합니다.
+- 화면 언어는 한국어로 고정되어 있다.
+- 헤더와 관리자 로그인 화면의 언어 선택 UI는 제거했다.
+- 일본어 상태, 일본어 localStorage 설정, 일본어 조건부 렌더링은 제거했다.
+- 런타임 코드에 `name_ja`, `*_ja`, `nameJa`, 일본어 샘플 매핑 참조가 없다.
+- DB에는 일본어 컬럼을 추가하지 않았다.
+- `products.name_ja does not exist` 오류를 발생시키던 SELECT 참조는 제거했다.
+- UI 컴포넌트가 이미 키 기반 문구를 많이 사용하므로 `context/LanguageContext.tsx`와 `lib/i18n/translations.ts`는 **한국어 문구 공급용 호환 계층**으로 남아 있다. 언어 전환 기능은 없다.
 
-### 🔴 절대 금지 사항 (Strict Prohibition)
-1. **원본 저장소 수정/삭제 금지**: `C:\Users\Asus\Documents\Codex\2026-08-01\rlt\work\local-site\itakura-main` 폴더는 원본 취급하며, 수정이나 삭제를 절대 진행하지 마십시오.
-2. **`.git` 폴더 삭제/덮어쓰기 금지**: `itakura-git` 내의 `.git` 히스토리 폴더를 삭제하거나 덮어쓰지 마십시오.
-3. **민감정보 GitHub 유출 절대 금지**:
-   * 비밀번호, API Key, GitHub Token, Supabase `SUPABASE_SERVICE_ROLE_KEY`, JWT, 개인키(`*.pem`, `*.key`, `*.p12`)는 **절대 커밋 및 push하지 마십시오**.
-   * `.env`, `.env.local`, `.env.development.local` 등의 파일은 `.gitignore`에 등록되어 있어야 하며, 실수로 `git add` 되지 않도록 항상 `git status`로 재검증하십시오.
-4. **파괴적인 Git 명령어 사용 금지**:
-   * `git push --force` (`-f`), `git reset --hard` (기존 이력 삭제)는 사용을 금지합니다.
-   * 원격 `main`과 충돌이 발생하면 강제로 덮어쓰지 말고 차이점을 비교 분석하여 보고하십시오.
-5. **검증 없는 Push 금지**: `pnpm run build` (`next build`)를 통한 컴파일 및 Static Prerender 성공을 확인하기 전에는 절대로 push하지 마십시오.
+## 2. 절대 변경하거나 실행하지 말 것
 
----
+- `db reset`, `DROP`, `TRUNCATE`, 전체 `DELETE` 실행 금지
+- 기존 migration과 `supabase/seed.sql` 수정 또는 재실행 금지
+- 새 migration 생성 금지
+- `name_ja` 등 일본어 컬럼 추가 금지
+- `.env.local` 수정 또는 내용 공개 금지
+- Supabase client 설정 변경 금지
+- Auth, 관리자 로그인, ADMIN 역할, 권한, RLS 구조 변경 금지
+- 기존 CRUD 쿼리, 테이블명, 관계 ID 변경 금지
+- 제품·자재·공급업체·라인명 등 기존 한국어 DB 값 변경 금지
+- ID, 코드, LOT 번호, 작업지시 번호, 상태 코드 변경 금지
+- `git reset --hard`, `git checkout -- .`, 강제 push 금지
+- 사용자 승인 없이 commit 또는 push 금지
 
-## 💡 2. 주요 작업 포인트 & 핵심 기술 노하우 (IMPORTANT POINTS)
+## 3. 매우 중요한 Git 상태
 
-### 1) 환경변수 & Supabase Client 설정
-* **빌드 호환성 (Fallback 설정 완료)**: `lib/supabase/client.ts`에는 빌드 타임에 `.env.local`이 없어도 `next build`가 정상 완료되도록 기본 Fallback URL/Key가 적용되어 있습니다.
-* **실제 연동 시**: 로컬 개발이나 실제 DB 연동 시에는 반드시 루트 디렉토리에 `.env.local`을 작성하고 실제 값으로 설정하십시오.
-  ```env
-  NEXT_PUBLIC_SUPABASE_URL=https://your-supabase-ref.supabase.co
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-anon-key
-  ```
-* **Service Role Key 보안**: `SUPABASE_SERVICE_ROLE_KEY`는 RLS(Row Level Security)를 우회하므로 클라이언트 코드(`NEXT_PUBLIC_*`) 및 브라우저에 절대로 포함시키면 안 됩니다.
+현재 작업 트리는 다수 파일이 수정된 **dirty 상태**다. 이 변경에는 한국어 UI 문구 키 정리, 관리자 세션 유지 보완, Supabase URL 정규화, 일본어 기능 제거가 섞여 있다.
 
-### 2) 런타임 및 개발 명령 (Windows Codex 환경)
-Codex CLI/Powershell 환경에서 Node.js/pnpm 기본 명령어가 PATH에 잡히지 않을 경우 아래의 직렬화 경로를 사용합니다:
+- 기존 변경을 임의로 되돌리지 않는다.
+- 특히 `context/AdminContext.tsx`와 `lib/supabase/client.ts`의 변경을 삭제하지 않는다.
+- 작업 전 `git status --short`와 대상 파일의 `git diff -- <파일>`을 먼저 확인한다.
+- 이번 제출 작업에서는 commit과 push를 하지 않는다.
 
-* **Node.js 실행 파일**: `C:\Users\Asus\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`
-* **pnpm CLI 스크립트**: `C:\Users\Asus\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\node_modules\pnpm\bin\pnpm.cjs`
+## 4. Supabase 연결 주의사항
 
-#### 추천 명령어 예시:
-* **개발 서버 (3000 포트)**:
-  ```bash
-  node node_modules/next/dist/bin/next dev -p 3000
-  ```
-* **프로덕션 빌드 & 검증**:
-  ```bash
-  node node_modules/next/dist/bin/next build
-  ```
+환경변수 이름은 다음 두 개다. 값은 문서나 로그에 남기지 않는다.
 
----
-
-## 📁 3. 저장소 및 데이터 구조
-
-* **로컬 작업 저장소**: `C:\Users\Asus\Documents\Codex\2026-08-01\rlt\work\local-site\itakura-git`
-* **원격 GitHub 저장소**: `https://github.com/ldavit125-spec/itakura.git` (`main` 브랜치)
-
-### 핵심 디렉토리 및 역할
-```
-itakura-git/
-├── app/                        # Next.js App Router (페이지 및 레이아웃)
-│   ├── (app)/                  # 메인 대시보드 및 모듈별 페이지
-│   │   ├── admin/              # 관리자 및 계정 권한 (/admin)
-│   │   ├── master-data/        # 기준 정보 관리 (/master-data)
-│   │   ├── materials/          # 자재/원료 관리 (/materials)
-│   │   ├── production/         # 생산 관리 (/production)
-│   │   ├── quality/            # 품질 관리 (/quality)
-│   │   ├── shipments/          # 출하 관리 (/shipments)
-│   │   └── traceability/       # 이력 추적 (/traceability)
-├── components/                 # UI 컴포넌트 & 모달 (기능별 분리)
-├── context/                    # React Context (전역 상태 및 DB 데이터 상태 연동)
-├── lib/                        # 비즈니스 수식 및 Supabase Client/Queries
-│   └── supabase/               # Supabase CRUD 쿼리 함수 모듈
-├── supabase/                   # Supabase SQL 스키마 및 데모 데이터
-│   ├── migrations/             # 202608010001_initial_schema.sql, 202608010003_demo_rls_policies.sql
-│   └── seed.sql                # 초기 데모 데이터셋
-└── CODEX_HANDOVER_GUIDE.md     # 본 인계 지침 문서
+```text
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 ```
 
----
+현재 `.env.local`의 URL은 `/rest/v1/`이 포함된 형태일 수 있다. `lib/supabase/client.ts`가 이를 프로젝트 기본 URL로 정규화한다. 이 처리를 제거하거나 URL을 다시 이어 붙이지 않는다.
 
-## 🔄 4. 표준 작업 프로세스 (Codex Standard Workflow)
+현재 런타임 SELECT는 실제 스키마의 한국어 원본 컬럼만 사용한다.
 
-Codex에서 작업을 시작하고 마무리할 때는 다음 순서로 진행하십시오.
+- `products`: `id,code,name,category,unit,default_line_id,status`
+- `materials`: `id,code,name,category,unit,safety_stock,default_supplier_id,status`
+- `suppliers`: `id,code,name,type,contact_person,phone,status`
+- `production_lines`: `id,code,name,process,max_capacity,unit,status`
 
-```mermaid
-flowchart TD
-    A[1. 작업 시작전 git status 확인] --> B[2. 필요시 .env.local 설정]
-    B --> C[3. 개발 서버 실행 및 기능 구현]
-    C --> D[4. 민감정보 검색 & 빌드 테스트]
-    D --> E{빌드 성공 여부?}
-    E -- 실패 --> C
-    E -- 성공 --> F[5. git status & diff--staged 검토]
-    F --> G[6. git commit & git push origin main]
+2026-08-03 읽기 전용 확인 행 수:
+
+- products: 7
+- materials: 7
+- suppliers: 7
+- production_lines: 4
+- production_plans: 8
+- work_orders: 7
+- shipments: 2
+- inspection_requests: 3
+- incoming_inspections: 2
+- process_inspections: 1
+- finished_goods_inspections: 1
+
+## 5. 관리자 로그인 구조
+
+관리자 로그인은 Supabase Auth 재설계 대상이 아니다. 기존 mock/RBAC 구조를 유지한다.
+
+- 로그인 경로: `/admin/login`
+- 관리자 사번: `A001`
+- 관리자 사용자 ID: `user-admin`
+- 관리자 역할 ID: `role-admin`
+- 역할 코드: `ADMIN`
+- 세션 키: `itakura-admin-session`
+- 보호 가드: `components/AdminRouteGuard.tsx`
+- 인증 판정: `lib/admin-auth.ts`
+- 사용자·역할 원본: `data/admin.mock.ts`
+
+`A001` → `user-admin` → `role-admin` → `ADMIN` 연결이 유지되어 있다. 관리자 세션은 localStorage에 유지되고 로그아웃 시 제거된다. 이 구조를 Supabase Auth로 바꾸지 않는다.
+
+## 6. 한국어 UI 호환 계층
+
+다음 파일명에는 과거 다국어 작업의 이름이 남아 있지만 현재 기능은 한국어 전용이다.
+
+- `context/LanguageContext.tsx`
+- `lib/i18n/translations.ts`
+
+현재 동작:
+
+- `LanguageContext`에는 `language`, `setLanguage`, localStorage 언어 상태가 없다.
+- `t(key)`는 한국어 `ko` 문구만 읽는다.
+- 일본어 사전과 일본어 선택 옵션은 없다.
+- 이 두 파일을 급하게 삭제하면 많은 화면의 import가 깨질 수 있으므로 제출 직전에는 이름 변경이나 대규모 직접 문자열 치환을 하지 않는다.
+
+새 일본어 사전, 자동 번역, `情報` fallback, 단어 자동 치환을 다시 추가하지 않는다.
+
+## 7. 현재 검증 결과
+
+마지막 확인 결과:
+
+```text
+npx tsc --noEmit
+성공
+
+npm run build
+성공
+Next.js 16.2.12
+14/14 정적 페이지 생성 성공
 ```
 
-1. **상태 확인**: `git status`로 이전 미커밋 내역이 없는지 확인합니다.
-2. **개발 및 수정**: 기능 구현 시 `components/` 및 `context/`에 상태를 안전하게 바인딩합니다.
-3. **민감정보 감사 (Audit)**: `password`, `token`, `secret`, `api_key` 등의 실제 비밀값이 소스에 포함되지 않았는지 점검합니다.
-4. **빌드 검증**: `node node_modules/next/dist/bin/next build` 명령을 실행하여 Static Prerendering 14개 라우트가 모두 성공하는지 확인합니다.
-5. **Stage & Commit**: `git add .` 후 `git status`를 확인하고 의미 있는 커밋 메시지로 커밋합니다 (`git commit -m "feat: ..."`).
-6. **Push**: `git push origin main`으로 일반 push를 수행하고 원격 커밋 해시를 확인합니다.
+로컬 페이지 응답:
+
+- `/admin/login`: 200
+- `/dashboard`: 200
+- `/master-data`: 200
+- `/materials`: 200
+- `/production`: 200
+- `/quality`: 200
+- `/shipments`: 200
+- `/traceability`: 200
+- `/reports`: 200
+
+## 8. Antigravity에서 시작할 때 순서
+
+1. 작업 경로가 `D:\이임원\04_바이브코딩\itakura`인지 확인한다.
+2. 이 문서를 끝까지 읽는다.
+3. `git status --short`로 기존 변경을 확인한다.
+4. `.env.local`은 열어 값 확인만 하고 수정하거나 출력하지 않는다.
+5. `npm run dev -- -p 3001`로 개발 서버를 실행한다.
+6. `/admin/login`에서 A001 로그인을 확인한다.
+7. `/dashboard`, `/master-data`, `/materials`, `/production`에서 데이터가 보이는지 확인한다.
+8. 브라우저 콘솔에서 `column ... does not exist`, `Failed to fetch`가 없는지 확인한다.
+9. 수정이 필요하면 표시 문자열/CSS 등 최소 범위만 변경한다.
+10. 마지막에 `npx tsc --noEmit`과 `npm run build`를 실행한다.
+
+## 9. 제출 직전 체크리스트
+
+- [ ] 언어 선택 드롭다운이 없다.
+- [ ] 화면에 일본어 또는 한·일 혼합 문구가 없다.
+- [ ] `rg "_ja|nameJa|setLanguage|itakura-language|日本語|情報" app components context lib types` 결과가 0건이다.
+- [ ] Supabase 제품·자재·생산 데이터가 0건으로 표시되지 않는다.
+- [ ] `column products.name_ja does not exist` 오류가 없다.
+- [ ] A001 관리자 로그인과 `/admin` 접근이 정상이다.
+- [ ] 새로고침 후 관리자 세션이 유지된다.
+- [ ] 로그아웃 후 `/admin/login`으로 이동한다.
+- [ ] 등록·수정 기능의 기존 한국어 값과 관계 ID가 유지된다.
+- [ ] `npx tsc --noEmit`이 성공한다.
+- [ ] `npm run build`가 성공한다.
+- [ ] `.env.local`과 비밀키가 Git 변경 목록에 없다.
+- [ ] commit과 push를 하지 않았다.
+
+## 10. 문제가 생겼을 때 우선 확인
+
+### `column ... name_ja does not exist`
+
+DB에 컬럼을 추가하지 말고, 코드의 `.select()`, insert/update payload, mapper, 타입에서 해당 일본어 필드 참조를 제거한다.
+
+### `Failed to fetch`
+
+1. 개발 서버가 실행 중인지 확인한다.
+2. `.env.local` 변수 이름만 확인한다.
+3. `lib/supabase/client.ts`의 URL 정규화가 유지되는지 확인한다.
+4. 네트워크 오류와 RLS 오류를 구분한다.
+5. 데이터가 삭제됐다고 가정하거나 seed를 다시 실행하지 않는다.
+
+### 데이터가 0건으로 보임
+
+DB를 초기화하지 않는다. 먼저 브라우저 네트워크 응답, Supabase 프로젝트 URL, SELECT 오류, RLS, 화면 필터를 확인한다.
 
 ---
 
-## ✅ 5. Codex 다음 작업자 체크리스트
-
-- [ ] `itakura-main` 원본 디렉토리를 건드리지 않았는가?
-- [ ] `.env.local` 등 민감정보 파일이 `git status`에 추적 대상으로 포함되지 않았는가?
-- [ ] 소스 코드에 실제 API Key나 Service Role Key가 하드코딩되지 않았는가?
-- [ ] `next build` 실행 시 모든 페이지가 Static / Dynamic으로 정상 빌드되는가?
-- [ ] `git push origin main` 실행 후 원격 `main`에 성공적으로 반영되었는가?
+이 제출본의 최우선 원칙은 **한국어 단일 언어, 기존 데이터 보존, 관리자 권한 유지, 빌드 성공**이다.

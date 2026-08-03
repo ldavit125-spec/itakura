@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import type { MaterialToastState } from "@/types/materials";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 자재관리 알림 Toast 컴포넌트 (3초 후 자동 닫힘)
@@ -13,6 +14,7 @@ interface MaterialToastProps {
 }
 
 export default function MaterialToast({ toast, onClose }: MaterialToastProps) {
+  const { t } = useLanguage();
   useEffect(() => {
     const timer = setTimeout(onClose, 3000);
     return () => clearTimeout(timer);
@@ -42,11 +44,11 @@ export default function MaterialToast({ toast, onClose }: MaterialToastProps) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
         )}
       </svg>
-      <span>{toast.message}</span>
+      <span>{t(toast.message)}</span>
       <button
         onClick={onClose}
         className="ml-1 opacity-70 hover:opacity-100 transition-opacity"
-        aria-label="알림 닫기"
+        aria-label={t("toast.close")}
       >
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

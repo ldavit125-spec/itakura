@@ -11,6 +11,7 @@ import {
 import { useQuality } from "@/context/QualityContext";
 import { aggregateInspectionResults } from "@/lib/common-selectors";
 import { QUALITY_RESULT_LABELS, type QualityResult } from "@/types/dashboard";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 품질검사 판정 비율 도넛 Pie Chart (실시간 Context 연동)
@@ -40,6 +41,7 @@ interface CustomTooltipProps {
 }
 
 function QualityTooltip({ active, payload }: CustomTooltipProps) {
+  const { t } = useLanguage();
   if (!active || !payload || payload.length === 0) return null;
   const item = payload[0].payload;
   return (
@@ -52,10 +54,10 @@ function QualityTooltip({ active, payload }: CustomTooltipProps) {
         <span className="font-semibold text-gray-700">{item.label}</span>
       </div>
       <p className="text-gray-600">
-        검사 비율: <span className="font-medium text-gray-900">{item.percentage}%</span>
+        {t("dashboard.inspectionRatio")}: <span className="font-medium text-gray-900">{item.percentage}%</span>
       </p>
       <p className="text-gray-600">
-        건수: <span className="font-medium text-gray-900">{item.count}건</span>
+        {t("dashboard.count")}: <span className="font-medium text-gray-900">{item.count}{t("unit.case")}</span>
       </p>
     </div>
   );
@@ -67,6 +69,7 @@ function legendFormatter(value: string): string {
 }
 
 export default function QualityResultChart() {
+  const { t } = useLanguage();
   const { incoming, processList, finished } = useQuality();
 
   const res = aggregateInspectionResults(incoming, processList, finished);
@@ -74,21 +77,21 @@ export default function QualityResultChart() {
   const chartData = [
     {
       result: "PASS" as QualityResult,
-      label: QUALITY_RESULT_LABELS.PASS,
+      label: t(QUALITY_RESULT_LABELS.PASS),
       count: res.passedCount,
       percentage: res.completedCount > 0 ? Number(((res.passedCount / res.completedCount) * 100).toFixed(1)) : 0,
       fill: RESULT_COLORS.PASS,
     },
     {
       result: "CONDITIONAL_PASS" as QualityResult,
-      label: QUALITY_RESULT_LABELS.CONDITIONAL_PASS,
+      label: t(QUALITY_RESULT_LABELS.CONDITIONAL_PASS),
       count: res.conditionalPassCount,
       percentage: res.completedCount > 0 ? Number(((res.conditionalPassCount / res.completedCount) * 100).toFixed(1)) : 0,
       fill: RESULT_COLORS.CONDITIONAL_PASS,
     },
     {
       result: "FAIL" as QualityResult,
-      label: QUALITY_RESULT_LABELS.FAIL,
+      label: t(QUALITY_RESULT_LABELS.FAIL),
       count: res.failedCount + res.holdCount,
       percentage: res.completedCount > 0 ? Number((((res.failedCount + res.holdCount) / res.completedCount) * 100).toFixed(1)) : 0,
       fill: RESULT_COLORS.FAIL,
@@ -101,14 +104,13 @@ export default function QualityResultChart() {
     <div className="bg-white rounded-lg border border-gray-200 p-5">
       {/* 헤더 */}
       <div className="mb-5">
-        <h3 className="text-sm font-semibold text-gray-800">품질검사 판정 비율</h3>
-        <p className="text-xs text-gray-500 mt-0.5">원재료·공정·완제품 검사 결과 분포</p>
+        <h3 className="text-sm font-semibold text-gray-800">{t("dashboard.qualityResultRatio")}</h3><p className="text-xs text-gray-500 mt-0.5">{t("dashboard.qualityResultDescription")}</p>
       </div>
 
       {/* 차트 + 도넛 중앙 텍스트 */}
       {totalCount === 0 ? (
         <div className="flex items-center justify-center h-[280px] text-sm text-gray-400">
-          표시할 완결된 품질검사 데이터가 없습니다.
+          {t("empty.qualityChart")}
         </div>
       ) : (
         <div className="relative" style={{ height: "280px" }}>
@@ -146,9 +148,9 @@ export default function QualityResultChart() {
             style={{ top: "44%", transform: "translate(-50%, -50%)" }}
             aria-hidden="true"
           >
-            <span className="text-xs text-gray-500 leading-tight">전체 검사</span>
+            <span className="text-xs text-gray-500 leading-tight">{t("dashboard.totalInspections")}</span>
             <span className="text-2xl font-bold text-gray-900 leading-tight">
-              {totalCount}건
+              {totalCount}{t("unit.case")}
             </span>
           </div>
         </div>

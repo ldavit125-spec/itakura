@@ -15,6 +15,7 @@ import { useAdmin } from "@/context/AdminContext";
 import { useMasterData } from "@/context/MasterDataContext";
 import { aggregateProductionByProduct } from "@/lib/common-selectors";
 import { PRODUCT_CODE_LABELS, type ProductCode } from "@/types/dashboard";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 제품별 생산량 Bar Chart (실시간 Context 연동)
@@ -35,15 +36,16 @@ interface CustomTooltipProps {
 }
 
 function ProductTooltip({ active, payload }: CustomTooltipProps) {
+  const { t } = useLanguage();
   if (!active || !payload || payload.length === 0) return null;
   const item = payload[0];
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-md px-3 py-2 text-xs">
       <p className="font-semibold text-gray-700 mb-1">{item.payload.label}</p>
       <p className="text-gray-600">
-        생산량:{" "}
+        {t("dashboard.productionQuantity")}:{" "}
         <span className="font-medium text-gray-900">
-          {item.value.toLocaleString("ko-KR")}개
+          {item.value.toLocaleString()}{t("unit.item")}
         </span>
       </p>
     </div>
@@ -57,6 +59,7 @@ function yAxisTickFormatter(value: number | string | readonly (string | number)[
 }
 
 export default function ProductProductionChart() {
+  const { t } = useLanguage();
   const { results } = useProduction();
   const { canAccessProductionLine } = useAdmin();
   const { products } = useMasterData();
@@ -76,14 +79,13 @@ export default function ProductProductionChart() {
     <div className="bg-white rounded-lg border border-gray-200 p-5">
       {/* 헤더 */}
       <div className="mb-5">
-        <h3 className="text-sm font-semibold text-gray-800">제품별 생산량</h3>
-        <p className="text-xs text-gray-500 mt-0.5 font-medium">실제 원본 생산실적 기준 제품별 생산 수량</p>
+        <h3 className="text-sm font-semibold text-gray-800">{t("dashboard.productProduction")}</h3><p className="text-xs text-gray-500 mt-0.5 font-medium">{t("dashboard.productProductionDescription")}</p>
       </div>
 
       {/* 차트 */}
       {chartData.length === 0 ? (
         <div className="flex items-center justify-center h-[280px] text-sm text-gray-400">
-          표시할 데이터가 없습니다.
+          {t("empty.chart")}
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={280}>

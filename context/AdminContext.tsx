@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { INITIAL_ADMIN_PERMISSIONS, INITIAL_ADMIN_ROLES, INITIAL_ADMIN_USERS, INITIAL_AUDIT_LOGS } from "@/data/admin.mock";
 import { canAccessModule as checkModule, canAccessPath as checkPath, canAccessProductionLine as checkLine, hasPermission as checkPermission } from "@/lib/rbac";
 import { authenticateAdmin, validateUserAccount } from "@/lib/admin-auth";
@@ -31,7 +31,8 @@ interface AdminContextValue {
   currentUser: AdminUser;
   authenticatedAdmin: AdminUser | null;
   isAdminAuthenticated: boolean;
-  loginAdmin: (identifier: string) => AdminLoginResult;
+  adminSessionReady: boolean;
+  loginAdmin: (identifier: string, password?: string) => AdminLoginResult;
   logoutAdmin: () => void;
   switchDemoUser: (userId: string) => void;
   hasPermission: (permission: PermissionCode) => boolean;
@@ -55,6 +56,7 @@ interface AdminContextValue {
 }
 
 const AdminContext = createContext<AdminContextValue | null>(null);
+const ADMIN_SESSION_KEY = "itakura-admin-session";
 
 function nowText() {
   return new Date().toLocaleString("sv-SE", { hour12: false }).replace("T", " ");
@@ -70,6 +72,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const [auditLogs, setAuditLogs] = useState(INITIAL_AUDIT_LOGS);
   const [currentUserId, setCurrentUserId] = useState("user-admin");
   const [authenticatedAdminId, setAuthenticatedAdminId] = useState<string | null>(null);
+  const [adminSessionReady, setAdminSessionReady] = useState(false);
 
   const currentUser = users.find((user) => user.id === currentUserId) ?? users[0];
   const authenticatedAdmin = users.find((user) => user.id === authenticatedAdminId) ?? null;
@@ -79,6 +82,21 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       && roles.some((role) => authenticatedAdmin.roleIds.includes(role.id) && role.code === "ADMIN")
   );
   const activeUsers = useMemo(() => users.filter((user) => user.status === "ACTIVE"), [users]);
+
+  useEffect(() => {
+    const savedId = window.localStorage.getItem(ADMIN_SESSION_KEY);
+    const savedAdmin = users.find((user) => user.id === savedId);
+    const hasAdminRole = Boolean(savedAdmin && roles.some(
+      (role) => savedAdmin.roleIds.includes(role.id) && role.code === "ADMIN",
+    ));
+    if (savedAdmin?.status === "ACTIVE" && hasAdminRole) {
+      setAuthenticatedAdminId(savedAdmin.id);
+      setCurrentUserId(savedAdmin.id);
+    } else {
+      window.localStorage.removeItem(ADMIN_SESSION_KEY);
+    }
+    setAdminSessionReady(true);
+  }, [roles, users]);
 
   const appendAudit = useCallback((
     actor: AdminUser,
@@ -103,15 +121,16 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     }, ...previous]);
   }, []);
 
-  const loginAdmin = useCallback((identifier: string): AdminLoginResult => {
-    const auth = authenticateAdmin(users, roles, identifier);
-    if (auth.failure === "INVALID_CREDENTIALS") return { success: false, message: "사번 또는 이메일을 확인하세요." };
+  const loginAdmin = useCallback((identifier: string, password?: string): AdminLoginResult => {
+    const auth = authenticateAdmin(users, roles, identifier, password);
+    if (auth.failure === "INVALID_CREDENTIALS") return { success: false, message: "사번(또는 이메일) 또는 비밀번호를 확인하세요." };
     if (auth.failure === "INACTIVE") return { success: false, message: "비활성 계정은 로그인할 수 없습니다." };
     if (auth.failure === "NOT_ADMIN") return { success: false, message: "ADMIN 역할이 있는 계정만 관리자 화면에 로그인할 수 있습니다." };
     const user = auth.user;
     if (!user) return { success: false, message: "로그인에 실패했습니다." };
     setAuthenticatedAdminId(user.id);
     setCurrentUserId(user.id);
+    window.localStorage.setItem(ADMIN_SESSION_KEY, user.id);
     appendAudit(user, "ADMIN_LOGIN", "SESSION", user.id, "관리자 화면에 로그인했습니다.");
     return { success: true };
   }, [appendAudit, roles, users]);
@@ -119,6 +138,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const logoutAdmin = useCallback(() => {
     if (authenticatedAdmin) appendAudit(authenticatedAdmin, "ADMIN_LOGOUT", "SESSION", authenticatedAdmin.id, "관리자 화면에서 로그아웃했습니다.");
     setAuthenticatedAdminId(null);
+    window.localStorage.removeItem(ADMIN_SESSION_KEY);
   }, [appendAudit, authenticatedAdmin]);
 
   const hasPermission = useCallback((permission: PermissionCode) => checkPermission(currentUser, roles, permission), [currentUser, roles]);
@@ -175,7 +195,10 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     setUsers((previous) => previous.map((user) => user.id === userId ? next : user));
     const action = target.status !== next.status ? (next.status === "ACTIVE" ? "USER_ACTIVATED" : "USER_DEACTIVATED") : "USER_UPDATED";
     appendAudit(authenticatedAdmin, action, "USER", userId, `${target.name} 사용자 계정을 변경했습니다.`, auditSnapshot(target), auditSnapshot(next));
-    if (next.status === "INACTIVE" && authenticatedAdminId === next.id) setAuthenticatedAdminId(null);
+    if (next.status === "INACTIVE" && authenticatedAdminId === next.id) {
+      setAuthenticatedAdminId(null);
+      window.localStorage.removeItem(ADMIN_SESSION_KEY);
+    }
     return { success: true };
   }, [appendAudit, authenticatedAdmin, authenticatedAdminId, isAdminAuthenticated, roles, users]);
 
@@ -244,10 +267,10 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo<AdminContextValue>(() => ({
     users, activeUsers, roles, permissions: INITIAL_ADMIN_PERMISSIONS, auditLogs, currentUser,
-    authenticatedAdmin, isAdminAuthenticated, loginAdmin, logoutAdmin, switchDemoUser,
+    authenticatedAdmin, isAdminAuthenticated, adminSessionReady, loginAdmin, logoutAdmin, switchDemoUser,
     hasPermission, canAccessModule, canAccessPath, canAccessProductionLine, getAssignableUsers,
     createUser, updateUser, deleteInactiveUser, deleteUserAccounts, updateRolePermissions, recordAudit,
-  }), [activeUsers, auditLogs, authenticatedAdmin, canAccessModule, canAccessPath, canAccessProductionLine, createUser, currentUser, deleteInactiveUser, deleteUserAccounts, getAssignableUsers, hasPermission, isAdminAuthenticated, loginAdmin, logoutAdmin, recordAudit, roles, switchDemoUser, updateRolePermissions, updateUser, users]);
+  }), [activeUsers, adminSessionReady, auditLogs, authenticatedAdmin, canAccessModule, canAccessPath, canAccessProductionLine, createUser, currentUser, deleteInactiveUser, deleteUserAccounts, getAssignableUsers, hasPermission, isAdminAuthenticated, loginAdmin, logoutAdmin, recordAudit, roles, switchDemoUser, updateRolePermissions, updateUser, users]);
 
   return <AdminContext.Provider value={value}>{children}</AdminContext.Provider>;
 }

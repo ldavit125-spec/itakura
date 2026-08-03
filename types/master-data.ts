@@ -29,69 +29,44 @@ export type StatusFilter = "ALL" | ActiveStatus;
 // ── 한국어 라벨 맵 ────────────────────────────────────────────
 
 export const ACTIVE_STATUS_LABELS: Record<ActiveStatus, string> = {
-  ACTIVE: "사용",
-  INACTIVE: "미사용",
+  ACTIVE: "status.active",
+  INACTIVE: "status.inactive",
 };
 
 export const PRODUCT_CATEGORY_LABELS: Record<ProductCategory, string> = {
-  BREAD: "식빵류",
-  COOKED_BREAD: "조리빵류",
-  SWEET_BREAD: "과자빵류",
-  PASTRY: "페이스트리류",
+  BREAD: "master.category.product.bread", COOKED_BREAD: "master.category.product.cookedBread", SWEET_BREAD: "master.category.product.sweetBread", PASTRY: "master.category.product.pastry",
 };
 
 export const PRODUCT_CATEGORY_OPTIONS: { value: ProductCategory; label: string }[] = [
-  { value: "BREAD", label: "식빵류" },
-  { value: "COOKED_BREAD", label: "조리빵류" },
-  { value: "SWEET_BREAD", label: "과자빵류" },
-  { value: "PASTRY", label: "페이스트리류" },
+  { value: "BREAD", label: "master.category.product.bread" }, { value: "COOKED_BREAD", label: "master.category.product.cookedBread" }, { value: "SWEET_BREAD", label: "master.category.product.sweetBread" }, { value: "PASTRY", label: "master.category.product.pastry" },
 ];
 
 export const MATERIAL_CATEGORY_LABELS: Record<MaterialCategory, string> = {
-  MAIN: "주원료",
-  SUB: "부원료",
-  DAIRY: "유제품",
-  AGRICULTURAL: "농산물",
-  PROCESSED: "가공원료",
+  MAIN: "master.category.material.main", SUB: "master.category.material.sub", DAIRY: "master.category.material.dairy", AGRICULTURAL: "master.category.material.agricultural", PROCESSED: "master.category.material.processed",
 };
 
 export const MATERIAL_CATEGORY_OPTIONS: { value: MaterialCategory; label: string }[] = [
-  { value: "MAIN", label: "주원료" },
-  { value: "SUB", label: "부원료" },
-  { value: "DAIRY", label: "유제품" },
-  { value: "AGRICULTURAL", label: "농산물" },
-  { value: "PROCESSED", label: "가공원료" },
+  { value: "MAIN", label: "master.category.material.main" }, { value: "SUB", label: "master.category.material.sub" }, { value: "DAIRY", label: "master.category.material.dairy" }, { value: "AGRICULTURAL", label: "master.category.material.agricultural" }, { value: "PROCESSED", label: "master.category.material.processed" },
 ];
 
 export const SUPPLIER_TYPE_LABELS: Record<SupplierType, string> = {
-  SUPPLIER: "공급업체",
-  CUSTOMER: "고객사",
-  PARTNER: "파트너",
+  SUPPLIER: "master.supplierType.supplier", CUSTOMER: "master.supplierType.customer", PARTNER: "master.supplierType.partner",
 };
 
 export const SUPPLIER_TYPE_OPTIONS: { value: SupplierType; label: string }[] = [
-  { value: "SUPPLIER", label: "공급업체" },
-  { value: "CUSTOMER", label: "고객사" },
-  { value: "PARTNER", label: "파트너" },
+  { value: "SUPPLIER", label: "master.supplierType.supplier" }, { value: "CUSTOMER", label: "master.supplierType.customer" }, { value: "PARTNER", label: "master.supplierType.partner" },
 ];
 
 export const LINE_PROCESS_LABELS: Record<LineProcess, string> = {
-  BREAD_PROCESS: "식빵 생산",
-  SWEET_BREAD_PROCESS: "단과자빵 생산",
-  PASTRY_PROCESS: "페이스트리 생산",
+  BREAD_PROCESS: "master.process.bread", SWEET_BREAD_PROCESS: "master.process.sweetBread", PASTRY_PROCESS: "master.process.pastry",
 };
 
 export const LINE_PROCESS_OPTIONS: { value: LineProcess; label: string }[] = [
-  { value: "BREAD_PROCESS", label: "식빵 생산" },
-  { value: "SWEET_BREAD_PROCESS", label: "단과자빵 생산" },
-  { value: "PASTRY_PROCESS", label: "페이스트리 생산" },
+  { value: "BREAD_PROCESS", label: "master.process.bread" }, { value: "SWEET_BREAD_PROCESS", label: "master.process.sweetBread" }, { value: "PASTRY_PROCESS", label: "master.process.pastry" },
 ];
 
 export const MASTER_DATA_TAB_LABELS: Record<MasterDataTab, string> = {
-  product: "제품 관리",
-  material: "원재료 관리",
-  supplier: "거래처 관리",
-  line: "생산라인 관리",
+  product: "master.tab.products", material: "master.tab.materials", supplier: "master.tab.suppliers", line: "master.tab.lines",
 };
 
 export const MASTER_DATA_TABS: MasterDataTab[] = [

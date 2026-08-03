@@ -13,12 +13,14 @@ import {
   OUTBOUND_STATUS_LABELS,
   TRANSACTION_TYPE_LABELS,
 } from "@/constants/material-labels";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 자재관리 배지 통합 컴포넌트
 // ============================================================
 
 export function InspectionStatusBadge({ status }: { status: InspectionStatus }) {
+  const { t } = useLanguage();
   const styles: Record<InspectionStatus, string> = {
     PASSED: "bg-green-100 text-green-700 border-green-200",
     PENDING: "bg-amber-100 text-amber-700 border-amber-200",
@@ -39,12 +41,13 @@ export function InspectionStatusBadge({ status }: { status: InspectionStatus }) 
       }`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${dotStyles[status]}`} />
-      {INSPECTION_STATUS_LABELS[status] || status}
+      {t(INSPECTION_STATUS_LABELS[status] || status)}
     </span>
   );
 }
 
 export function InboundStatusBadge({ status }: { status: InboundStatus }) {
+  const { t } = useLanguage();
   const styles: Record<InboundStatus, string> = {
     RECEIVED: "bg-blue-100 text-blue-700 border-blue-200",
     CANCELLED: "bg-gray-100 text-gray-500 border-gray-200 line-through",
@@ -61,12 +64,13 @@ export function InboundStatusBadge({ status }: { status: InboundStatus }) {
       }`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${dotStyles[status]}`} />
-      {INBOUND_STATUS_LABELS[status] || status}
+      {t(INBOUND_STATUS_LABELS[status] || status)}
     </span>
   );
 }
 
 export function InventoryStatusBadge({ status }: { status: InventoryStatus }) {
+  const { t } = useLanguage();
   const styles: Record<InventoryStatus, string> = {
     NORMAL: "bg-green-100 text-green-700 border-green-200",
     LOW: "bg-amber-100 text-amber-800 border-amber-300 font-semibold",
@@ -89,12 +93,13 @@ export function InventoryStatusBadge({ status }: { status: InventoryStatus }) {
       }`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${dotStyles[status]}`} />
-      {INVENTORY_STATUS_LABELS[status] || status}
+      {t(INVENTORY_STATUS_LABELS[status] || status)}
     </span>
   );
 }
 
 export function OutboundStatusBadge({ status }: { status: OutboundStatus }) {
+  const { t } = useLanguage();
   const styles: Record<OutboundStatus, string> = {
     COMPLETED: "bg-indigo-100 text-indigo-700 border-indigo-200",
     CANCELLED: "bg-gray-100 text-gray-500 border-gray-200 line-through",
@@ -111,12 +116,13 @@ export function OutboundStatusBadge({ status }: { status: OutboundStatus }) {
       }`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${dotStyles[status]}`} />
-      {OUTBOUND_STATUS_LABELS[status] || status}
+      {t(OUTBOUND_STATUS_LABELS[status] || status)}
     </span>
   );
 }
 
 export function TransactionTypeBadge({ type }: { type: TransactionType }) {
+  const { t } = useLanguage();
   const styles: Record<TransactionType, string> = {
     INBOUND: "bg-green-100 text-green-700 border-green-200",
     OUTBOUND: "bg-blue-100 text-blue-700 border-blue-200",
@@ -132,7 +138,7 @@ export function TransactionTypeBadge({ type }: { type: TransactionType }) {
         styles[type] || "bg-gray-100 text-gray-700 border-gray-200"
       }`}
     >
-      {TRANSACTION_TYPE_LABELS[type] || type}
+      {t(TRANSACTION_TYPE_LABELS[type] || type)}
     </span>
   );
 }

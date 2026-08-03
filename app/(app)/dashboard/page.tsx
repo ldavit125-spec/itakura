@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "대시보드" };
 export default function DashboardPage() {
   return (
     <>
-      <PageHeader title="대시보드" description="오늘 생산실적과 불량 현황을 실시간으로 확인합니다." breadcrumb={["대시보드"]} />
+      <PageHeader title="nav.dashboard" description="dashboard.page.description" breadcrumb={["nav.dashboard"]} />
       <RealtimeDashboard />
     </>
   );

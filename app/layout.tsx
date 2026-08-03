@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AdminProvider } from "@/context/AdminContext";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 // ============================================================
 // 루트 레이아웃
@@ -23,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full">
       <body className="h-full font-sans antialiased">
-        <AdminProvider>{children}</AdminProvider>
+        <LanguageProvider><AdminProvider>{children}</AdminProvider></LanguageProvider>
       </body>
     </html>
   );

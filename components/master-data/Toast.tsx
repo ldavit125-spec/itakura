@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import type { ToastState } from "@/types/master-data";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // Toast 알림 컴포넌트 — 3초 후 자동 닫힘
@@ -13,6 +14,7 @@ interface ToastProps {
 }
 
 export default function Toast({ toast, onClose }: ToastProps) {
+  const { t } = useLanguage();
   useEffect(() => {
     const timer = setTimeout(onClose, 3000);
     return () => clearTimeout(timer);
@@ -42,11 +44,11 @@ export default function Toast({ toast, onClose }: ToastProps) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
         )}
       </svg>
-      <span>{toast.message}</span>
+      <span>{t(toast.message)}</span>
       <button
         onClick={onClose}
         className="ml-1 opacity-70 hover:opacity-100 transition-opacity"
-        aria-label="알림 닫기"
+        aria-label={t("toast.close")}
       >
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

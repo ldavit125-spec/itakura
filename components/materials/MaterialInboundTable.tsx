@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import type { MaterialInbound, InspectionStatus } from "@/types/materials";
 import { INSPECTION_STATUS_OPTIONS } from "@/constants/material-labels";
 import { InspectionStatusBadge, InboundStatusBadge } from "./MaterialStatusBadge";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 자재 입고 목록 테이블 컴포넌트
@@ -22,6 +23,7 @@ export default function MaterialInboundTable({
   onOpenDetail,
   onCancelInbound,
 }: MaterialInboundTableProps) {
+  const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [dateSearch, setDateSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<InspectionStatus | "ALL">("ALL");
@@ -58,13 +60,13 @@ export default function MaterialInboundTable({
               value={dateSearch}
               onChange={(e) => setDateSearch(e.target.value)}
               className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              title="입고일 검색"
+              title={t("materials.inbound.dateSearch")}
             />
             {dateSearch && (
               <button
                 onClick={() => setDateSearch("")}
                 className="ml-1 text-xs text-gray-400 hover:text-gray-600"
-                title="입고일 초기화"
+                title={t("materials.inbound.dateClear")}
               >
                 ✕
               </button>
@@ -75,7 +77,7 @@ export default function MaterialInboundTable({
           <div className="relative flex-1 min-w-[200px]">
             <input
               type="text"
-              placeholder="자재명, 자재코드, LOT번호, 입고번호 검색..."
+              placeholder={t("materials.inbound.search")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -103,7 +105,7 @@ export default function MaterialInboundTable({
           >
             {INSPECTION_STATUS_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
-                {opt.label}
+                {t(opt.label)}
               </option>
             ))}
           </select>
@@ -117,7 +119,7 @@ export default function MaterialInboundTable({
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          <span>신규 입고 등록</span>
+          <span>{t("materials.inbound.new")}</span>
         </button>
       </div>
 
@@ -126,25 +128,14 @@ export default function MaterialInboundTable({
         <table className="w-full text-sm text-left text-gray-700 min-w-[1000px]">
           <thead className="text-xs uppercase bg-gray-50 text-gray-500 border-b border-gray-200">
             <tr>
-              <th className="px-4 py-3 font-semibold">입고 번호</th>
-              <th className="px-4 py-3 font-semibold">입고일</th>
-              <th className="px-4 py-3 font-semibold">자재 코드</th>
-              <th className="px-4 py-3 font-semibold">자재명</th>
-              <th className="px-4 py-3 font-semibold">자재 LOT</th>
-              <th className="px-4 py-3 font-semibold">거래처</th>
-              <th className="px-4 py-3 font-semibold text-right">입고 수량</th>
-              <th className="px-4 py-3 font-semibold">단위</th>
-              <th className="px-4 py-3 font-semibold">유통기한</th>
-              <th className="px-4 py-3 font-semibold text-center">검사 상태</th>
-              <th className="px-4 py-3 font-semibold text-center">입고 상태</th>
-              <th className="px-4 py-3 font-semibold text-center">작업</th>
+              {["materials.inbound.number","materials.inbound.date","master.field.materialCode","master.field.materialName","materials.inbound.lot","master.field.supplierName","materials.inbound.quantity","common.unit","materials.expirationDate","materials.inbound.inspectionStatus","materials.inbound.status","common.work"].map((key) => <th key={key} className="px-4 py-3 font-semibold">{t(key)}</th>)}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {filteredData.length === 0 ? (
               <tr>
                 <td colSpan={12} className="px-4 py-12 text-center text-gray-500">
-                  입고 내역이 없습니다.
+                  {t("materials.inbound.empty")}
                 </td>
               </tr>
             ) : (
@@ -184,7 +175,7 @@ export default function MaterialInboundTable({
                           onClick={() => onOpenDetail(item)}
                           className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
                         >
-                          상세
+                          {t("action.detail")}
                         </button>
                         {!isCancelled && (
                           <>
@@ -192,13 +183,13 @@ export default function MaterialInboundTable({
                               onClick={() => onOpenEdit(item)}
                               className="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
                             >
-                              수정
+                              {t("action.edit")}
                             </button>
                             <button
                               onClick={() => onCancelInbound(item)}
                               className="px-2 py-1 text-xs font-medium text-red-700 bg-red-50 rounded hover:bg-red-100 transition-colors"
                             >
-                              취소
+                              {t("action.cancel")}
                             </button>
                           </>
                         )}

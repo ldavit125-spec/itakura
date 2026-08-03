@@ -17,6 +17,7 @@ import { useAdmin } from "@/context/AdminContext";
 import { aggregateProductionByPeriod } from "@/lib/common-selectors";
 import { getBusinessDate } from "@/lib/common-selectors";
 import DashboardPeriodFilter from "@/components/dashboard/DashboardPeriodFilter";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 생산계획 대비 실적 Line Chart (실시간 Context 연동)
@@ -36,6 +37,7 @@ interface CustomTooltipProps {
 }
 
 function ProductionTooltip({ active, payload, label }: CustomTooltipProps) {
+  const { t } = useLanguage();
   if (!active || !payload || payload.length === 0) return null;
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-md px-3 py-2 text-xs">
@@ -47,10 +49,10 @@ function ProductionTooltip({ active, payload, label }: CustomTooltipProps) {
             style={{ backgroundColor: entry.color }}
           />
           <span className="text-gray-600">
-            {entry.dataKey === "plan" ? "계획 수량" : "실제 생산량"}:
+            {t(entry.dataKey === "plan" ? "dashboard.planQuantity" : "dashboard.actualProduction")}:
           </span>
           <span className="font-medium text-gray-900">
-            {entry.value.toLocaleString("ko-KR")}개
+            {entry.value.toLocaleString()}{t("unit.item")}
           </span>
         </p>
       ))}
@@ -60,7 +62,7 @@ function ProductionTooltip({ active, payload, label }: CustomTooltipProps) {
 
 /** 범례 라벨 변환 */
 function legendFormatter(value: string): string {
-  return value === "plan" ? "계획 수량" : "실제 생산량";
+  return value === "plan" ? "dashboard.planQuantity" : "dashboard.actualProduction";
 }
 
 /** Y축 눈금 포맷 */
@@ -71,6 +73,7 @@ function yAxisTickFormatter(value: number | string | readonly (string | number)[
 }
 
 export default function ProductionPerformanceChart() {
+  const { t } = useLanguage();
   const [period, setPeriod] = useState<PeriodType>("WEEKLY");
   const { plans, results } = useProduction();
   const { canAccessProductionLine } = useAdmin();
@@ -112,8 +115,7 @@ export default function ProductionPerformanceChart() {
       {/* 헤더 */}
       <div className="flex items-start justify-between mb-5">
         <div>
-          <h3 className="text-sm font-semibold text-gray-800">생산계획 대비 실적</h3>
-          <p className="text-xs text-gray-500 mt-0.5">계획 수량과 실제 생산량 비교</p>
+          <h3 className="text-sm font-semibold text-gray-800">{t("dashboard.planVsActual")}</h3><p className="text-xs text-gray-500 mt-0.5">{t("dashboard.planVsActualDescription")}</p>
         </div>
         <DashboardPeriodFilter period={period} onChange={setPeriod} />
       </div>
@@ -121,7 +123,7 @@ export default function ProductionPerformanceChart() {
       {/* 차트 */}
       {data.length === 0 ? (
         <div className="flex items-center justify-center h-[280px] text-sm text-gray-400">
-          표시할 데이터가 없습니다.
+          {t("empty.chart")}
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={280}>
@@ -137,7 +139,7 @@ export default function ProductionPerformanceChart() {
               tickLine={false}
             />
             <YAxis
-              tickFormatter={yAxisTickFormatter}
+              tickFormatter={(value) => yAxisTickFormatter(value)}
               tick={{ fontSize: 11, fill: "#64748b" }}
               axisLine={false}
               tickLine={false}
@@ -145,7 +147,7 @@ export default function ProductionPerformanceChart() {
             />
             <Tooltip content={<ProductionTooltip />} />
             <Legend
-              formatter={legendFormatter}
+              formatter={(value) => t(legendFormatter(value))}
               iconType="circle"
               iconSize={8}
               wrapperStyle={{ fontSize: "12px", paddingTop: "12px" }}

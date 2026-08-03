@@ -1,4 +1,7 @@
+"use client";
+
 import type { DashboardCardData, KpiStatus } from "@/types";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 대시보드 KPI 카드 컴포넌트
@@ -30,13 +33,14 @@ const STATUS_STYLES: Record<KpiStatus, { badge: string; indicator: string }> = {
 
 /** 상태 한국어 라벨 */
 const STATUS_LABELS: Record<KpiStatus, string> = {
-  GOOD: "정상",
-  WARNING: "주의",
-  DANGER: "위험",
-  NEUTRAL: "보통",
+  GOOD: "status.normal",
+  WARNING: "status.warning",
+  DANGER: "status.danger",
+  NEUTRAL: "status.neutral",
 };
 
 export default function DashboardCard({ data }: DashboardCardProps) {
+  const { t } = useLanguage();
   const status = data.status ?? "NEUTRAL";
   const styles = STATUS_STYLES[status];
 
@@ -48,14 +52,14 @@ export default function DashboardCard({ data }: DashboardCardProps) {
       {/* 제목 + 상태 뱃지 */}
       <div className="flex items-start justify-between gap-2">
         <h3 className="text-sm font-medium text-gray-600 leading-snug">
-          {data.title}
+          {t(data.title)}
         </h3>
         {data.status && (
           <span
             className={`flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${styles.badge}`}
           >
             <span className={`w-1.5 h-1.5 rounded-full ${styles.indicator}`} aria-hidden="true" />
-            {STATUS_LABELS[status]}
+            {t(STATUS_LABELS[status])}
           </span>
         )}
       </div>
@@ -66,14 +70,14 @@ export default function DashboardCard({ data }: DashboardCardProps) {
           {data.value}
         </span>
         {data.unit && (
-          <span className="text-sm text-gray-500 font-medium">{data.unit}</span>
+          <span className="text-sm text-gray-500 font-medium">{t(data.unit)}</span>
         )}
       </div>
 
       {/* 설명 */}
       {data.description && (
         <p className="text-xs text-gray-400 border-t border-gray-100 pt-2 leading-relaxed">
-          {data.description}
+          {t(data.description)}
         </p>
       )}
     </div>

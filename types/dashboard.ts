@@ -6,8 +6,8 @@
 export type PeriodType = "WEEKLY" | "MONTHLY";
 
 export const PERIOD_TYPE_LABELS: Record<PeriodType, string> = {
-  WEEKLY: "주간",
-  MONTHLY: "월간",
+  WEEKLY: "period.weekly",
+  MONTHLY: "period.monthly",
 };
 
 /** 제품 코드 (내부 영문값) */
@@ -30,9 +30,7 @@ export const PRODUCT_CODE_LABELS: Record<ProductCode, string> = {
 export type QualityResult = "PASS" | "CONDITIONAL_PASS" | "FAIL";
 
 export const QUALITY_RESULT_LABELS: Record<QualityResult, string> = {
-  PASS: "합격",
-  CONDITIONAL_PASS: "조건부 합격",
-  FAIL: "불합격",
+  PASS: "status.pass", CONDITIONAL_PASS: "status.conditionalPass", FAIL: "status.fail",
 };
 
 // ── 차트 데이터 인터페이스 ────────────────────────────────────

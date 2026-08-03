@@ -1,10 +1,14 @@
+"use client";
+
 import type { PageHeaderProps } from "@/types";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 페이지 제목 + 설명 헤더 컴포넌트
 // ============================================================
 
 export default function PageHeader({ title, description, breadcrumb }: PageHeaderProps) {
+  const { t } = useLanguage();
   return (
     <div className="mb-6">
       {/* 브레드크럼 (선택) */}
@@ -25,7 +29,7 @@ export default function PageHeader({ title, description, breadcrumb }: PageHeade
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 )}
-                <span>{crumb}</span>
+                <span>{t(crumb)}</span>
               </li>
             ))}
           </ol>
@@ -33,10 +37,10 @@ export default function PageHeader({ title, description, breadcrumb }: PageHeade
       )}
 
       {/* 제목 */}
-      <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+      <h2 className="text-xl font-bold text-gray-900">{t(title)}</h2>
 
       {/* 설명 */}
-      <p className="mt-1 text-sm text-gray-500">{description}</p>
+      <p className="mt-1 text-sm text-gray-500">{t(description)}</p>
 
       {/* 하단 구분선 */}
       <div className="mt-4 border-b border-gray-200" />

@@ -23,7 +23,7 @@ export async function fetchMaterialsSnapshot(): Promise<MaterialsSnapshot> {
   const [materials, suppliers, lines, users, workOrders, inbounds, inventories, outbounds, transactions, requests] =
     await Promise.all([
       supabase.from("materials").select("id,code,name"),
-      supabase.from("suppliers").select("id,name"),
+      supabase.from("suppliers").select("id,code,name"),
       supabase.from("production_lines").select("id,name"),
       supabase.from("business_users").select("id,name"),
       supabase.from("work_orders").select("id,work_order_no"),
@@ -39,7 +39,7 @@ export async function fetchMaterialsSnapshot(): Promise<MaterialsSnapshot> {
   }
 
   const materialById = new Map((materials.data ?? []).map((row) => [row.id, row]));
-  const supplierById = new Map((suppliers.data ?? []).map((row) => [row.id, row.name]));
+  const supplierById = new Map((suppliers.data ?? []).map((row) => [row.id, row]));
   const lineById = new Map((lines.data ?? []).map((row) => [row.id, row.name]));
   const userById = new Map((users.data ?? []).map((row) => [row.id, row.name]));
   const workOrderById = new Map((workOrders.data ?? []).map((row) => [row.id, row.work_order_no]));
@@ -56,7 +56,7 @@ export async function fetchMaterialsSnapshot(): Promise<MaterialsSnapshot> {
         materialCode: material?.code ?? "",
         materialName: material?.name ?? "",
         lotNo: row.lot_no,
-        supplierName: row.supplier_id ? (supplierById.get(row.supplier_id) ?? "") : "",
+        supplierName: row.supplier_id ? (supplierById.get(row.supplier_id)?.name ?? "") : "",
         quantity: Number(row.quantity),
         unit: row.unit,
         manufactureDate: row.manufacture_date ?? "",
@@ -82,7 +82,7 @@ export async function fetchMaterialsSnapshot(): Promise<MaterialsSnapshot> {
         expirationDate: row.expiration_date,
         inventoryStatus: row.inventory_status,
         inspectionStatus: row.inspection_status,
-        supplierName: row.supplier_id ? (supplierById.get(row.supplier_id) ?? "") : "",
+        supplierName: row.supplier_id ? (supplierById.get(row.supplier_id)?.name ?? "") : "",
       };
     }),
     outbounds: (outbounds.data ?? []).map((row) => {
@@ -130,7 +130,7 @@ export async function fetchMaterialsSnapshot(): Promise<MaterialsSnapshot> {
         requestDate: row.request_date,
         materialCode: material?.code ?? "",
         materialName: material?.name ?? "",
-        supplierName: row.supplier_id ? (supplierById.get(row.supplier_id) ?? "") : "",
+        supplierName: row.supplier_id ? (supplierById.get(row.supplier_id)?.name ?? "") : "",
         requestedQuantity: Number(row.requested_quantity),
         unit: row.unit,
         status: row.status,

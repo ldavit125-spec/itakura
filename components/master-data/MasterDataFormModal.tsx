@@ -14,11 +14,10 @@ import type {
   ActiveStatus,
 } from "@/types/master-data";
 import {
-  PRODUCT_CATEGORY_OPTIONS,
   MATERIAL_CATEGORY_OPTIONS,
   SUPPLIER_TYPE_OPTIONS,
-  LINE_PROCESS_OPTIONS,
 } from "@/types/master-data";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 공통 폼 필드 컴포넌트
@@ -32,16 +31,17 @@ interface FormFieldProps {
 }
 
 function FormField({ label, required, error, children }: FormFieldProps) {
+  const { t } = useLanguage();
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}
+        {t(label)}
         {required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       {children}
       {error && (
         <p className="mt-1 text-xs text-red-500" role="alert">
-          {error}
+          {t(error)}
         </p>
       )}
     </div>
@@ -65,6 +65,7 @@ interface FormActionsProps {
 }
 
 function FormActions({ onClose, isEdit }: FormActionsProps) {
+  const { t } = useLanguage();
   return (
     <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-100">
       <button
@@ -72,14 +73,14 @@ function FormActions({ onClose, isEdit }: FormActionsProps) {
         onClick={onClose}
         className="px-4 py-2 text-sm font-medium border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
       >
-        취소
+        {t("action.cancel")}
       </button>
       <button
         type="submit"
         id="modal-save-btn"
         className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
       >
-        {isEdit ? "수정 저장" : "등록"}
+        {t(isEdit ? "action.saveChanges" : "action.register")}
       </button>
     </div>
   );
@@ -104,6 +105,7 @@ export function ProductFormModal({
   onSave,
   onClose,
 }: ProductFormModalProps) {
+  const { t } = useLanguage();
   const [code, setCode] = useState(item?.code ?? "");
   const [name, setName] = useState(item?.name ?? "");
   const [category, setCategory] = useState<ProductCategory>(
@@ -116,11 +118,12 @@ export function ProductFormModal({
 
   const validate = (): boolean => {
     const next: Partial<Record<string, string>> = {};
-    if (!code.trim()) next.code = "제품 코드를 입력하세요.";
+    if (!code.trim()) next.code = "master.validation.productCode";
     else if (existingCodes.includes(code.trim()))
-      next.code = "이미 사용 중인 코드입니다.";
-    if (!name.trim()) next.name = "제품명을 입력하세요.";
-    if (!unit.trim()) next.unit = "단위를 입력하세요.";
+      next.code = "master.validation.duplicateCode";
+    if (!name.trim()) next.name = "master.validation.productName";
+    if (!category.trim()) next.category = "master.validation.productCategory";
+    if (!unit.trim()) next.unit = "master.validation.unit";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -128,79 +131,74 @@ export function ProductFormModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    onSave({ code: code.trim(), name: name.trim(), category, unit: unit.trim(), defaultLine: defaultLine.trim(), status });
+    onSave({ code: code.trim(), name: name.trim(), category: category.trim() as ProductCategory, unit: unit.trim(), defaultLine: defaultLine.trim(), status });
   };
 
   return (
     <MasterDataModal
-      title={mode === "edit" ? "제품 수정" : "제품 신규 등록"}
+      title={mode === "edit" ? "master.modal.productEdit" : "master.modal.productCreate"}
       onClose={onClose}
     >
       <form onSubmit={handleSubmit} noValidate>
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="제품 코드" required error={errors.code}>
+          <FormField label="master.field.productCode" required error={errors.code}>
             <input
               id="product-form-code"
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="예: PRD-006"
+              placeholder={t("master.placeholder.productCode")}
               className={errors.code ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="제품명" required error={errors.name}>
+          <FormField label="master.field.productName" required error={errors.name}>
             <input
               id="product-form-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="예: 소보로빵"
+              placeholder={t("master.placeholder.productName")}
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="제품 분류" required>
-            <select
+          <FormField label="master.field.productCategory" required error={errors.category}>
+            <input
               id="product-form-category"
+              type="text"
               value={category}
               onChange={(e) => setCategory(e.target.value as ProductCategory)}
-              className={SELECT_CLASS}
-            >
-              {PRODUCT_CATEGORY_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              placeholder={t("master.placeholder.productCategory")}
+              className={errors.category ? INPUT_ERROR_CLASS : INPUT_CLASS}
+            />
           </FormField>
-          <FormField label="단위" required error={errors.unit}>
+          <FormField label="common.unit" required error={errors.unit}>
             <input
               id="product-form-unit"
               type="text"
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
-              placeholder="예: 개"
+              placeholder={t("master.placeholder.unitItem")}
               className={errors.unit ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="기본 생산라인">
+          <FormField label="master.field.defaultLine">
             <input
               id="product-form-line"
               type="text"
               value={defaultLine}
               onChange={(e) => setDefaultLine(e.target.value)}
-              placeholder="예: 1호 라인"
+              placeholder={t("master.placeholder.defaultLine")}
               className={INPUT_CLASS}
             />
           </FormField>
-          <FormField label="사용 여부">
+          <FormField label="master.field.useStatus">
             <select
               id="product-form-status"
               value={status}
               onChange={(e) => setStatus(e.target.value as ActiveStatus)}
               className={SELECT_CLASS}
             >
-              <option value="ACTIVE">사용</option>
-              <option value="INACTIVE">미사용</option>
+              <option value="ACTIVE">{t("status.active")}</option><option value="INACTIVE">{t("status.inactive")}</option>
             </select>
           </FormField>
         </div>
@@ -229,6 +227,7 @@ export function MaterialFormModal({
   onSave,
   onClose,
 }: MaterialFormModalProps) {
+  const { t } = useLanguage();
   const [code, setCode] = useState(item?.code ?? "");
   const [name, setName] = useState(item?.name ?? "");
   const [category, setCategory] = useState<MaterialCategory>(
@@ -246,14 +245,14 @@ export function MaterialFormModal({
 
   const validate = (): boolean => {
     const next: Partial<Record<string, string>> = {};
-    if (!code.trim()) next.code = "자재 코드를 입력하세요.";
+    if (!code.trim()) next.code = "master.validation.materialCode";
     else if (existingCodes.includes(code.trim()))
-      next.code = "이미 사용 중인 코드입니다.";
-    if (!name.trim()) next.name = "자재명을 입력하세요.";
-    if (!unit.trim()) next.unit = "단위를 입력하세요.";
+      next.code = "master.validation.duplicateCode";
+    if (!name.trim()) next.name = "master.validation.materialName";
+    if (!unit.trim()) next.unit = "master.validation.unit";
     const stock = Number(safetyStock);
     if (isNaN(stock) || stock < 0)
-      next.safetyStock = "0 이상의 숫자를 입력하세요.";
+      next.safetyStock = "master.validation.nonNegative";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -274,32 +273,32 @@ export function MaterialFormModal({
 
   return (
     <MasterDataModal
-      title={mode === "edit" ? "원재료 수정" : "원재료 신규 등록"}
+      title={mode === "edit" ? "master.modal.materialEdit" : "master.modal.materialCreate"}
       onClose={onClose}
     >
       <form onSubmit={handleSubmit} noValidate>
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="자재 코드" required error={errors.code}>
+          <FormField label="master.field.materialCode" required error={errors.code}>
             <input
               id="material-form-code"
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="예: MAT-006"
+              placeholder={t("master.placeholder.materialCode")}
               className={errors.code ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="자재명" required error={errors.name}>
+          <FormField label="master.field.materialName" required error={errors.name}>
             <input
               id="material-form-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="예: 박력분"
+              placeholder={t("master.placeholder.materialName")}
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="자재 분류" required>
+          <FormField label="master.field.materialCategory" required>
             <select
               id="material-form-category"
               value={category}
@@ -308,22 +307,22 @@ export function MaterialFormModal({
             >
               {MATERIAL_CATEGORY_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
-                  {opt.label}
+                  {t(opt.label)}
                 </option>
               ))}
             </select>
           </FormField>
-          <FormField label="단위" required error={errors.unit}>
+          <FormField label="common.unit" required error={errors.unit}>
             <input
               id="material-form-unit"
               type="text"
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
-              placeholder="예: kg"
+              placeholder={t("master.placeholder.unitKg")}
               className={errors.unit ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="안전재고" required error={errors.safetyStock}>
+          <FormField label="master.field.safetyStock" required error={errors.safetyStock}>
             <input
               id="material-form-safety-stock"
               type="number"
@@ -335,25 +334,24 @@ export function MaterialFormModal({
               className={errors.safetyStock ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="기본 거래처">
+          <FormField label="master.field.defaultSupplier">
             <input
               id="material-form-supplier"
               type="text"
               value={defaultSupplier}
               onChange={(e) => setDefaultSupplier(e.target.value)}
-              placeholder="예: 사쿠라 제분"
+              placeholder={t("master.placeholder.defaultSupplier")}
               className={INPUT_CLASS}
             />
           </FormField>
-          <FormField label="사용 여부">
+          <FormField label="master.field.useStatus">
             <select
               id="material-form-status"
               value={status}
               onChange={(e) => setStatus(e.target.value as ActiveStatus)}
               className={SELECT_CLASS}
             >
-              <option value="ACTIVE">사용</option>
-              <option value="INACTIVE">미사용</option>
+              <option value="ACTIVE">{t("status.active")}</option><option value="INACTIVE">{t("status.inactive")}</option>
             </select>
           </FormField>
         </div>
@@ -382,6 +380,7 @@ export function SupplierFormModal({
   onSave,
   onClose,
 }: SupplierFormModalProps) {
+  const { t } = useLanguage();
   const [code, setCode] = useState(item?.code ?? "");
   const [name, setName] = useState(item?.name ?? "");
   const [type, setType] = useState<SupplierType>(item?.type ?? "SUPPLIER");
@@ -392,10 +391,10 @@ export function SupplierFormModal({
 
   const validate = (): boolean => {
     const next: Partial<Record<string, string>> = {};
-    if (!code.trim()) next.code = "거래처 코드를 입력하세요.";
+    if (!code.trim()) next.code = "master.validation.supplierCode";
     else if (existingCodes.includes(code.trim()))
-      next.code = "이미 사용 중인 코드입니다.";
-    if (!name.trim()) next.name = "거래처명을 입력하세요.";
+      next.code = "master.validation.duplicateCode";
+    if (!name.trim()) next.name = "master.validation.supplierName";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -415,32 +414,32 @@ export function SupplierFormModal({
 
   return (
     <MasterDataModal
-      title={mode === "edit" ? "거래처 수정" : "거래처 신규 등록"}
+      title={mode === "edit" ? "master.modal.supplierEdit" : "master.modal.supplierCreate"}
       onClose={onClose}
     >
       <form onSubmit={handleSubmit} noValidate>
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="거래처 코드" required error={errors.code}>
+          <FormField label="master.field.supplierCode" required error={errors.code}>
             <input
               id="supplier-form-code"
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="예: SUP-006"
+              placeholder={t("master.placeholder.supplierCode")}
               className={errors.code ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="거래처명" required error={errors.name}>
+          <FormField label="master.field.supplierName" required error={errors.name}>
             <input
               id="supplier-form-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="예: 오사카 제분"
+              placeholder={t("master.placeholder.supplierName")}
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="거래처 구분" required>
+          <FormField label="master.field.supplierType" required>
             <select
               id="supplier-form-type"
               value={type}
@@ -449,40 +448,39 @@ export function SupplierFormModal({
             >
               {SUPPLIER_TYPE_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
-                  {opt.label}
+                  {t(opt.label)}
                 </option>
               ))}
             </select>
           </FormField>
-          <FormField label="담당자">
+          <FormField label="master.field.manager">
             <input
               id="supplier-form-contact"
               type="text"
               value={contactPerson}
               onChange={(e) => setContactPerson(e.target.value)}
-              placeholder="예: 직원 이름"
+              placeholder={t("master.placeholder.manager")}
               className={INPUT_CLASS}
             />
           </FormField>
-          <FormField label="연락처">
+          <FormField label="master.field.contact">
             <input
               id="supplier-form-phone"
               type="text"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="예: 02-1234-5678"
+              placeholder={t("master.placeholder.contact")}
               className={INPUT_CLASS}
             />
           </FormField>
-          <FormField label="사용 여부">
+          <FormField label="master.field.useStatus">
             <select
               id="supplier-form-status"
               value={status}
               onChange={(e) => setStatus(e.target.value as ActiveStatus)}
               className={SELECT_CLASS}
             >
-              <option value="ACTIVE">사용</option>
-              <option value="INACTIVE">미사용</option>
+              <option value="ACTIVE">{t("status.active")}</option><option value="INACTIVE">{t("status.inactive")}</option>
             </select>
           </FormField>
         </div>
@@ -511,6 +509,7 @@ export function ProductionLineFormModal({
   onSave,
   onClose,
 }: ProductionLineFormModalProps) {
+  const { t } = useLanguage();
   const [code, setCode] = useState(item?.code ?? "");
   const [name, setName] = useState(item?.name ?? "");
   const [process, setProcess] = useState<LineProcess>(
@@ -525,14 +524,15 @@ export function ProductionLineFormModal({
 
   const validate = (): boolean => {
     const next: Partial<Record<string, string>> = {};
-    if (!code.trim()) next.code = "라인 코드를 입력하세요.";
+    if (!code.trim()) next.code = "master.validation.lineCode";
     else if (existingCodes.includes(code.trim()))
-      next.code = "이미 사용 중인 코드입니다.";
-    if (!name.trim()) next.name = "생산라인명을 입력하세요.";
-    if (!unit.trim()) next.unit = "단위를 입력하세요.";
+      next.code = "master.validation.duplicateCode";
+    if (!name.trim()) next.name = "master.validation.lineName";
+    if (!process.trim()) next.process = "master.validation.process";
+    if (!unit.trim()) next.unit = "master.validation.unit";
     const cap = Number(maxCapacity);
     if (isNaN(cap) || cap < 0)
-      next.maxCapacity = "0 이상의 숫자를 입력하세요.";
+      next.maxCapacity = "master.validation.nonNegative";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -543,7 +543,7 @@ export function ProductionLineFormModal({
     onSave({
       code: code.trim(),
       name: name.trim(),
-      process,
+      process: process.trim() as LineProcess,
       maxCapacity: Number(maxCapacity),
       unit: unit.trim(),
       status,
@@ -552,46 +552,42 @@ export function ProductionLineFormModal({
 
   return (
     <MasterDataModal
-      title={mode === "edit" ? "생산라인 수정" : "생산라인 신규 등록"}
+      title={mode === "edit" ? "master.modal.lineEdit" : "master.modal.lineCreate"}
       onClose={onClose}
     >
       <form onSubmit={handleSubmit} noValidate>
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="라인 코드" required error={errors.code}>
+          <FormField label="master.field.lineCode" required error={errors.code}>
             <input
               id="line-form-code"
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="예: LINE-04"
+              placeholder={t("master.placeholder.lineCode")}
               className={errors.code ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="생산라인명" required error={errors.name}>
+          <FormField label="master.field.lineName" required error={errors.name}>
             <input
               id="line-form-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="예: 4호 라인"
+              placeholder={t("master.placeholder.lineName")}
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="담당 공정" required>
-            <select
+          <FormField label="master.field.process" required error={errors.process}>
+            <input
               id="line-form-process"
+              type="text"
               value={process}
               onChange={(e) => setProcess(e.target.value as LineProcess)}
-              className={SELECT_CLASS}
-            >
-              {LINE_PROCESS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              placeholder={t("master.placeholder.process")}
+              className={errors.process ? INPUT_ERROR_CLASS : INPUT_CLASS}
+            />
           </FormField>
-          <FormField label="최대 생산량" required error={errors.maxCapacity}>
+          <FormField label="master.field.maxCapacity" required error={errors.maxCapacity}>
             <input
               id="line-form-capacity"
               type="number"
@@ -603,25 +599,24 @@ export function ProductionLineFormModal({
               className={errors.maxCapacity ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="단위" required error={errors.unit}>
+          <FormField label="common.unit" required error={errors.unit}>
             <input
               id="line-form-unit"
               type="text"
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
-              placeholder="예: 개"
+              placeholder={t("master.placeholder.unitItem")}
               className={errors.unit ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="사용 여부">
+          <FormField label="master.field.useStatus">
             <select
               id="line-form-status"
               value={status}
               onChange={(e) => setStatus(e.target.value as ActiveStatus)}
               className={SELECT_CLASS}
             >
-              <option value="ACTIVE">사용</option>
-              <option value="INACTIVE">미사용</option>
+              <option value="ACTIVE">{t("status.active")}</option><option value="INACTIVE">{t("status.inactive")}</option>
             </select>
           </FormField>
         </div>

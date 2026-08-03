@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/constants/navigation";
 import type { NavItem } from "@/types";
 import { useAdmin } from "@/context/AdminContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 왼쪽 고정 사이드바 컴포넌트
@@ -16,6 +17,7 @@ interface SidebarNavItemProps {
 }
 
 function SidebarNavItem({ item, isActive }: SidebarNavItemProps) {
+  const { t } = useLanguage();
   return (
     <li>
       <Link
@@ -44,13 +46,14 @@ function SidebarNavItem({ item, isActive }: SidebarNavItemProps) {
             d={item.icon}
           />
         </svg>
-        <span className="truncate">{item.label}</span>
+        <span className="truncate">{t(item.label)}</span>
       </Link>
     </li>
   );
 }
 
 export default function Sidebar() {
+  const { t } = useLanguage();
   const pathname = usePathname();
   const { canAccessModule } = useAdmin();
   const visibleItems = NAV_ITEMS.filter((item) => canAccessModule(item.module));
@@ -77,10 +80,10 @@ export default function Sidebar() {
         </div>
         <div className="min-w-0">
           <p className="text-white font-bold text-sm leading-tight truncate">
-            이타쿠라 제빵
+            {t("brand.name")}
           </p>
           <p className="text-slate-400 text-xs leading-tight truncate">
-            통합관리 시스템
+            {t("brand.system")}
           </p>
         </div>
       </div>
@@ -100,7 +103,7 @@ export default function Sidebar() {
 
       {/* 버전 정보 */}
       <div className="px-5 py-4 border-t border-slate-700">
-        <p className="text-slate-500 text-xs">v1.0.0 — 기본 뼈대</p>
+        <p className="text-slate-500 text-xs">v1.0.0</p>
       </div>
     </aside>
   );
