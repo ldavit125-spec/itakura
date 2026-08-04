@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { NAV_ITEMS } from "@/constants/navigation";
 import type { NavItem } from "@/types";
 import { useAdmin } from "@/context/AdminContext";
@@ -55,7 +55,8 @@ function SidebarNavItem({ item, isActive }: SidebarNavItemProps) {
 export default function Sidebar() {
   const { t } = useLanguage();
   const pathname = usePathname();
-  const { canAccessModule } = useAdmin();
+  const router = useRouter();
+  const { canAccessModule, logoutAdmin } = useAdmin();
   const visibleItems = NAV_ITEMS.filter((item) => canAccessModule(item.module));
 
   return (
@@ -101,9 +102,22 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      {/* 버전 정보 */}
-      <div className="px-5 py-4 border-t border-slate-700">
+      {/* 하단 버전 정보 및 로그아웃 버튼 */}
+      <div className="px-5 py-4 border-t border-slate-700 flex items-center justify-between">
         <p className="text-slate-500 text-xs">v1.0.0</p>
+        <button
+          type="button"
+          onClick={() => {
+            logoutAdmin();
+            router.replace("/admin/login");
+          }}
+          className="text-slate-400 hover:text-white text-xs flex items-center gap-1 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          {t("action.logout")}
+        </button>
       </div>
     </aside>
   );

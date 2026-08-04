@@ -53,13 +53,12 @@ export default function Header() {
             <p className="text-xs text-gray-500 leading-tight truncate">{roleLabel}</p>
           </div>
         </div>
-        {isAdminAuthenticated && pathname.startsWith("/admin") && (
+        {isAdminAuthenticated ? (
           <button type="button" onClick={() => { logoutAdmin(); router.replace("/admin/login"); }}
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+            className="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 hover:text-red-600 transition-colors">
             {t("action.logout")}
           </button>
-        )}
-        {!isAdminAuthenticated && (
+        ) : (
           <Link href="/admin/login" className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100">
             {t("header.adminLogin")}
           </Link>
