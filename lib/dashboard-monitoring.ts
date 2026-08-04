@@ -1,5 +1,5 @@
 import type { MaterialInventory } from "@/types/materials";
-import type { Material, ProductionLine } from "@/types/master-data";
+import type { Material, Product, ProductionLine } from "@/types/master-data";
 import type { ProductionPlan, ProductionResult, WorkOrder, FinishedGoodsLot } from "@/types/production";
 import type { DefectHistory, InspectionQueueItem } from "@/types/quality";
 import type { HourlyMonitoringPoint, LineProgressItem, MonitoringKpi, MonitoringLevel, ProductionLineRuntimeStatus } from "@/types/dashboard";
@@ -39,6 +39,7 @@ export function buildRealtimeMonitoring(input: {
   queue: InspectionQueueItem[];
   inventories: MaterialInventory[];
   materials: Material[];
+  products?: Product[];
   productionLines: ProductionLine[];
   now?: Date;
 }) {
@@ -75,9 +76,18 @@ export function buildRealtimeMonitoring(input: {
     else if (orders.some((item) => item.workStatus === "PAUSED" || item.workStatus === "CANCELLED")) status = "STOPPED";
     else if (orders.some((item) => item.workStatus === "IN_PROGRESS")) status = "RUNNING";
     const latest = [...orders.map((item) => item.actualEndTime || item.actualStartTime || `${item.plannedDate} ${item.startTime}`), ...results.map((item) => item.actualEndTime)].filter(Boolean).sort().at(-1);
+    const inProgressOrder = orders.find((item) => item.workStatus === "IN_PROGRESS");
+    const targetCode = inProgressOrder?.productCode ?? plans[0]?.productCode;
+    const targetName = inProgressOrder?.productName ?? plans[0]?.productName;
+    const matchedProduct = input.products?.find(
+      (p) => (targetCode && p.code === targetCode) || (targetName && p.name === targetName)
+    );
+
     return {
       lineName: line.name,
-      productName: orders.find((item) => item.workStatus === "IN_PROGRESS")?.productName ?? plans[0]?.productName ?? "-",
+      lineNameJa: line.nameJa ?? null,
+      productName: matchedProduct?.name ?? targetName ?? "-",
+      productNameJa: matchedProduct?.nameJa ?? null,
       planQuantity: planQty,
       productionQuantity: productionQty,
       achievementRate: rate(productionQty, planQty),

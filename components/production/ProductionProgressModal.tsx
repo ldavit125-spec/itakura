@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import type { WorkOrder } from "@/types/production";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 현재 생산량 모니터링 / 입력 모달 컴포넌트
@@ -19,6 +21,7 @@ export default function ProductionProgressModal({
   onSubmit,
 }: ProductionProgressModalProps) {
   const [currentQty, setCurrentQty] = useState<number | "">(0);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     if (isOpen && item) {
@@ -46,7 +49,7 @@ export default function ProductionProgressModal({
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden border border-gray-100 my-8">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div>
-            <h3 className="text-base font-bold text-gray-900">현재 생산 수량 입력</h3>
+            <h3 className="text-base font-bold text-gray-900">{t("production.progress.reportResult")}</h3>
             <p className="text-xs text-gray-500 font-mono mt-0.5">{item.workOrderNo}</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
@@ -59,18 +62,18 @@ export default function ProductionProgressModal({
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-2">
             <div className="flex justify-between text-xs text-gray-600">
-              <span>제품: <strong>{item.productName}</strong></span>
-              <span>생산라인: <strong>{item.productionLine}</strong></span>
+              <span>{t("master.field.productName")}: <strong>{localizedName({ locale: language, ko: item.productName, ja: item.productNameJa })}</strong></span>
+              <span>{t("master.tab.lines")}: <strong>{localizedName({ locale: language, ko: item.productionLine, ja: item.lineNameJa })}</strong></span>
             </div>
             <div className="flex justify-between text-xs text-gray-600">
-              <span>지시 수량: <strong>{item.orderedQuantity.toLocaleString()} {item.unit}</strong></span>
+              <span>{t("production.workOrder.instructedQty")}: <strong>{item.orderedQuantity.toLocaleString()} {localizedName({ locale: language, ko: item.unit })}</strong></span>
               <span>예정 시간: <strong>{item.startTime} ~ {item.endTime}</strong></span>
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">
-              현재 누적 생산량 ({item.unit}) <span className="text-red-500">*</span>
+              현재 누적 생산량 ({localizedName({ locale: language, ko: item.unit })}) <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -103,13 +106,13 @@ export default function ProductionProgressModal({
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
             >
-              취소
+              {t("action.cancel")}
             </button>
             <button
               type="submit"
               className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
             >
-              수량 업데이트
+              {t("action.save")}
             </button>
           </div>
         </form>

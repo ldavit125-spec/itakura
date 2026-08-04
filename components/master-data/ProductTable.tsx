@@ -5,6 +5,7 @@ import type { Product, StatusFilter } from "@/types/master-data";
 import { PRODUCT_CATEGORY_LABELS } from "@/types/master-data";
 import StatusBadge from "@/components/master-data/StatusBadge";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 제품 관리 테이블
@@ -25,7 +26,7 @@ export default function ProductTable({
   onEdit,
   onToggleStatus,
 }: ProductTableProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [page, setPage] = useState(1);
@@ -119,10 +120,10 @@ export default function ProductTable({
               paginated.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-mono text-xs text-gray-600">{item.code}</td>
-                  <td className="px-4 py-3 font-medium text-gray-900">{item.name}</td>
-                  <td className="px-4 py-3 text-gray-600">{PRODUCT_CATEGORY_LABELS[item.category] ? t(PRODUCT_CATEGORY_LABELS[item.category]) : item.category}</td>
-                  <td className="px-4 py-3 text-gray-600">{item.unit}</td>
-                  <td className="px-4 py-3 text-gray-600">{item.defaultLine}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900">{localizedName({ locale: language, ko: item.name, ja: item.nameJa })}</td>
+                  <td className="px-4 py-3 text-gray-600">{localizedName({ locale: language, ko: PRODUCT_CATEGORY_LABELS[item.category] ? t(PRODUCT_CATEGORY_LABELS[item.category]) : item.category, ja: item.categoryJa })}</td>
+                  <td className="px-4 py-3 text-gray-600">{localizedName({ locale: language, ko: item.unit })}</td>
+                  <td className="px-4 py-3 text-gray-600">{localizedName({ locale: language, ko: item.defaultLine })}</td>
                   <td className="px-4 py-3 text-center whitespace-nowrap">
                     <StatusBadge status={item.status} />
                   </td>

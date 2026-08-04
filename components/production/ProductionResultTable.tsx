@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import type { ProductionResult } from "@/types/production";
 import { ResultStatusBadge } from "./ProductionStatusBadge";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 생산실적 목록 테이블 컴포넌트
@@ -22,20 +24,22 @@ export default function ProductionResultTable({
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
+  const { t, language } = useLanguage();
 
   const filteredData = useMemo(() => {
     return results.filter((r) => {
+      const localizedProd = localizedName({ locale: language, ko: r.productName, ja: r.productNameJa });
       if (
         searchTerm &&
         !r.resultNo.toLowerCase().includes(searchTerm.toLowerCase()) &&
         !r.workOrderNo.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !r.productName.toLowerCase().includes(searchTerm.toLowerCase())
+        !localizedProd.toLowerCase().includes(searchTerm.toLowerCase())
       ) {
         return false;
       }
       return true;
     });
-  }, [results, searchTerm]);
+  }, [results, searchTerm, language]);
 
   const totalPages = Math.ceil(filteredData.length / pageSize) || 1;
   const paginatedData = useMemo(() => {
@@ -50,7 +54,7 @@ export default function ProductionResultTable({
         <div className="relative flex-1 max-w-md">
           <input
             type="text"
-            placeholder="실적번호, 작업지시번호, 제품명 검색..."
+            placeholder={t("production.result.searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -75,7 +79,7 @@ export default function ProductionResultTable({
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          <span>생산실적 등록</span>
+          <span>{t("production.result.new")}</span>
         </button>
       </div>
 
@@ -84,28 +88,28 @@ export default function ProductionResultTable({
         <table className="w-full text-sm text-left text-gray-700 min-w-[1100px]">
           <thead className="text-xs uppercase bg-gray-50 text-gray-500 border-b border-gray-200">
             <tr>
-              <th className="px-4 py-3 font-semibold">실적 번호</th>
-              <th className="px-4 py-3 font-semibold">작업지시 번호</th>
-              <th className="px-4 py-3 font-semibold">생산일</th>
-              <th className="px-4 py-3 font-semibold">제품명</th>
-              <th className="px-4 py-3 font-semibold">생산라인</th>
-              <th className="px-4 py-3 font-semibold text-right">지시 수량</th>
-              <th className="px-4 py-3 font-semibold text-right">총 생산량</th>
-              <th className="px-4 py-3 font-semibold text-right text-green-700">양품 수량</th>
-              <th className="px-4 py-3 font-semibold text-right text-red-600">불량 수량</th>
-              <th className="px-4 py-3 font-semibold text-right text-amber-700">재작업 수량</th>
-              <th className="px-4 py-3 font-semibold text-right">달성률</th>
-              <th className="px-4 py-3 font-semibold text-right">불량률</th>
-              <th className="px-4 py-3 font-semibold">담당자</th>
-              <th className="px-4 py-3 font-semibold text-center">실적 상태</th>
-              <th className="px-4 py-3 font-semibold text-center">작업</th>
+              <th className="px-4 py-3 font-semibold">{t("production.result.number")}</th>
+              <th className="px-4 py-3 font-semibold">{t("production.workOrder.number")}</th>
+              <th className="px-4 py-3 font-semibold">{t("production.fgLot.manufactureDate")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.field.productName")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.tab.lines")}</th>
+              <th className="px-4 py-3 font-semibold text-right">{t("production.workOrder.instructedQty")}</th>
+              <th className="px-4 py-3 font-semibold text-right">{t("production.result.totalQty")}</th>
+              <th className="px-4 py-3 font-semibold text-right text-green-700">{t("production.result.goodQty")}</th>
+              <th className="px-4 py-3 font-semibold text-right text-red-600">{t("production.result.defectQty")}</th>
+              <th className="px-4 py-3 font-semibold text-right text-amber-700">{t("production.result.reworkQty")}</th>
+              <th className="px-4 py-3 font-semibold text-right">{t("production.plan.achievementRate")}</th>
+              <th className="px-4 py-3 font-semibold text-right">{t("production.result.defectRate")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.field.manager")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("production.plan.status")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("production.plan.status")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {paginatedData.length === 0 ? (
               <tr>
                 <td colSpan={15} className="px-4 py-12 text-center text-gray-500">
-                  등록된 생산실적이 없습니다.
+                  {t("production.result.empty")}
                 </td>
               </tr>
             ) : (
@@ -117,8 +121,12 @@ export default function ProductionResultTable({
                     <td className="px-4 py-3 font-mono font-bold text-gray-900">{item.resultNo}</td>
                     <td className="px-4 py-3 font-mono text-xs text-gray-600">{item.workOrderNo}</td>
                     <td className="px-4 py-3 whitespace-nowrap">{item.productionDate}</td>
-                    <td className="px-4 py-3 font-semibold text-gray-900">{item.productName}</td>
-                    <td className="px-4 py-3 font-medium text-gray-800">{item.productionLine}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900">
+                      {localizedName({ locale: language, ko: item.productName, ja: item.productNameJa })}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-gray-800">
+                      {localizedName({ locale: language, ko: item.productionLine, ja: item.lineNameJa })}
+                    </td>
                     <td className="px-4 py-3 text-right font-medium text-gray-700">
                       {item.orderedQuantity.toLocaleString()}
                     </td>
@@ -140,7 +148,7 @@ export default function ProductionResultTable({
                     <td className="px-4 py-3 text-right font-semibold text-red-500">
                       {item.defectRate}%
                     </td>
-                    <td className="px-4 py-3 text-gray-800">{item.handler}</td>
+                    <td className="px-4 py-3 text-gray-800">{localizedName({ locale: language, ko: item.handler })}</td>
                     <td className="px-4 py-3 text-center">
                       <ResultStatusBadge status={item.resultStatus} />
                     </td>
@@ -150,7 +158,7 @@ export default function ProductionResultTable({
                           onClick={() => onOpenDetail(item)}
                           className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
                         >
-                          상세
+                          {t("action.detail")}
                         </button>
                         {!isConfirmed && (
                           <button
@@ -158,7 +166,7 @@ export default function ProductionResultTable({
                             className="px-2 py-1 text-xs font-bold text-white bg-green-600 rounded hover:bg-green-700 shadow-sm"
                             title="실적 확정 시 완제품 LOT가 자동 생성됩니다."
                           >
-                            실적 확정
+                            {t("action.confirm")}
                           </button>
                         )}
                       </div>
@@ -183,7 +191,7 @@ export default function ProductionResultTable({
               disabled={currentPage === 1}
               className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              이전
+              {t("action.prev")}
             </button>
             <span className="px-3 py-1 font-semibold">{currentPage} / {totalPages}</span>
             <button
@@ -191,7 +199,7 @@ export default function ProductionResultTable({
               disabled={currentPage === totalPages}
               className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              다음
+              {t("action.next")}
             </button>
           </div>
         </div>

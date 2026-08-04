@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from "react";
 import type { ProductionPlan, PlanStatus, PlanPriority } from "@/types/production";
 import { useMasterData } from "@/context/MasterDataContext";
-import { PLAN_STATUS_OPTIONS, PLAN_PRIORITY_OPTIONS } from "@/constants/production-labels";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
+import DateInput from "@/components/ui/DateInput";
 import {
   PlanStatusBadge,
   PlanPriorityBadge,
@@ -32,6 +34,7 @@ export default function ProductionPlanTable({
   onCreateWorkOrder,
 }: ProductionPlanTableProps) {
   const { productionLines } = useMasterData();
+  const { t, language } = useLanguage();
   const [dateSearch, setDateSearch] = useState("");
   const [productSearch, setProductSearch] = useState("");
   const [lineFilter, setLineFilter] = useState("ALL");
@@ -47,9 +50,10 @@ export default function ProductionPlanTable({
       if (dateSearch && !item.plannedDate.includes(dateSearch)) return false;
 
       // 제품 검색
+      const localizedProd = localizedName({ locale: language, ko: item.productName, ja: item.productNameJa });
       if (
         productSearch &&
-        !item.productName.toLowerCase().includes(productSearch.toLowerCase()) &&
+        !localizedProd.toLowerCase().includes(productSearch.toLowerCase()) &&
         !item.productCode.toLowerCase().includes(productSearch.toLowerCase()) &&
         !item.planNo.toLowerCase().includes(productSearch.toLowerCase())
       ) {
@@ -67,7 +71,7 @@ export default function ProductionPlanTable({
 
       return true;
     });
-  }, [plans, dateSearch, productSearch, lineFilter, statusFilter, priorityFilter]);
+  }, [plans, dateSearch, productSearch, lineFilter, statusFilter, priorityFilter, language]);
 
   const totalPages = Math.ceil(filteredData.length / pageSize) || 1;
   const paginatedData = useMemo(() => {
@@ -90,22 +94,23 @@ export default function ProductionPlanTable({
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
         <div className="flex flex-wrap items-center gap-2.5 flex-1">
           {/* 생산 예정일 */}
-          <input
-            type="date"
-            value={dateSearch}
-            onChange={(e) => {
-              setDateSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            title="생산 예정일 검색"
-          />
+          <div className="min-w-[140px]">
+            <DateInput
+              value={dateSearch}
+              onChange={(e) => {
+                setDateSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              title={t("production.plan.date")}
+            />
+          </div>
 
           {/* 제품/코드/계획번호 검색 */}
           <div className="relative flex-1 min-w-[180px]">
             <input
               type="text"
-              placeholder="제품명, 제품코드, 계획번호 검색..."
+              placeholder={t("production.plan.searchPlaceholder")}
               value={productSearch}
               onChange={(e) => {
                 setProductSearch(e.target.value);
@@ -132,10 +137,10 @@ export default function ProductionPlanTable({
             }}
             className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           >
-            <option value="ALL">생산라인 전체</option>
+            <option value="ALL">{t("production.plan.lineAll")}</option>
             {productionLines.map((line) => (
               <option key={line.id} value={line.name}>
-                {line.name}
+                {localizedName({ locale: language, ko: line.name, ja: line.nameJa })}
               </option>
             ))}
           </select>
@@ -149,11 +154,12 @@ export default function ProductionPlanTable({
             }}
             className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           >
-            {PLAN_STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
+            <option value="ALL">{t("production.plan.statusAll")}</option>
+            <option value="DRAFT">{t("production.status.plan.draft")}</option>
+            <option value="CONFIRMED">{t("production.status.plan.confirmed")}</option>
+            <option value="IN_PROGRESS">{t("production.status.plan.inProgress")}</option>
+            <option value="COMPLETED">{t("production.status.plan.completed")}</option>
+            <option value="CANCELLED">{t("production.status.plan.cancelled")}</option>
           </select>
 
           {/* 우선순위 필터 */}
@@ -165,20 +171,20 @@ export default function ProductionPlanTable({
             }}
             className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           >
-            {PLAN_PRIORITY_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
+            <option value="ALL">{t("production.plan.priorityAll")}</option>
+            <option value="URGENT">{t("production.priority.urgent")}</option>
+            <option value="HIGH">{t("production.priority.high")}</option>
+            <option value="NORMAL">{t("production.priority.normal")}</option>
+            <option value="LOW">{t("production.priority.low")}</option>
           </select>
 
           {/* 초기화 버튼 */}
           <button
             onClick={resetFilters}
             className="px-2.5 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-            title="필터 초기화"
+            title={t("action.reset")}
           >
-            초기화
+            {t("action.reset")}
           </button>
         </div>
 
@@ -190,7 +196,7 @@ export default function ProductionPlanTable({
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          <span>신규 생산계획 등록</span>
+          <span>{t("production.plan.new")}</span>
         </button>
       </div>
 
@@ -199,25 +205,25 @@ export default function ProductionPlanTable({
         <table className="w-full text-sm text-left text-gray-700 min-w-[1050px]">
           <thead className="text-xs uppercase bg-gray-50 text-gray-500 border-b border-gray-200">
             <tr>
-              <th className="px-4 py-3 font-semibold">생산계획 번호</th>
-              <th className="px-4 py-3 font-semibold">생산 예정일</th>
-              <th className="px-4 py-3 font-semibold">제품 코드</th>
-              <th className="px-4 py-3 font-semibold">제품명</th>
-              <th className="px-4 py-3 font-semibold">생산라인</th>
-              <th className="px-4 py-3 font-semibold text-right">계획 수량</th>
-              <th className="px-4 py-3 font-semibold">단위</th>
-              <th className="px-4 py-3 font-semibold">계획 시간</th>
-              <th className="px-4 py-3 font-semibold text-center">우선순위</th>
-              <th className="px-4 py-3 font-semibold text-center">계획 상태</th>
-              <th className="px-4 py-3 font-semibold text-center">자재 준비</th>
-              <th className="px-4 py-3 font-semibold text-center">작업</th>
+              <th className="px-4 py-3 font-semibold">{t("production.plan.number")}</th>
+              <th className="px-4 py-3 font-semibold">{t("production.plan.date")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.field.productCode")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.field.productName")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.tab.lines")}</th>
+              <th className="px-4 py-3 font-semibold text-right">{t("production.plan.quantity")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.field.unit")}</th>
+              <th className="px-4 py-3 font-semibold">{t("production.plan.date")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("production.plan.priority")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("production.plan.status")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("production.plan.materialReadiness")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("master.field.manager")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {paginatedData.length === 0 ? (
               <tr>
                 <td colSpan={12} className="px-4 py-12 text-center text-gray-500">
-                  등록된 생산계획이 없습니다.
+                  {t("production.plan.empty")}
                 </td>
               </tr>
             ) : (
@@ -238,12 +244,18 @@ export default function ProductionPlanTable({
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">{item.plannedDate}</td>
                     <td className="px-4 py-3 font-mono text-gray-600">{item.productCode}</td>
-                    <td className="px-4 py-3 font-semibold text-gray-900">{item.productName}</td>
-                    <td className="px-4 py-3 font-medium text-gray-800">{item.productionLine}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900">
+                      {localizedName({ locale: language, ko: item.productName, ja: item.productNameJa })}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-gray-800">
+                      {localizedName({ locale: language, ko: item.productionLine, ja: item.lineNameJa })}
+                    </td>
                     <td className="px-4 py-3 text-right font-extrabold text-blue-600">
                       {item.plannedQuantity.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-gray-500">{item.unit}</td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {localizedName({ locale: language, ko: item.unit })}
+                    </td>
                     <td className="px-4 py-3 font-mono text-xs whitespace-nowrap text-gray-700">
                       {item.startTime} ~ {item.endTime}
                     </td>
@@ -262,7 +274,7 @@ export default function ProductionPlanTable({
                           onClick={() => onOpenDetail(item)}
                           className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
                         >
-                          상세
+                          {t("action.detail")}
                         </button>
                         {isDraft && (
                           <>
@@ -270,13 +282,13 @@ export default function ProductionPlanTable({
                               onClick={() => onOpenEdit(item)}
                               className="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
                             >
-                              수정
+                              {t("action.edit")}
                             </button>
                             <button
                               onClick={() => onConfirmPlan(item.id)}
                               className="px-2 py-1 text-xs font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors"
                             >
-                              확정
+                              {t("action.confirm")}
                             </button>
                           </>
                         )}
@@ -285,7 +297,7 @@ export default function ProductionPlanTable({
                             onClick={() => onCreateWorkOrder(item)}
                             className="px-2 py-1 text-xs font-bold text-white bg-emerald-600 rounded hover:bg-emerald-700 transition-colors shadow-sm"
                           >
-                            지시 발행
+                            {t("action.issueOrder")}
                           </button>
                         )}
                         {!isCancelled && item.planStatus !== "COMPLETED" && (
@@ -293,7 +305,7 @@ export default function ProductionPlanTable({
                             onClick={() => onCancelPlan(item.id)}
                             className="px-2 py-1 text-xs font-medium text-red-700 bg-red-50 rounded hover:bg-red-100 transition-colors"
                           >
-                            취소
+                            {t("action.cancel")}
                           </button>
                         )}
                       </div>
@@ -318,7 +330,7 @@ export default function ProductionPlanTable({
               disabled={currentPage === 1}
               className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              이전
+              {t("action.prev")}
             </button>
             <span className="px-3 py-1 font-semibold">{currentPage} / {totalPages}</span>
             <button
@@ -326,7 +338,7 @@ export default function ProductionPlanTable({
               disabled={currentPage === totalPages}
               className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              다음
+              {t("action.next")}
             </button>
           </div>
         </div>

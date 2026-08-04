@@ -1,12 +1,16 @@
+"use client";
+
+import { useLanguage } from "@/context/LanguageContext";
 import type { DefectProcessingStatus } from "@/types/quality";
 
-export const DEFECT_STATUS_LABELS: Record<DefectProcessingStatus, string> = {
-  INVESTIGATING: "조사중",
-  CAUSE_ANALYZED: "원인 분석 완료",
-  REWORK: "재작업",
-  DISCARDED: "폐기",
-  SHIPMENT_HOLD: "출하 보류",
-  COMPLETED: "처리 완료",
+// 불량 처리 상태 코드 → 번역 키 매핑
+const DEFECT_STATUS_KEYS: Record<DefectProcessingStatus, string> = {
+  INVESTIGATING: "quality.defectStatus.investigating",
+  CAUSE_ANALYZED: "quality.defectStatus.causeAnalyzed",
+  REWORK: "quality.defectStatus.rework",
+  DISCARDED: "quality.defectStatus.discarded",
+  SHIPMENT_HOLD: "quality.defectStatus.shipmentHold",
+  COMPLETED: "quality.defectStatus.completed",
 };
 
 const COLORS: Record<DefectProcessingStatus, string> = {
@@ -19,5 +23,10 @@ const COLORS: Record<DefectProcessingStatus, string> = {
 };
 
 export default function DefectStatusBadge({ status }: { status: DefectProcessingStatus }) {
-  return <span className={`inline-flex whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-bold ${COLORS[status]}`}>{DEFECT_STATUS_LABELS[status]}</span>;
+  const { t } = useLanguage();
+  return (
+    <span className={`inline-flex whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-bold ${COLORS[status]}`}>
+      {t(DEFECT_STATUS_KEYS[status])}
+    </span>
+  );
 }

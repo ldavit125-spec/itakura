@@ -1,6 +1,8 @@
 import React from "react";
 import type { FinishedGoodsLot } from "@/types/production";
 import { QualityStatusBadge } from "./ProductionStatusBadge";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 완제품 LOT 상세 모달 컴포넌트
@@ -17,6 +19,8 @@ export default function FinishedGoodsLotDetailModal({
   item,
   onClose,
 }: FinishedGoodsLotDetailModalProps) {
+  const { t, language } = useLanguage();
+
   if (!isOpen || !item) return null;
 
   return (
@@ -37,56 +41,56 @@ export default function FinishedGoodsLotDetailModal({
         <div className="p-6 space-y-4 text-sm">
           <div className="grid grid-cols-2 gap-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100 text-center">
             <div>
-              <p className="text-xs font-semibold text-gray-500">총 생산량</p>
+              <p className="text-xs font-semibold text-gray-500">{t("production.result.totalQty")}</p>
               <p className="text-xl font-bold text-gray-900 mt-1">
-                {item.totalQuantity.toLocaleString()} <span className="text-xs font-normal text-gray-500">{item.unit}</span>
+                {item.totalQuantity.toLocaleString()} <span className="text-xs font-normal text-gray-500">{localizedName({ locale: language, ko: item.unit })}</span>
               </p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-green-700">양품 수량</p>
+              <p className="text-xs font-semibold text-green-700">{t("production.result.goodQty")}</p>
               <p className="text-xl font-bold text-green-600 mt-1">
-                {item.goodQuantity.toLocaleString()} <span className="text-xs font-normal text-gray-500">{item.unit}</span>
+                {item.goodQuantity.toLocaleString()} <span className="text-xs font-normal text-gray-500">{localizedName({ locale: language, ko: item.unit })}</span>
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-y-3 gap-x-4 border-t border-b border-gray-100 py-3">
             <div>
-              <span className="text-gray-500 font-medium">생산실적 번호:</span>
+              <span className="text-gray-500 font-medium">{t("production.result.number")}:</span>
               <span className="ml-2 font-mono text-gray-900 font-semibold">{item.resultNo}</span>
             </div>
             <div>
-              <span className="text-gray-500 font-medium">작업지시 번호:</span>
+              <span className="text-gray-500 font-medium">{t("production.workOrder.number")}:</span>
               <span className="ml-2 font-mono text-gray-900">{item.workOrderNo}</span>
             </div>
             <div>
-              <span className="text-gray-500 font-medium">생산일:</span>
+              <span className="text-gray-500 font-medium">{t("production.fgLot.manufactureDate")}:</span>
               <span className="ml-2 font-semibold text-gray-900">{item.productionDate}</span>
             </div>
             <div>
-              <span className="text-gray-500 font-medium">유통기한:</span>
+              <span className="text-gray-500 font-medium">{t("production.fgLot.expirationDate")}:</span>
               <span className="ml-2 font-mono font-bold text-amber-700">{item.expirationDate}</span>
             </div>
             <div>
-              <span className="text-gray-500 font-medium">제품:</span>
+              <span className="text-gray-500 font-medium">{t("master.field.productName")}:</span>
               <span className="ml-2 font-semibold text-gray-900">
-                [{item.productCode}] {item.productName}
+                [{item.productCode}] {localizedName({ locale: language, ko: item.productName, ja: item.productNameJa })}
               </span>
             </div>
             <div>
-              <span className="text-gray-500 font-medium">생산라인:</span>
-              <span className="ml-2 text-gray-900 font-medium">{item.productionLine}</span>
+              <span className="text-gray-500 font-medium">{t("master.tab.lines")}:</span>
+              <span className="ml-2 text-gray-900 font-medium">{localizedName({ locale: language, ko: item.productionLine, ja: item.lineNameJa })}</span>
             </div>
             <div>
-              <span className="text-gray-500 font-medium">품질 상태:</span>
+              <span className="text-gray-500 font-medium">{t("production.result.qualityStatus")}:</span>
               <span className="ml-2 inline-block">
                 <QualityStatusBadge status={item.qualityStatus} />
               </span>
             </div>
             <div>
-              <span className="text-gray-500 font-medium">출고 가능 여부:</span>
+              <span className="text-gray-500 font-medium">{t("production.fgLot.shipmentStatus")}:</span>
               <span className="ml-2 font-semibold text-gray-900">
-                {item.isReleaseAvailable ? "출고 가능" : "출고 불가 (검사 대기)"}
+                {item.isReleaseAvailable ? localizedName({ locale: language, ko: "출고 가능", ja: "出荷可能" }) : localizedName({ locale: language, ko: "출고 불가 (검사 대기)", ja: "出荷不可 (検査待機)" })}
               </span>
             </div>
           </div>
@@ -100,7 +104,7 @@ export default function FinishedGoodsLotDetailModal({
               onClick={onClose}
               className="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
             >
-              닫기
+              {t("action.close")}
             </button>
           </div>
         </div>

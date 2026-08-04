@@ -82,7 +82,9 @@ export interface Product {
   id: string;
   code: string;
   name: string;
+  nameJa?: string | null;
   category: ProductCategory;
+  categoryJa?: string | null;
   unit: string;
   defaultLine: string;
   status: ActiveStatus;
@@ -92,6 +94,7 @@ export interface Material {
   id: string;
   code: string;
   name: string;
+  nameJa?: string | null;
   category: MaterialCategory;
   unit: string;
   safetyStock: number;
@@ -103,6 +106,7 @@ export interface Supplier {
   id: string;
   code: string;
   name: string;
+  nameJa?: string | null;
   type: SupplierType;
   contactPerson: string;
   phone: string;
@@ -113,6 +117,7 @@ export interface ProductionLine {
   id: string;
   code: string;
   name: string;
+  nameJa?: string | null;
   process: LineProcess;
   maxCapacity: number;
   unit: string;

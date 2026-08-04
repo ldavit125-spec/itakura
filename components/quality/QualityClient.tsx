@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useQuality } from "@/context/QualityContext";
+import { useLanguage } from "@/context/LanguageContext";
 import type {
   InspectionQueueItem,
   IncomingInspection,
@@ -50,6 +51,7 @@ import CorrectiveActionCreateModal from "./CorrectiveActionCreateModal";
 // ============================================================
 
 export default function QualityClient() {
+  const { t } = useLanguage();
   const { hasPermission, canAccessProductionLine } = useAdmin();
   const {
     activeTab,
@@ -106,8 +108,8 @@ export default function QualityClient() {
   const [defectCreateOpen, setDefectCreateOpen] = useState(false);
   const [correctiveCreateOpen, setCorrectiveCreateOpen] = useState(false);
 
-  if (qualityLoading) return <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500">품질 데이터를 불러오는 중입니다...</div>;
-  if (qualityError) return <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center"><p className="mb-4 text-red-700">{qualityError}</p><button onClick={() => void refreshQuality()} className="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white">다시 시도</button></div>;
+  if (qualityLoading) return <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500">{t("quality.loading")}</div>;
+  if (qualityError) return <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center"><p className="mb-4 text-red-700">{qualityError}</p><button onClick={() => void refreshQuality()} className="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white">{t("quality.retry")}</button></div>;
 
   return (
     <div className="space-y-6">
@@ -136,7 +138,11 @@ export default function QualityClient() {
         {/* 탭 2: 원재료 입고검사 */}
         {activeTab === "results" && (
           <div className="flex gap-2 border-b border-gray-200 bg-gray-50 px-5 py-3">
-            {([["incoming", "원재료 검사"], ["process", "공정 검사"], ["finished", "완제품 검사"]] as const).map(([value, label]) => (
+            {([
+              ["incoming", t("quality.tab.incoming")],
+              ["process", t("quality.tab.process")],
+              ["finished", t("quality.tab.finished")],
+            ] as const).map(([value, label]) => (
               <button key={value} onClick={() => setResultView(value)} className={`rounded-lg px-3 py-2 text-sm font-semibold ${resultView === value ? "bg-blue-600 text-white" : "border border-gray-200 bg-white text-gray-600"}`}>{label}</button>
             ))}
           </div>
@@ -170,7 +176,11 @@ export default function QualityClient() {
         {/* 탭 5: 부적합 관리 */}
         {activeTab === "defects" && (
           <div className="flex gap-2 border-b border-gray-200 bg-gray-50 px-5 py-3">
-            {([["history", "불량품 이력"], ["nonconformity", "부적합 관리"], ["corrective", "시정조치"]] as const).map(([value, label]) => (
+            {([
+              ["history", t("quality.tab.history")],
+              ["nonconformity", t("quality.tab.nonconformity")],
+              ["corrective", t("quality.tab.corrective")],
+            ] as const).map(([value, label]) => (
               <button key={value} onClick={() => setDefectView(value)} className={`rounded-lg px-3 py-2 text-sm font-semibold ${defectView === value ? "bg-red-600 text-white" : "border border-gray-200 bg-white text-gray-600"}`}>{label}</button>
             ))}
           </div>

@@ -108,9 +108,11 @@ export function ProductFormModal({
   const { t } = useLanguage();
   const [code, setCode] = useState(item?.code ?? "");
   const [name, setName] = useState(item?.name ?? "");
+  const [nameJa, setNameJa] = useState(item?.nameJa ?? "");
   const [category, setCategory] = useState<ProductCategory>(
     item?.category ?? "BREAD"
   );
+  const [categoryJa, setCategoryJa] = useState(item?.categoryJa ?? "");
   const [unit, setUnit] = useState(item?.unit ?? "개");
   const [defaultLine, setDefaultLine] = useState(item?.defaultLine ?? "");
   const [status, setStatus] = useState<ActiveStatus>(item?.status ?? "ACTIVE");
@@ -131,7 +133,16 @@ export function ProductFormModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    onSave({ code: code.trim(), name: name.trim(), category: category.trim() as ProductCategory, unit: unit.trim(), defaultLine: defaultLine.trim(), status });
+    onSave({
+      code: code.trim(),
+      name: name.trim(),
+      nameJa: nameJa.trim() || undefined,
+      category: category.trim() as ProductCategory,
+      categoryJa: categoryJa.trim() || undefined,
+      unit: unit.trim(),
+      defaultLine: defaultLine.trim(),
+      status,
+    });
   };
 
   return (
@@ -151,7 +162,7 @@ export function ProductFormModal({
               className={errors.code ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="master.field.productName" required error={errors.name}>
+          <FormField label="master.field.productNameKo" required error={errors.name}>
             <input
               id="product-form-name"
               type="text"
@@ -161,7 +172,18 @@ export function ProductFormModal({
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="master.field.productCategory" required error={errors.category}>
+          <FormField label="master.field.productNameJa">
+            <input
+              id="product-form-name-ja"
+              type="text"
+              value={nameJa}
+              onChange={(e) => setNameJa(e.target.value)}
+              placeholder={t("master.placeholder.productNameJa")}
+              className={INPUT_CLASS}
+            />
+            <p className="mt-1 text-xs text-gray-400">{t("master.hint.fallbackName")}</p>
+          </FormField>
+          <FormField label="master.field.productCategoryKo" required error={errors.category}>
             <input
               id="product-form-category"
               type="text"
@@ -169,6 +191,16 @@ export function ProductFormModal({
               onChange={(e) => setCategory(e.target.value as ProductCategory)}
               placeholder={t("master.placeholder.productCategory")}
               className={errors.category ? INPUT_ERROR_CLASS : INPUT_CLASS}
+            />
+          </FormField>
+          <FormField label="master.field.productCategoryJa">
+            <input
+              id="product-form-category-ja"
+              type="text"
+              value={categoryJa}
+              onChange={(e) => setCategoryJa(e.target.value)}
+              placeholder={t("master.placeholder.productCategoryJa")}
+              className={INPUT_CLASS}
             />
           </FormField>
           <FormField label="common.unit" required error={errors.unit}>
@@ -230,6 +262,7 @@ export function MaterialFormModal({
   const { t } = useLanguage();
   const [code, setCode] = useState(item?.code ?? "");
   const [name, setName] = useState(item?.name ?? "");
+  const [nameJa, setNameJa] = useState(item?.nameJa ?? "");
   const [category, setCategory] = useState<MaterialCategory>(
     item?.category ?? "MAIN"
   );
@@ -263,6 +296,7 @@ export function MaterialFormModal({
     onSave({
       code: code.trim(),
       name: name.trim(),
+      nameJa: nameJa.trim() || undefined,
       category,
       unit: unit.trim(),
       safetyStock: Number(safetyStock),
@@ -297,6 +331,19 @@ export function MaterialFormModal({
               placeholder={t("master.placeholder.materialName")}
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
+          </FormField>
+          <FormField label="master.field.materialNameJa">
+            <input
+              id="material-form-name-ja"
+              type="text"
+              value={nameJa}
+              onChange={(e) => setNameJa(e.target.value)}
+              placeholder={t("master.placeholder.materialNameJa")}
+              className={INPUT_CLASS}
+            />
+            <p className="mt-1 text-[11px] text-gray-400">
+              {t("master.hint.fallbackName")}
+            </p>
           </FormField>
           <FormField label="master.field.materialCategory" required>
             <select
@@ -383,6 +430,7 @@ export function SupplierFormModal({
   const { t } = useLanguage();
   const [code, setCode] = useState(item?.code ?? "");
   const [name, setName] = useState(item?.name ?? "");
+  const [nameJa, setNameJa] = useState(item?.nameJa ?? "");
   const [type, setType] = useState<SupplierType>(item?.type ?? "SUPPLIER");
   const [contactPerson, setContactPerson] = useState(item?.contactPerson ?? "");
   const [phone, setPhone] = useState(item?.phone ?? "");
@@ -405,6 +453,7 @@ export function SupplierFormModal({
     onSave({
       code: code.trim(),
       name: name.trim(),
+      nameJa: nameJa.trim() || undefined,
       type,
       contactPerson: contactPerson.trim(),
       phone: phone.trim(),
@@ -438,6 +487,19 @@ export function SupplierFormModal({
               placeholder={t("master.placeholder.supplierName")}
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
+          </FormField>
+          <FormField label="master.field.supplierNameJa">
+            <input
+              id="supplier-form-name-ja"
+              type="text"
+              value={nameJa}
+              onChange={(e) => setNameJa(e.target.value)}
+              placeholder={t("master.placeholder.supplierNameJa")}
+              className={INPUT_CLASS}
+            />
+            <p className="mt-1 text-[11px] text-gray-400">
+              {t("master.hint.fallbackName")}
+            </p>
           </FormField>
           <FormField label="master.field.supplierType" required>
             <select
@@ -512,6 +574,7 @@ export function ProductionLineFormModal({
   const { t } = useLanguage();
   const [code, setCode] = useState(item?.code ?? "");
   const [name, setName] = useState(item?.name ?? "");
+  const [nameJa, setNameJa] = useState(item?.nameJa ?? "");
   const [process, setProcess] = useState<LineProcess>(
     item?.process ?? "BREAD_PROCESS"
   );
@@ -543,6 +606,7 @@ export function ProductionLineFormModal({
     onSave({
       code: code.trim(),
       name: name.trim(),
+      nameJa: nameJa.trim() || undefined,
       process: process.trim() as LineProcess,
       maxCapacity: Number(maxCapacity),
       unit: unit.trim(),
@@ -567,7 +631,7 @@ export function ProductionLineFormModal({
               className={errors.code ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="master.field.lineName" required error={errors.name}>
+          <FormField label="master.field.lineNameKo" required error={errors.name}>
             <input
               id="line-form-name"
               type="text"
@@ -576,6 +640,17 @@ export function ProductionLineFormModal({
               placeholder={t("master.placeholder.lineName")}
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
+          </FormField>
+          <FormField label="master.field.lineNameJa">
+            <input
+              id="line-form-name-ja"
+              type="text"
+              value={nameJa}
+              onChange={(e) => setNameJa(e.target.value)}
+              placeholder={t("master.placeholder.lineNameJa")}
+              className={INPUT_CLASS}
+            />
+            <p className="mt-1 text-xs text-gray-400">{t("master.hint.fallbackName")}</p>
           </FormField>
           <FormField label="master.field.process" required error={errors.process}>
             <input

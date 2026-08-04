@@ -37,6 +37,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  useEffect(() => {
+    document.documentElement.lang = language === "ja" ? "ja" : "ko";
+  }, [language]);
+
   const setLanguage = useCallback((lang: Locale) => {
     setLanguageState(lang);
     window.localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);

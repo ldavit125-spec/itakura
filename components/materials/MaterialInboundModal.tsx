@@ -3,6 +3,9 @@ import type { MaterialInbound, InspectionStatus } from "@/types/materials";
 import { useMasterData } from "@/context/MasterDataContext";
 import { INSPECTION_STATUS_OPTIONS } from "@/constants/material-labels";
 import { InspectionStatusBadge, InboundStatusBadge } from "./MaterialStatusBadge";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
+import DateInput from "@/components/ui/DateInput";
 
 // ============================================================
 // 자재 입고 등록 / 수정 / 상세 모달 컴포넌트
@@ -27,6 +30,7 @@ export default function MaterialInboundModal({
   onUpdate,
   initialValues,
 }: MaterialInboundModalProps) {
+  const { t, language } = useLanguage();
   const { materials, suppliers } = useMasterData();
 
   const [inboundDate, setInboundDate] = useState("2026-07-31");
@@ -258,8 +262,7 @@ export default function MaterialInboundModal({
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
                   입고일 <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="date"
+                <DateInput
                   value={inboundDate}
                   onChange={(e) => setInboundDate(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -278,10 +281,10 @@ export default function MaterialInboundModal({
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                   required
                 >
-                  <option value="">-- 자재 선택 --</option>
+                  <option value="">{t("materials.modal.selectMaterial")}</option>
                   {materials.map((mat) => (
                     <option key={mat.id} value={mat.code}>
-                      [{mat.code}] {mat.name} ({mat.unit})
+                      [{mat.code}] {localizedName({ locale: language, ko: mat.name, ja: mat.nameJa })} ({localizedName({ locale: language, ko: mat.unit })})
                     </option>
                   ))}
                 </select>
@@ -290,7 +293,7 @@ export default function MaterialInboundModal({
               {/* 거래처 선택 */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  거래처 <span className="text-red-500">*</span>
+                  {t("master.field.supplierName")} <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={supplierName}
@@ -298,10 +301,10 @@ export default function MaterialInboundModal({
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                   required
                 >
-                  <option value="">-- 거래처 선택 --</option>
+                  <option value="">{t("materials.modal.selectSupplier")}</option>
                   {suppliers.map((sup) => (
                     <option key={sup.id} value={sup.name}>
-                      {sup.name} [{sup.code}]
+                      {localizedName({ locale: language, ko: sup.name, ja: sup.nameJa })} [{sup.code}]
                     </option>
                   ))}
                 </select>
@@ -338,8 +341,7 @@ export default function MaterialInboundModal({
               {/* 제조일 */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">제조일</label>
-                <input
-                  type="date"
+                <DateInput
                   value={manufactureDate}
                   onChange={(e) => setManufactureDate(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -351,8 +353,7 @@ export default function MaterialInboundModal({
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
                   유통기한 <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="date"
+                <DateInput
                   value={expirationDate}
                   onChange={(e) => setExpirationDate(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"

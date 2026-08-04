@@ -1,11 +1,6 @@
 import React, { useState, useMemo } from "react";
 import type { Nonconformity, NonconformityType, SeverityLevel, NonconformityStatus } from "@/types/quality";
-import {
-  NONCONFORMITY_TYPE_LABELS,
-  NONCONFORMITY_TYPE_OPTIONS,
-  SEVERITY_LEVEL_OPTIONS,
-  NONCONFORMITY_STATUS_OPTIONS,
-} from "@/constants/quality-labels";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   InspectionCategoryBadge,
   SeverityLevelBadge,
@@ -13,7 +8,7 @@ import {
 } from "./QualityStatusBadge";
 
 // ============================================================
-// 부적합 관리 목록 테이블 컴포넌트
+// 부적합 관리 목록 테이블 컴포넌트 (다국어 지원)
 // ============================================================
 
 interface NonconformityTableProps {
@@ -24,6 +19,54 @@ interface NonconformityTableProps {
   onRequestCA: (ncNo: string, handler: string) => void;
 }
 
+const NC_TYPE_OPTIONS: { value: NonconformityType | "ALL"; labelKey: string }[] = [
+  { value: "ALL", labelKey: "quality.ncType.all" },
+  { value: "MATERIAL_DEFECT", labelKey: "quality.ncType.materialDefect" },
+  { value: "PACKAGING_DAMAGE", labelKey: "quality.ncType.packagingDamage" },
+  { value: "FOREIGN_MATERIAL", labelKey: "quality.ncType.foreignMaterial" },
+  { value: "TEMPERATURE_DEVIATION", labelKey: "quality.ncType.temperatureDeviation" },
+  { value: "WEIGHT_DEVIATION", labelKey: "quality.ncType.weightDeviation" },
+  { value: "APPEARANCE_DEFECT", labelKey: "quality.ncType.appearanceDefect" },
+  { value: "SHAPE_DEFECT", labelKey: "quality.ncType.shapeDefect" },
+  { value: "BAKING_DEFECT", labelKey: "quality.ncType.bakingDefect" },
+  { value: "LABELING_ERROR", labelKey: "quality.ncType.labelingError" },
+  { value: "HYGIENE_ISSUE", labelKey: "quality.ncType.hygieneIssue" },
+  { value: "PROCESS_DEVIATION", labelKey: "quality.ncType.processDeviation" },
+  { value: "OTHER", labelKey: "quality.ncType.other" },
+];
+
+const NC_TYPE_LABEL_KEYS: Record<NonconformityType, string> = {
+  MATERIAL_DEFECT: "quality.ncType.materialDefect",
+  PACKAGING_DAMAGE: "quality.ncType.packagingDamage",
+  FOREIGN_MATERIAL: "quality.ncType.foreignMaterial",
+  TEMPERATURE_DEVIATION: "quality.ncType.temperatureDeviation",
+  WEIGHT_DEVIATION: "quality.ncType.weightDeviation",
+  APPEARANCE_DEFECT: "quality.ncType.appearanceDefect",
+  SHAPE_DEFECT: "quality.ncType.shapeDefect",
+  BAKING_DEFECT: "quality.ncType.bakingDefect",
+  LABELING_ERROR: "quality.ncType.labelingError",
+  HYGIENE_ISSUE: "quality.ncType.hygieneIssue",
+  PROCESS_DEVIATION: "quality.ncType.processDeviation",
+  OTHER: "quality.ncType.other",
+};
+
+const SEVERITY_OPTIONS: { value: SeverityLevel | "ALL"; labelKey: string }[] = [
+  { value: "ALL", labelKey: "quality.severity.all" },
+  { value: "CRITICAL", labelKey: "quality.severity.critical" },
+  { value: "MAJOR", labelKey: "quality.severity.major" },
+  { value: "MINOR", labelKey: "quality.severity.minor" },
+];
+
+const NC_STATUS_OPTIONS: { value: NonconformityStatus | "ALL"; labelKey: string }[] = [
+  { value: "ALL", labelKey: "quality.ncStatus.all" },
+  { value: "OPEN", labelKey: "quality.ncStatus.open" },
+  { value: "INVESTIGATING", labelKey: "quality.ncStatus.investigating" },
+  { value: "ACTION_REQUIRED", labelKey: "quality.ncStatus.actionRequired" },
+  { value: "ACTION_IN_PROGRESS", labelKey: "quality.ncStatus.actionInProgress" },
+  { value: "RESOLVED", labelKey: "quality.ncStatus.resolved" },
+  { value: "CLOSED", labelKey: "quality.ncStatus.closed" },
+];
+
 export default function NonconformityTable({
   nonconformities,
   onOpenCreate,
@@ -31,6 +74,7 @@ export default function NonconformityTable({
   onUpdateStatus,
   onRequestCA,
 }: NonconformityTableProps) {
+  const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<NonconformityType | "ALL">("ALL");
   const [severityFilter, setSeverityFilter] = useState<SeverityLevel | "ALL">("ALL");
@@ -65,12 +109,11 @@ export default function NonconformityTable({
 
   return (
     <div className="p-4 sm:p-6">
-      {/* 검색 및 필터 바 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 mb-4">
         <div className="relative col-span-1 sm:col-span-2">
           <input
             type="text"
-            placeholder="부적합번호, 대상명, LOT, 대상번호 검색..."
+            placeholder={t("quality.search.nc")}
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -78,59 +121,21 @@ export default function NonconformityTable({
             }}
             className="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
           />
-          <svg
-            className="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
 
-        <select
-          value={typeFilter}
-          onChange={(e) => {
-            setTypeFilter(e.target.value as NonconformityType | "ALL");
-            setCurrentPage(1);
-          }}
-          className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-        >
-          {NONCONFORMITY_TYPE_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
+        <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value as NonconformityType | "ALL"); setCurrentPage(1); }} className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+          {NC_TYPE_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>)}
         </select>
 
-        <select
-          value={severityFilter}
-          onChange={(e) => {
-            setSeverityFilter(e.target.value as SeverityLevel | "ALL");
-            setCurrentPage(1);
-          }}
-          className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-        >
-          {SEVERITY_LEVEL_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
+        <select value={severityFilter} onChange={(e) => { setSeverityFilter(e.target.value as SeverityLevel | "ALL"); setCurrentPage(1); }} className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+          {SEVERITY_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>)}
         </select>
 
-        <select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value as NonconformityStatus | "ALL");
-            setCurrentPage(1);
-          }}
-          className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-        >
-          {NONCONFORMITY_STATUS_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
+        <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value as NonconformityStatus | "ALL"); setCurrentPage(1); }} className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+          {NC_STATUS_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>)}
         </select>
       </div>
 
@@ -142,42 +147,39 @@ export default function NonconformityTable({
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          <span>부적합 내역 수동 등록</span>
+          <span>{t("quality.btn.registerNc")}</span>
         </button>
       </div>
 
-      {/* 테이블 영역 */}
       <div className="overflow-x-auto border border-gray-200 rounded-lg bg-white shadow-sm">
         <table className="w-full text-sm text-left text-gray-700 min-w-[1100px]">
           <thead className="text-xs uppercase bg-gray-50 text-gray-500 border-b border-gray-200">
             <tr>
-              <th className="px-4 py-3 font-semibold">부적합 번호</th>
-              <th className="px-4 py-3 font-semibold">발생일</th>
-              <th className="px-4 py-3 font-semibold text-center">검사 구분</th>
-              <th className="px-4 py-3 font-semibold">검사 번호</th>
-              <th className="px-4 py-3 font-semibold">대상명</th>
-              <th className="px-4 py-3 font-semibold">LOT 번호</th>
-              <th className="px-4 py-3 font-semibold">부적합 유형</th>
-              <th className="px-4 py-3 font-semibold text-right">부적합 수량</th>
-              <th className="px-4 py-3 font-semibold text-center">심각도</th>
-              <th className="px-4 py-3 font-semibold text-center">처리 상태</th>
-              <th className="px-4 py-3 font-semibold">담당자</th>
-              <th className="px-4 py-3 font-semibold text-center">작업</th>
+              <th className="px-4 py-3 font-semibold">{t("quality.col.ncNo")}</th>
+              <th className="px-4 py-3 font-semibold">{t("quality.col.occurredDate")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("quality.col.category")}</th>
+              <th className="px-4 py-3 font-semibold">{t("quality.col.inspectionNo")}</th>
+              <th className="px-4 py-3 font-semibold">{t("quality.col.targetName")}</th>
+              <th className="px-4 py-3 font-semibold">{t("quality.col.lotNo")}</th>
+              <th className="px-4 py-3 font-semibold">{t("quality.col.ncType")}</th>
+              <th className="px-4 py-3 font-semibold text-right">{t("quality.col.ncQty")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("quality.col.severity")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("quality.col.ncStatus")}</th>
+              <th className="px-4 py-3 font-semibold">{t("quality.col.handler")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("quality.col.action")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {paginatedData.length === 0 ? (
               <tr>
                 <td colSpan={12} className="px-4 py-12 text-center text-gray-500">
-                  등록된 부적합 내역이 없습니다.
+                  {t("quality.empty.nc")}
                 </td>
               </tr>
             ) : (
               paginatedData.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 font-mono font-bold text-red-700 bg-red-50/50 my-1 inline-block rounded">
-                    {item.ncNo}
-                  </td>
+                  <td className="px-4 py-3 font-mono font-bold text-red-700 bg-red-50/50 my-1 inline-block rounded">{item.ncNo}</td>
                   <td className="px-4 py-3 whitespace-nowrap text-gray-800">{item.occurredDate}</td>
                   <td className="px-4 py-3 text-center whitespace-nowrap">
                     <InspectionCategoryBadge category={item.category} />
@@ -186,7 +188,7 @@ export default function NonconformityTable({
                   <td className="px-4 py-3 font-semibold text-gray-900">{item.targetName}</td>
                   <td className="px-4 py-3 font-mono text-xs text-purple-700">{item.lotNo}</td>
                   <td className="px-4 py-3 font-medium text-gray-800">
-                    {NONCONFORMITY_TYPE_LABELS[item.ncType]}
+                    {t(NC_TYPE_LABEL_KEYS[item.ncType])}
                   </td>
                   <td className="px-4 py-3 text-right font-bold text-red-600">
                     {item.defectQuantity.toLocaleString()} {item.unit}
@@ -204,15 +206,15 @@ export default function NonconformityTable({
                         onClick={() => onOpenDetail(item)}
                         className="px-2.5 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
                       >
-                        상세
+                        {t("action.detail")}
                       </button>
                       {!item.correctiveActionNo && (item.severity === "CRITICAL" || item.severity === "MAJOR") && (
                         <button
                           onClick={() => onRequestCA(item.ncNo, item.handler)}
                           className="px-2 py-1 text-xs font-bold text-white bg-amber-600 rounded hover:bg-amber-700 shadow-sm"
-                          title="시정조치(CAPA) 발행"
+                          title={t("quality.btn.requestCA")}
                         >
-                          시정조치 요청
+                          {t("quality.btn.requestCA")}
                         </button>
                       )}
                     </div>
@@ -224,27 +226,18 @@ export default function NonconformityTable({
         </table>
       </div>
 
-      {/* 페이지네이션 */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-4 text-xs text-gray-600">
           <span>
-            {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, filteredData.length)} / 총 {filteredData.length}건
+            {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, filteredData.length)} / {t("quality.total")} {filteredData.length}{t("quality.summary.unit")}
           </span>
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              이전
+            <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1} className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+              {t("action.previous")}
             </button>
             <span className="px-3 py-1 font-semibold">{currentPage} / {totalPages}</span>
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              다음
+            <button onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages} className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+              {t("action.next")}
             </button>
           </div>
         </div>

@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from "react";
-import type { WorkOrder, WorkStatus, MaterialIssueStatus } from "@/types/production";
+import type { WorkOrder, WorkStatus } from "@/types/production";
 import { useMasterData } from "@/context/MasterDataContext";
-import { WORK_STATUS_OPTIONS } from "@/constants/production-labels";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 import {
   WorkStatusBadge,
   MaterialIssueStatusBadge,
@@ -29,6 +30,7 @@ export default function WorkOrderTable({
   onNavigateToMaterials,
 }: WorkOrderTableProps) {
   const { productionLines } = useMasterData();
+  const { t, language } = useLanguage();
   const [woSearch, setWoSearch] = useState("");
   const [lineFilter, setLineFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState<WorkStatus | "ALL">("ALL");
@@ -38,25 +40,22 @@ export default function WorkOrderTable({
 
   const filteredData = useMemo(() => {
     return workOrders.filter((item) => {
-      // 작업지시 번호/제품명/계획번호 검색
+      const localizedProd = localizedName({ locale: language, ko: item.productName, ja: item.productNameJa });
       if (
         woSearch &&
         !item.workOrderNo.toLowerCase().includes(woSearch.toLowerCase()) &&
-        !item.productName.toLowerCase().includes(woSearch.toLowerCase()) &&
+        !localizedProd.toLowerCase().includes(woSearch.toLowerCase()) &&
         !item.planNo.toLowerCase().includes(woSearch.toLowerCase())
       ) {
         return false;
       }
 
-      // 생산라인 필터
       if (lineFilter !== "ALL" && item.productionLine !== lineFilter) return false;
-
-      // 작업 상태 필터
       if (statusFilter !== "ALL" && item.workStatus !== statusFilter) return false;
 
       return true;
     });
-  }, [workOrders, woSearch, lineFilter, statusFilter]);
+  }, [workOrders, woSearch, lineFilter, statusFilter, language]);
 
   const totalPages = Math.ceil(filteredData.length / pageSize) || 1;
   const paginatedData = useMemo(() => {
@@ -73,7 +72,7 @@ export default function WorkOrderTable({
           <div className="relative flex-1 min-w-[200px]">
             <input
               type="text"
-              placeholder="작업지시 번호, 계획번호, 제품명 검색..."
+              placeholder={t("production.workOrder.searchPlaceholder")}
               value={woSearch}
               onChange={(e) => {
                 setWoSearch(e.target.value);
@@ -100,10 +99,10 @@ export default function WorkOrderTable({
             }}
             className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           >
-            <option value="ALL">생산라인 전체</option>
+            <option value="ALL">{t("production.plan.lineAll")}</option>
             {productionLines.map((line) => (
               <option key={line.id} value={line.name}>
-                {line.name}
+                {localizedName({ locale: language, ko: line.name, ja: line.nameJa })}
               </option>
             ))}
           </select>
@@ -117,11 +116,13 @@ export default function WorkOrderTable({
             }}
             className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           >
-            {WORK_STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
+            <option value="ALL">{t("production.workOrder.statusAll")}</option>
+            <option value="WAITING">{t("production.status.work.waiting")}</option>
+            <option value="READY">{t("production.status.work.ready")}</option>
+            <option value="IN_PROGRESS">{t("production.status.work.inProgress")}</option>
+            <option value="PAUSED">{t("production.status.work.paused")}</option>
+            <option value="COMPLETED">{t("production.status.work.completed")}</option>
+            <option value="CANCELLED">{t("production.status.work.cancelled")}</option>
           </select>
         </div>
       </div>
@@ -131,30 +132,29 @@ export default function WorkOrderTable({
         <table className="w-full text-sm text-left text-gray-700 min-w-[1050px]">
           <thead className="text-xs uppercase bg-gray-50 text-gray-500 border-b border-gray-200">
             <tr>
-              <th className="px-4 py-3 font-semibold">작업지시 번호</th>
-              <th className="px-4 py-3 font-semibold">생산계획 번호</th>
-              <th className="px-4 py-3 font-semibold">생산 예정일</th>
-              <th className="px-4 py-3 font-semibold">제품명</th>
-              <th className="px-4 py-3 font-semibold">생산라인</th>
-              <th className="px-4 py-3 font-semibold text-right">지시 수량</th>
-              <th className="px-4 py-3 font-semibold">예정 시간</th>
-              <th className="px-4 py-3 font-semibold">담당자</th>
-              <th className="px-4 py-3 font-semibold text-center">자재 출고 상태</th>
-              <th className="px-4 py-3 font-semibold text-center">작업 상태</th>
-              <th className="px-4 py-3 font-semibold text-center">작업</th>
+              <th className="px-4 py-3 font-semibold">{t("production.workOrder.number")}</th>
+              <th className="px-4 py-3 font-semibold">{t("production.plan.number")}</th>
+              <th className="px-4 py-3 font-semibold">{t("production.plan.date")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.field.productName")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.tab.lines")}</th>
+              <th className="px-4 py-3 font-semibold text-right">{t("production.workOrder.instructedQty")}</th>
+              <th className="px-4 py-3 font-semibold">{t("production.plan.date")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.field.manager")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("production.workOrder.issueStatus")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("production.workOrder.status")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("production.plan.status")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {paginatedData.length === 0 ? (
               <tr>
                 <td colSpan={11} className="px-4 py-12 text-center text-gray-500">
-                  발행된 작업지시가 없습니다.
+                  {t("production.workOrder.empty")}
                 </td>
               </tr>
             ) : (
               paginatedData.map((item) => {
                 const isWaiting = item.workStatus === "WAITING";
-                const isReady = item.workStatus === "READY";
                 const isCancelled = item.workStatus === "CANCELLED";
 
                 return (
@@ -171,17 +171,21 @@ export default function WorkOrderTable({
                       {item.planNo}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">{item.plannedDate}</td>
-                    <td className="px-4 py-3 font-semibold text-gray-900">{item.productName}</td>
-                    <td className="px-4 py-3 font-medium text-gray-800">{item.productionLine}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900">
+                      {localizedName({ locale: language, ko: item.productName, ja: item.productNameJa })}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-gray-800">
+                      {localizedName({ locale: language, ko: item.productionLine, ja: item.lineNameJa })}
+                    </td>
                     <td className="px-4 py-3 text-right font-extrabold text-blue-600">
-                      {item.orderedQuantity.toLocaleString()} {item.unit}
+                      {item.orderedQuantity.toLocaleString()} {localizedName({ locale: language, ko: item.unit })}
                     </td>
                     <td className="px-4 py-3 font-mono text-xs text-gray-700 whitespace-nowrap">
                       {item.startTime} ~ {item.endTime}
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-900">
                       {item.handler ? (
-                        item.handler
+                        localizedName({ locale: language, ko: item.handler })
                       ) : (
                         <span className="text-red-500 font-normal">미배정</span>
                       )}
@@ -198,7 +202,7 @@ export default function WorkOrderTable({
                           onClick={() => onOpenDetail(item)}
                           className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
                         >
-                          상세
+                          {t("action.detail")}
                         </button>
                         {isWaiting && (
                           <button
@@ -213,14 +217,14 @@ export default function WorkOrderTable({
                           className="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
                           title="자재 출고 관리 화면으로 이동"
                         >
-                          자재출고
+                          {t("production.workOrder.issueStatus")}
                         </button>
                         {!isCancelled && item.workStatus !== "COMPLETED" && (
                           <button
                             onClick={() => onCancelWorkOrder(item.id)}
                             className="px-2 py-1 text-xs font-medium text-red-700 bg-red-50 rounded hover:bg-red-100 transition-colors"
                           >
-                            취소
+                            {t("action.cancel")}
                           </button>
                         )}
                       </div>
@@ -245,7 +249,7 @@ export default function WorkOrderTable({
               disabled={currentPage === 1}
               className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              이전
+              {t("action.prev")}
             </button>
             <span className="px-3 py-1 font-semibold">{currentPage} / {totalPages}</span>
             <button
@@ -253,7 +257,7 @@ export default function WorkOrderTable({
               disabled={currentPage === totalPages}
               className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              다음
+              {t("action.next")}
             </button>
           </div>
         </div>

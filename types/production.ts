@@ -64,7 +64,9 @@ export interface ProductionPlan {
   plannedDate: string;
   productCode: string;
   productName: string;
+  productNameJa?: string;
   productionLine: string;
+  lineNameJa?: string;
   plannedQuantity: number;
   unit: string;
   startTime: string;
@@ -84,7 +86,9 @@ export interface WorkOrder {
   plannedDate: string;
   productCode: string;
   productName: string;
+  productNameJa?: string;
   productionLine: string;
+  lineNameJa?: string;
   orderedQuantity: number;
   unit: string;
   startTime: string;
@@ -111,6 +115,7 @@ export interface BOMItem {
 export interface MaterialRequirement {
   materialCode: string;
   materialName: string;
+  materialNameJa?: string;
   unit: string;
   requiredQuantity: number;
   issuedQuantity: number;
@@ -132,7 +137,9 @@ export interface ProductionResult {
   productionDate: string;
   productCode: string;
   productName: string;
+  productNameJa?: string;
   productionLine: string;
+  lineNameJa?: string;
   orderedQuantity: number;
   totalQuantity: number;
   goodQuantity: number;
@@ -158,7 +165,9 @@ export interface FinishedGoodsLot {
   productionDate: string;
   productCode: string;
   productName: string;
+  productNameJa?: string;
   productionLine: string;
+  lineNameJa?: string;
   totalQuantity: number;
   goodQuantity: number;
   unit: string;

@@ -1,5 +1,7 @@
 import React from "react";
 import type { ProductionPlan } from "@/types/production";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 import {
   PlanStatusBadge,
   PlanPriorityBadge,
@@ -25,6 +27,8 @@ export default function ProductionPlanDetailModal({
   onConfirmPlan,
   onCreateWorkOrder,
 }: ProductionPlanDetailModalProps) {
+  const { t, language } = useLanguage();
+
   if (!isOpen || !item) return null;
 
   const isDraft = item.planStatus === "DRAFT";
@@ -36,7 +40,7 @@ export default function ProductionPlanDetailModal({
         {/* 헤더 */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">생산계획 상세 정보</h3>
+            <h3 className="text-lg font-bold text-gray-900">{t("production.plan.detailModalTitle")}</h3>
             <p className="text-xs text-gray-500 font-mono mt-0.5">{item.planNo}</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
@@ -50,19 +54,19 @@ export default function ProductionPlanDetailModal({
           {/* 상태 배지 영역 */}
           <div className="grid grid-cols-3 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200 text-center">
             <div>
-              <p className="text-xs text-gray-500">우선순위</p>
+              <p className="text-xs text-gray-500">{t("production.plan.priority")}</p>
               <div className="mt-1">
                 <PlanPriorityBadge priority={item.priority} />
               </div>
             </div>
             <div>
-              <p className="text-xs text-gray-500">계획 상태</p>
+              <p className="text-xs text-gray-500">{t("production.plan.status")}</p>
               <div className="mt-1">
                 <PlanStatusBadge status={item.planStatus} />
               </div>
             </div>
             <div>
-              <p className="text-xs text-gray-500">자재 준비</p>
+              <p className="text-xs text-gray-500">{t("production.plan.materialReadiness")}</p>
               <div className="mt-1">
                 <MaterialReadinessBadge readiness={item.materialReadiness} />
               </div>
@@ -72,42 +76,44 @@ export default function ProductionPlanDetailModal({
           {/* 항목별 텍스트 그리드 */}
           <div className="grid grid-cols-2 gap-y-3 gap-x-4 border-t border-b border-gray-100 py-3">
             <div>
-              <span className="text-gray-500 font-medium">생산 예정일:</span>
+              <span className="text-gray-500 font-medium">{t("production.plan.date")}:</span>
               <span className="ml-2 font-semibold text-gray-900">{item.plannedDate}</span>
             </div>
             <div>
-              <span className="text-gray-500 font-medium">생산라인:</span>
-              <span className="ml-2 font-semibold text-gray-900">{item.productionLine}</span>
-            </div>
-            <div>
-              <span className="text-gray-500 font-medium">제품:</span>
+              <span className="text-gray-500 font-medium">{t("master.tab.lines")}:</span>
               <span className="ml-2 font-semibold text-gray-900">
-                [{item.productCode}] {item.productName}
+                {localizedName({ locale: language, ko: item.productionLine, ja: item.lineNameJa })}
               </span>
             </div>
             <div>
-              <span className="text-gray-500 font-medium">계획 수량:</span>
+              <span className="text-gray-500 font-medium">{t("master.field.productName")}:</span>
+              <span className="ml-2 font-semibold text-gray-900">
+                [{item.productCode}] {localizedName({ locale: language, ko: item.productName, ja: item.productNameJa })}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-500 font-medium">{t("production.plan.quantity")}:</span>
               <span className="ml-2 font-bold text-blue-600">
-                {item.plannedQuantity.toLocaleString()} {item.unit}
+                {item.plannedQuantity.toLocaleString()} {localizedName({ locale: language, ko: item.unit })}
               </span>
             </div>
             <div>
-              <span className="text-gray-500 font-medium">계획 시간:</span>
+              <span className="text-gray-500 font-medium">{t("production.plan.date")}:</span>
               <span className="ml-2 font-mono text-gray-900">
                 {item.startTime} ~ {item.endTime}
               </span>
             </div>
             <div>
-              <span className="text-gray-500 font-medium">담당자:</span>
-              <span className="ml-2 text-gray-900">{item.manager}</span>
+              <span className="text-gray-500 font-medium">{t("master.field.manager")}:</span>
+              <span className="ml-2 text-gray-900">{localizedName({ locale: language, ko: item.manager })}</span>
             </div>
           </div>
 
           {item.remarks && (
             <div className="pt-1">
-              <p className="font-medium text-gray-500">비고:</p>
+              <p className="font-medium text-gray-500">{t("common.remarks")}:</p>
               <p className="mt-1 text-gray-700 bg-gray-50 p-2.5 rounded-md text-xs">
-                {item.remarks}
+                {localizedName({ locale: language, ko: item.remarks })}
               </p>
             </div>
           )}
@@ -123,7 +129,7 @@ export default function ProductionPlanDetailModal({
                   }}
                   className="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
                 >
-                  계획 확정하기
+                  {t("action.confirm")}
                 </button>
               )}
               {isConfirmed && onCreateWorkOrder && (
@@ -134,7 +140,7 @@ export default function ProductionPlanDetailModal({
                   }}
                   className="px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
                 >
-                  작업지시서 발행
+                  {t("action.issueOrder")}
                 </button>
               )}
             </div>
@@ -143,7 +149,7 @@ export default function ProductionPlanDetailModal({
               onClick={onClose}
               className="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
             >
-              닫기
+              {t("action.close")}
             </button>
           </div>
         </div>

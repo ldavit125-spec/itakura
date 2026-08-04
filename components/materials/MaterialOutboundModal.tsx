@@ -3,6 +3,9 @@ import type { MaterialOutbound, MaterialInventory } from "@/types/materials";
 import { useMasterData } from "@/context/MasterDataContext";
 import { OutboundStatusBadge } from "./MaterialStatusBadge";
 import { useAdmin } from "@/context/AdminContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
+import DateInput from "@/components/ui/DateInput";
 
 // ============================================================
 // 자재 출고 등록 / 상세 모달 컴포넌트
@@ -25,6 +28,7 @@ export default function MaterialOutboundModal({
   onClose,
   onSubmit,
 }: MaterialOutboundModalProps) {
+  const { t, language } = useLanguage();
   const { materials, productionLines } = useMasterData();
   const { getAssignableUsers } = useAdmin();
   const handlers = getAssignableUsers(["MATERIAL_MANAGER", "WORKER"]);
@@ -288,8 +292,7 @@ export default function MaterialOutboundModal({
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
                   출고일 <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="date"
+                <DateInput
                   value={outboundDate}
                   onChange={(e) => setOutboundDate(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -308,10 +311,10 @@ export default function MaterialOutboundModal({
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                   required
                 >
-                  <option value="">-- 출고할 자재 선택 --</option>
+                  <option value="">{t("materials.modal.selectMaterial")}</option>
                   {materials.map((mat) => (
                     <option key={mat.id} value={mat.code}>
-                      [{mat.code}] {mat.name} ({mat.unit})
+                      [{mat.code}] {localizedName({ locale: language, ko: mat.name, ja: mat.nameJa })} ({localizedName({ locale: language, ko: mat.unit })})
                     </option>
                   ))}
                 </select>
@@ -358,7 +361,7 @@ export default function MaterialOutboundModal({
                       const isFefo = fefoRecommendedLot?.lotNo === lot.lotNo;
                       return (
                         <option key={lot.id} value={lot.lotNo}>
-                          {lot.lotNo} [가용: {lot.availableStock} {lot.unit}] (유통기한: {lot.expirationDate})
+                          {lot.lotNo} [가용: {lot.availableStock} {localizedName({ locale: language, ko: lot.unit })}] (유통기한: {lot.expirationDate})
                           {isFefo ? " ★ FEFO 추천" : ""}
                         </option>
                       );
@@ -371,7 +374,7 @@ export default function MaterialOutboundModal({
               <div className="grid grid-cols-3 gap-2">
                 <div className="col-span-2">
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    출고 수량 <span className="text-red-500">*</span>
+                    {t("materials.outbound.quantity")} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
@@ -385,10 +388,10 @@ export default function MaterialOutboundModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">단위</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">{t("common.unit")}</label>
                   <input
                     type="text"
-                    value={unit}
+                    value={localizedName({ locale: language, ko: unit })}
                     readOnly
                     className="w-full px-3 py-2 border border-gray-200 bg-gray-100 text-gray-600 rounded-lg text-sm"
                   />
@@ -399,8 +402,8 @@ export default function MaterialOutboundModal({
             {/* 현재 선택 LOT 정보 안내 */}
             {activeSelectedLot && (
               <div className="text-xs text-gray-500 flex items-center justify-between px-1">
-                <span>보관 위치: <strong>{activeSelectedLot.location}</strong></span>
-                <span>현재 가용 재고: <strong className="text-green-600">{activeSelectedLot.availableStock.toLocaleString()} {unit}</strong></span>
+                <span>{t("materials.inventory.location")}: <strong>{localizedName({ locale: language, ko: activeSelectedLot.location })}</strong></span>
+                <span>현재 가용 재고: <strong className="text-green-600">{activeSelectedLot.availableStock.toLocaleString()} {localizedName({ locale: language, ko: unit })}</strong></span>
               </div>
             )}
 
@@ -408,7 +411,7 @@ export default function MaterialOutboundModal({
               {/* 생산라인 선택 */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  생산라인 <span className="text-red-500">*</span>
+                  {t("materials.outbound.line")} <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={productionLine}
@@ -416,10 +419,10 @@ export default function MaterialOutboundModal({
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                   required
                 >
-                  <option value="">-- 생산라인 선택 --</option>
+                  <option value="">{t("materials.modal.selectLine")}</option>
                   {productionLines.map((line) => (
                     <option key={line.id} value={line.name}>
-                      {line.name} ({line.process})
+                      {localizedName({ locale: language, ko: line.name, ja: line.nameJa })} ({localizedName({ locale: language, ko: line.process })})
                     </option>
                   ))}
                 </select>

@@ -19,10 +19,16 @@ async function idBy(table: "products" | "production_lines" | "business_users" | 
   return data?.id ?? null;
 }
 
+async function selectWithJaFallback(table: "products" | "production_lines", cols: string) {
+  const primary = await supabase.from(table).select(`${cols},name_ja`);
+  if (!primary.error) return primary;
+  return supabase.from(table).select(cols);
+}
+
 export async function fetchProductionSnapshot(): Promise<ProductionSnapshot> {
   const [products, lines, users, plans, workOrders, results, defects, lots] = await Promise.all([
-    supabase.from("products").select("id,code,name"),
-    supabase.from("production_lines").select("id,name"),
+    selectWithJaFallback("products", "id,code,name"),
+    selectWithJaFallback("production_lines", "id,name"),
     supabase.from("business_users").select("id,name"),
     supabase.from("production_plans").select("*").order("planned_date", { ascending: false }),
     supabase.from("work_orders").select("*").order("planned_date", { ascending: false }),
@@ -32,8 +38,8 @@ export async function fetchProductionSnapshot(): Promise<ProductionSnapshot> {
   ]);
   for (const result of [products, lines, users, plans, workOrders, results, defects, lots]) throwIfError(result.error);
 
-  const productById = new Map((products.data ?? []).map((row) => [row.id, row]));
-  const lineById = new Map((lines.data ?? []).map((row) => [row.id, row.name]));
+  const productById = new Map((products.data ?? []).map((row: any) => [row.id, row]));
+  const lineById = new Map((lines.data ?? []).map((row: any) => [row.id, row]));
   const userById = new Map((users.data ?? []).map((row) => [row.id, row.name]));
   const planById = new Map((plans.data ?? []).map((row) => [row.id, row.plan_no]));
   const workOrderById = new Map((workOrders.data ?? []).map((row) => [row.id, row.work_order_no]));
@@ -48,10 +54,11 @@ export async function fetchProductionSnapshot(): Promise<ProductionSnapshot> {
   return {
     plans: (plans.data ?? []).map((row) => {
       const product = productById.get(row.product_id);
+      const line = lineById.get(row.production_line_id);
       return {
         id: row.id, planNo: row.plan_no, plannedDate: row.planned_date,
-        productCode: product?.code ?? "", productName: product?.name ?? "",
-        productionLine: lineById.get(row.production_line_id) ?? "",
+        productCode: product?.code ?? "", productName: product?.name ?? "", productNameJa: product?.name_ja ?? undefined,
+        productionLine: line?.name ?? "", lineNameJa: line?.name_ja ?? undefined,
         plannedQuantity: Number(row.planned_quantity), unit: row.unit,
         startTime: String(row.start_time).slice(0, 5), endTime: String(row.end_time).slice(0, 5),
         priority: row.priority, planStatus: row.plan_status, materialReadiness: row.material_readiness,
@@ -61,10 +68,11 @@ export async function fetchProductionSnapshot(): Promise<ProductionSnapshot> {
     }),
     workOrders: (workOrders.data ?? []).map((row) => {
       const product = productById.get(row.product_id);
+      const line = lineById.get(row.production_line_id);
       return {
         id: row.id, workOrderNo: row.work_order_no, planNo: planById.get(row.production_plan_id) ?? "",
-        plannedDate: row.planned_date, productCode: product?.code ?? "", productName: product?.name ?? "",
-        productionLine: lineById.get(row.production_line_id) ?? "", orderedQuantity: Number(row.ordered_quantity),
+        plannedDate: row.planned_date, productCode: product?.code ?? "", productName: product?.name ?? "", productNameJa: product?.name_ja ?? undefined,
+        productionLine: line?.name ?? "", lineNameJa: line?.name_ja ?? undefined, orderedQuantity: Number(row.ordered_quantity),
         unit: row.unit, startTime: String(row.start_time).slice(0, 5), endTime: String(row.end_time).slice(0, 5),
         handler: row.handler_name || (row.handler_user_id ? userById.get(row.handler_user_id) : "") || "",
         materialIssueStatus: row.material_issue_status, workStatus: row.work_status,
@@ -75,10 +83,11 @@ export async function fetchProductionSnapshot(): Promise<ProductionSnapshot> {
     }),
     results: (results.data ?? []).map((row) => {
       const product = productById.get(row.product_id);
+      const line = lineById.get(row.production_line_id);
       return {
         id: row.id, resultNo: row.result_no, workOrderNo: workOrderById.get(row.work_order_id) ?? "",
-        productionDate: row.production_date, productCode: product?.code ?? "", productName: product?.name ?? "",
-        productionLine: lineById.get(row.production_line_id) ?? "", orderedQuantity: Number(row.ordered_quantity),
+        productionDate: row.production_date, productCode: product?.code ?? "", productName: product?.name ?? "", productNameJa: product?.name_ja ?? undefined,
+        productionLine: line?.name ?? "", lineNameJa: line?.name_ja ?? undefined, orderedQuantity: Number(row.ordered_quantity),
         totalQuantity: Number(row.total_quantity), goodQuantity: Number(row.good_quantity),
         defectQuantity: Number(row.defect_quantity), reworkQuantity: Number(row.rework_quantity),
         achievementRate: Number(row.achievement_rate), defectRate: Number(row.defect_rate),
@@ -89,11 +98,12 @@ export async function fetchProductionSnapshot(): Promise<ProductionSnapshot> {
     }),
     fgLots: (lots.data ?? []).map((row) => {
       const product = productById.get(row.product_id);
+      const line = lineById.get(row.production_line_id);
       return {
         id: row.id, fgLotNo: row.fg_lot_no, resultNo: resultById.get(row.production_result_id) ?? "",
         workOrderNo: workOrderById.get(row.work_order_id) ?? "", productionDate: row.production_date,
-        productCode: product?.code ?? "", productName: product?.name ?? "",
-        productionLine: lineById.get(row.production_line_id) ?? "", totalQuantity: Number(row.total_quantity),
+        productCode: product?.code ?? "", productName: product?.name ?? "", productNameJa: product?.name_ja ?? undefined,
+        productionLine: line?.name ?? "", lineNameJa: line?.name_ja ?? undefined, totalQuantity: Number(row.total_quantity),
         goodQuantity: Number(row.good_quantity), unit: row.unit, expirationDate: row.expiration_date,
         qualityStatus: row.quality_status, isReleaseAvailable: row.is_release_available,
       };

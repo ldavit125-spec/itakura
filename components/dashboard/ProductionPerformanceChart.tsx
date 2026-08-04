@@ -68,8 +68,7 @@ function legendFormatter(value: string): string {
 /** Y축 눈금 포맷 */
 function yAxisTickFormatter(value: number | string | readonly (string | number)[]): string {
   if (typeof value !== "number") return String(value);
-  if (value >= 10000) return `${(value / 10000).toFixed(0)}만`;
-  return value.toLocaleString("ko-KR");
+  return value.toLocaleString();
 }
 
 export default function ProductionPerformanceChart() {

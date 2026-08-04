@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import type { WorkOrder } from "@/types/production";
 import { WorkStatusBadge, MaterialIssueStatusBadge } from "./ProductionStatusBadge";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 생산 진행 현황 목록 테이블 컴포넌트
@@ -26,8 +28,8 @@ export default function ProductionProgressTable({
   onOpenDetail,
 }: ProductionProgressTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const { t, language } = useLanguage();
 
-  // 진행 탭에는 WAITING, READY, IN_PROGRESS, PAUSED 상태인 작업지시만 표시
   const activeProgressOrders = useMemo(() => {
     return workOrders.filter((w) =>
       ["WAITING", "READY", "IN_PROGRESS", "PAUSED"].includes(w.workStatus)
@@ -36,17 +38,19 @@ export default function ProductionProgressTable({
 
   const filteredData = useMemo(() => {
     return activeProgressOrders.filter((w) => {
+      const localizedProd = localizedName({ locale: language, ko: w.productName, ja: w.productNameJa });
+      const localizedLine = localizedName({ locale: language, ko: w.productionLine, ja: w.lineNameJa });
       if (
         searchTerm &&
         !w.workOrderNo.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !w.productName.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !w.productionLine.toLowerCase().includes(searchTerm.toLowerCase())
+        !localizedProd.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !localizedLine.toLowerCase().includes(searchTerm.toLowerCase())
       ) {
         return false;
       }
       return true;
     });
-  }, [activeProgressOrders, searchTerm]);
+  }, [activeProgressOrders, searchTerm, language]);
 
   return (
     <div className="p-4 sm:p-6">
@@ -55,7 +59,7 @@ export default function ProductionProgressTable({
         <div className="relative flex-1 max-w-md">
           <input
             type="text"
-            placeholder="작업지시 번호, 제품명, 생산라인 검색..."
+            placeholder={t("production.workOrder.searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -80,25 +84,25 @@ export default function ProductionProgressTable({
         <table className="w-full text-sm text-left text-gray-700 min-w-[1100px]">
           <thead className="text-xs uppercase bg-gray-50 text-gray-500 border-b border-gray-200">
             <tr>
-              <th className="px-4 py-3 font-semibold">작업지시 번호</th>
-              <th className="px-4 py-3 font-semibold">제품명</th>
-              <th className="px-4 py-3 font-semibold">생산라인</th>
-              <th className="px-4 py-3 font-semibold text-right">지시 수량</th>
+              <th className="px-4 py-3 font-semibold">{t("production.workOrder.number")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.field.productName")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.tab.lines")}</th>
+              <th className="px-4 py-3 font-semibold text-right">{t("production.workOrder.instructedQty")}</th>
               <th className="px-4 py-3 font-semibold">예정 시작</th>
               <th className="px-4 py-3 font-semibold">실제 시작</th>
               <th className="px-4 py-3 font-semibold text-right">현재 생산량</th>
-              <th className="px-4 py-3 font-semibold w-40">진행률 (%)</th>
-              <th className="px-4 py-3 font-semibold text-center">자재 출고</th>
-              <th className="px-4 py-3 font-semibold text-center">작업 상태</th>
-              <th className="px-4 py-3 font-semibold">담당자</th>
-              <th className="px-4 py-3 font-semibold text-center">작업</th>
+              <th className="px-4 py-3 font-semibold w-40">{t("production.plan.achievementRate")} (%)</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("production.workOrder.issueStatus")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("production.workOrder.status")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.field.manager")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("production.plan.status")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {filteredData.length === 0 ? (
               <tr>
                 <td colSpan={12} className="px-4 py-12 text-center text-gray-500">
-                  현재 진행 중이거나 대기 중인 작업지시가 없습니다.
+                  {t("production.progress.empty")}
                 </td>
               </tr>
             ) : (
@@ -118,17 +122,21 @@ export default function ProductionProgressTable({
                     <td className="px-4 py-3 font-mono font-bold text-gray-900">
                       {item.workOrderNo}
                     </td>
-                    <td className="px-4 py-3 font-semibold text-gray-900">{item.productName}</td>
-                    <td className="px-4 py-3 font-medium text-gray-800">{item.productionLine}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900">
+                      {localizedName({ locale: language, ko: item.productName, ja: item.productNameJa })}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-gray-800">
+                      {localizedName({ locale: language, ko: item.productionLine, ja: item.lineNameJa })}
+                    </td>
                     <td className="px-4 py-3 text-right font-semibold text-gray-900">
-                      {item.orderedQuantity.toLocaleString()} {item.unit}
+                      {item.orderedQuantity.toLocaleString()} {localizedName({ locale: language, ko: item.unit })}
                     </td>
                     <td className="px-4 py-3 font-mono text-xs text-gray-600">{item.startTime}</td>
                     <td className="px-4 py-3 font-mono text-xs text-blue-600">
                       {item.actualStartTime || "-"}
                     </td>
                     <td className="px-4 py-3 text-right font-extrabold text-blue-700">
-                      {item.currentQuantity.toLocaleString()} {item.unit}
+                      {item.currentQuantity.toLocaleString()} {localizedName({ locale: language, ko: item.unit })}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -156,7 +164,7 @@ export default function ProductionProgressTable({
                       <WorkStatusBadge status={item.workStatus} />
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-800">
-                      {item.handler || "미배정"}
+                      {localizedName({ locale: language, ko: item.handler }) || "미배정"}
                     </td>
                     <td className="px-4 py-3 text-center whitespace-nowrap">
                       <div className="flex items-center justify-center gap-1">
@@ -164,14 +172,14 @@ export default function ProductionProgressTable({
                           onClick={() => onOpenDetail(item)}
                           className="px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
                         >
-                          상세
+                          {t("action.detail")}
                         </button>
                         {(isWaiting || isReady) && (
                           <button
                             onClick={() => onStartWork(item.id)}
                             className="px-2.5 py-1 text-xs font-bold text-white bg-blue-600 rounded hover:bg-blue-700 shadow-sm"
                           >
-                            작업 시작
+                            {t("production.workOrder.start")}
                           </button>
                         )}
                         {isInProgress && (
@@ -180,19 +188,19 @@ export default function ProductionProgressTable({
                               onClick={() => onOpenQuantityModal(item)}
                               className="px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-50 rounded hover:bg-blue-100"
                             >
-                              실적 입력
+                              {t("production.progress.reportResult")}
                             </button>
                             <button
                               onClick={() => onPauseWork(item)}
                               className="px-2 py-1 text-xs font-medium text-purple-700 bg-purple-50 rounded hover:bg-purple-100"
                             >
-                              일시정지
+                              {t("production.progress.pause")}
                             </button>
                             <button
                               onClick={() => onCompleteRequest(item.id)}
                               className="px-2 py-1 text-xs font-bold text-white bg-green-600 rounded hover:bg-green-700"
                             >
-                              작업 완료
+                              {t("production.workOrder.complete")}
                             </button>
                           </>
                         )}
@@ -201,7 +209,7 @@ export default function ProductionProgressTable({
                             onClick={() => onResumeWork(item.id)}
                             className="px-2.5 py-1 text-xs font-bold text-white bg-amber-600 rounded hover:bg-amber-700"
                           >
-                            작업 재개
+                            {t("production.progress.resume")}
                           </button>
                         )}
                       </div>

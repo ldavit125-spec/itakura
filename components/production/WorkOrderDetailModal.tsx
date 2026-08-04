@@ -5,6 +5,8 @@ import { WorkStatusBadge, MaterialIssueStatusBadge } from "./ProductionStatusBad
 import MaterialRequirementTable from "./MaterialRequirementTable";
 import { useMasterData } from "@/context/MasterDataContext";
 import { useMaterials } from "@/context/MaterialsContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 작업지시 상세 정보 및 작업지시서 서식 모달 컴포넌트
@@ -31,6 +33,7 @@ export default function WorkOrderDetailModal({
   const [isPrintView, setIsPrintView] = useState(false);
   const { materials } = useMasterData();
   const { outbounds, inventories } = useMaterials();
+  const { t, language } = useLanguage();
 
   if (!isOpen || !item) return null;
 
@@ -92,22 +95,22 @@ export default function WorkOrderDetailModal({
 
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div className="border p-2">
-                <span className="font-bold">생산 예정일:</span> {item.plannedDate}
+                <span className="font-bold">{t("production.plan.date")}:</span> {item.plannedDate}
               </div>
               <div className="border p-2">
-                <span className="font-bold">생산 라인:</span> {item.productionLine}
+                <span className="font-bold">{t("master.tab.lines")}:</span> {localizedName({ locale: language, ko: item.productionLine, ja: item.lineNameJa })}
               </div>
               <div className="border p-2">
-                <span className="font-bold">제품명:</span> [{item.productCode}] {item.productName}
+                <span className="font-bold">{t("master.field.productName")}:</span> [{item.productCode}] {localizedName({ locale: language, ko: item.productName, ja: item.productNameJa })}
               </div>
               <div className="border p-2">
-                <span className="font-bold">지시 수량:</span> {item.orderedQuantity.toLocaleString()} {item.unit}
+                <span className="font-bold">{t("production.workOrder.instructedQty")}:</span> {item.orderedQuantity.toLocaleString()} {localizedName({ locale: language, ko: item.unit })}
               </div>
               <div className="border p-2">
                 <span className="font-bold">작업 예정시간:</span> {item.startTime} ~ {item.endTime}
               </div>
               <div className="border p-2">
-                <span className="font-bold">담당자:</span> {item.handler || "미배정"}
+                <span className="font-bold">{t("master.field.manager")}:</span> {localizedName({ locale: language, ko: item.handler }) || "미배정"}
               </div>
             </div>
 
@@ -117,7 +120,7 @@ export default function WorkOrderDetailModal({
                 <thead>
                   <tr className="bg-gray-100 border-b border-gray-400">
                     <th className="border border-gray-400 p-1">자재코드</th>
-                    <th className="border border-gray-400 p-1">자재명</th>
+                    <th className="border border-gray-400 p-1">{t("master.field.materialName")}</th>
                     <th className="border border-gray-400 p-1 text-right">예상 소요량</th>
                     <th className="border border-gray-400 p-1 text-right">실제 출고량</th>
                   </tr>
@@ -126,12 +129,12 @@ export default function WorkOrderDetailModal({
                   {requirements.map((r) => (
                     <tr key={r.materialCode}>
                       <td className="border border-gray-400 p-1 font-mono">{r.materialCode}</td>
-                      <td className="border border-gray-400 p-1">{r.materialName}</td>
+                      <td className="border border-gray-400 p-1">{localizedName({ locale: language, ko: r.materialName, ja: r.materialNameJa })}</td>
                       <td className="border border-gray-400 p-1 text-right font-bold">
-                        {r.requiredQuantity.toLocaleString()} {r.unit}
+                        {r.requiredQuantity.toLocaleString()} {localizedName({ locale: language, ko: r.unit })}
                       </td>
                       <td className="border border-gray-400 p-1 text-right">
-                        {r.issuedQuantity.toLocaleString()} {r.unit}
+                        {r.issuedQuantity.toLocaleString()} {localizedName({ locale: language, ko: r.unit })}
                       </td>
                     </tr>
                   ))}
@@ -154,13 +157,13 @@ export default function WorkOrderDetailModal({
             {/* 상태 알림 카드 */}
             <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
               <div>
-                <span className="text-xs text-gray-500 font-medium">자재 출고 상태</span>
+                <span className="text-xs text-gray-500 font-medium">{t("production.workOrder.issueStatus")}</span>
                 <div className="mt-1">
                   <MaterialIssueStatusBadge status={item.materialIssueStatus} />
                 </div>
               </div>
               <div>
-                <span className="text-xs text-gray-500 font-medium">작업 상태</span>
+                <span className="text-xs text-gray-500 font-medium">{t("production.workOrder.status")}</span>
                 <div className="mt-1">
                   <WorkStatusBadge status={item.workStatus} />
                 </div>
@@ -170,23 +173,23 @@ export default function WorkOrderDetailModal({
             {/* 기본 정보 라벨 그리드 */}
             <div className="grid grid-cols-2 gap-y-3 gap-x-4 border-t border-b border-gray-100 py-3">
               <div>
-                <span className="text-gray-500 font-medium">생산 예정일:</span>
+                <span className="text-gray-500 font-medium">{t("production.plan.date")}:</span>
                 <span className="ml-2 font-semibold text-gray-900">{item.plannedDate}</span>
               </div>
               <div>
-                <span className="text-gray-500 font-medium">생산라인:</span>
-                <span className="ml-2 font-semibold text-gray-900">{item.productionLine}</span>
+                <span className="text-gray-500 font-medium">{t("master.tab.lines")}:</span>
+                <span className="ml-2 font-semibold text-gray-900">{localizedName({ locale: language, ko: item.productionLine, ja: item.lineNameJa })}</span>
               </div>
               <div>
-                <span className="text-gray-500 font-medium">제품:</span>
+                <span className="text-gray-500 font-medium">{t("master.field.productName")}:</span>
                 <span className="ml-2 font-semibold text-gray-900">
-                  [{item.productCode}] {item.productName}
+                  [{item.productCode}] {localizedName({ locale: language, ko: item.productName, ja: item.productNameJa })}
                 </span>
               </div>
               <div>
-                <span className="text-gray-500 font-medium">지시 수량:</span>
+                <span className="text-gray-500 font-medium">{t("production.workOrder.instructedQty")}:</span>
                 <span className="ml-2 font-extrabold text-blue-600">
-                  {item.orderedQuantity.toLocaleString()} {item.unit}
+                  {item.orderedQuantity.toLocaleString()} {localizedName({ locale: language, ko: item.unit })}
                 </span>
               </div>
               <div>
@@ -196,17 +199,17 @@ export default function WorkOrderDetailModal({
                 </span>
               </div>
               <div>
-                <span className="text-gray-500 font-medium">담당자:</span>
+                <span className="text-gray-500 font-medium">{t("master.field.manager")}:</span>
                 <span className="ml-2 font-semibold text-gray-900">
-                  {item.handler || "미배정"}
+                  {localizedName({ locale: language, ko: item.handler }) || "미배정"}
                 </span>
               </div>
             </div>
 
             {item.pauseReason && (
               <div className="rounded-lg border border-purple-200 bg-purple-50 p-3">
-                <p className="text-xs font-semibold text-purple-700">최근 일시정지 사유</p>
-                <p className="mt-1 text-sm text-gray-900">{item.pauseReason}</p>
+                <p className="text-xs font-semibold text-purple-700">{t("production.progress.pauseReason")}</p>
+                <p className="mt-1 text-sm text-gray-900">{localizedName({ locale: language, ko: item.pauseReason })}</p>
                 {item.pausedAt && <p className="mt-1 text-xs text-gray-500">정지 시각: {item.pausedAt}</p>}
               </div>
             )}
@@ -228,7 +231,7 @@ export default function WorkOrderDetailModal({
                   onClick={handleSaveHandler}
                   className="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 whitespace-nowrap"
                 >
-                  배정 저장
+                  {t("action.save")}
                 </button>
               </div>
             </div>
@@ -262,7 +265,7 @@ export default function WorkOrderDetailModal({
                 onClick={onClose}
                 className="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
               >
-                닫기
+                {t("action.close")}
               </button>
             </div>
           </div>

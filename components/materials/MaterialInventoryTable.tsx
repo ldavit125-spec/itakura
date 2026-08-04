@@ -3,6 +3,7 @@ import type { MaterialInventory, InventoryStatus } from "@/types/materials";
 import { INVENTORY_STATUS_OPTIONS, STORAGE_LOCATIONS } from "@/constants/material-labels";
 import { InventoryStatusBadge } from "./MaterialStatusBadge";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 재고 현황 목록 테이블 컴포넌트
@@ -17,7 +18,7 @@ export default function MaterialInventoryTable({
   inventories,
   onOpenDetail,
 }: MaterialInventoryTableProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [materialSearch, setMaterialSearch] = useState("");
   const [lotSearch, setLotSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<InventoryStatus | "ALL">("ALL");
@@ -119,7 +120,7 @@ export default function MaterialInventoryTable({
           <option value="ALL">{t("materials.inventory.allLocations")}</option>
           {STORAGE_LOCATIONS.map((loc) => (
             <option key={loc} value={loc}>
-              {loc}
+              {localizedName({ locale: language, ko: loc })}
             </option>
           ))}
         </select>
@@ -172,7 +173,7 @@ export default function MaterialInventoryTable({
                     }`}
                   >
                     <td className="px-4 py-3 font-mono text-gray-600">{item.materialCode}</td>
-                    <td className="px-4 py-3 font-semibold text-gray-900">{item.materialName}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900">{localizedName({ locale: language, ko: item.materialName, ja: item.materialNameJa })}</td>
                     <td className="px-4 py-3 font-mono text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded inline-block my-1">
                       {item.lotNo}
                     </td>
@@ -189,11 +190,11 @@ export default function MaterialInventoryTable({
                     <td className="px-4 py-3 text-right font-semibold text-purple-700">
                       {item.holdStock > 0 ? item.holdStock.toLocaleString() : "-"}
                     </td>
-                    <td className="px-4 py-3 text-gray-500">{item.unit}</td>
+                    <td className="px-4 py-3 text-gray-500">{localizedName({ locale: language, ko: item.unit })}</td>
                     <td className="px-4 py-3 text-right text-gray-500">
                       {item.safetyStock.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{item.location}</td>
+                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{localizedName({ locale: language, ko: item.location })}</td>
                     <td className="px-4 py-3 whitespace-nowrap font-mono text-xs">{item.expirationDate}</td>
                     <td className="px-4 py-3 text-center">
                       <InventoryStatusBadge status={item.inventoryStatus} />

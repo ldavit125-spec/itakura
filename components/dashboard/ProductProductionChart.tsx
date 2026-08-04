@@ -16,6 +16,7 @@ import { useMasterData } from "@/context/MasterDataContext";
 import { aggregateProductionByProduct } from "@/lib/common-selectors";
 import { PRODUCT_CODE_LABELS, type ProductCode } from "@/types/dashboard";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 제품별 생산량 Bar Chart (실시간 Context 연동)
@@ -59,7 +60,7 @@ function yAxisTickFormatter(value: number | string | readonly (string | number)[
 }
 
 export default function ProductProductionChart() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { results } = useProduction();
   const { canAccessProductionLine } = useAdmin();
   const { products } = useMasterData();
@@ -69,11 +70,14 @@ export default function ProductProductionChart() {
     products
   );
 
-  const chartData = productDataList.map((d: { productCode: string; productName: string; quantity: number }) => ({
-    productCode: d.productCode,
-    label: d.productName,
-    quantity: d.quantity,
-  }));
+  const chartData = productDataList.map((d: { productCode: string; productName: string; quantity: number }) => {
+    const matchedProd = products.find((p) => p.code === d.productCode || p.name === d.productName);
+    return {
+      productCode: d.productCode,
+      label: localizedName({ locale: language, ko: d.productName, ja: matchedProd?.nameJa }),
+      quantity: d.quantity,
+    };
+  });
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-5">

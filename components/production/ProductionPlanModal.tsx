@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import type { ProductionPlan, PlanPriority } from "@/types/production";
 import { useMasterData } from "@/context/MasterDataContext";
-import { PLAN_PRIORITY_OPTIONS } from "@/constants/production-labels";
 import { useAdmin } from "@/context/AdminContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
+import DateInput from "@/components/ui/DateInput";
 
 // ============================================================
 // 생산계획 등록 / 수정 모달 컴포넌트
@@ -27,6 +29,7 @@ export default function ProductionPlanModal({
 }: ProductionPlanModalProps) {
   const { products, productionLines } = useMasterData();
   const { getAssignableUsers } = useAdmin();
+  const { t, language } = useLanguage();
   const managers = getAssignableUsers(["PRODUCTION_MANAGER"]);
 
   const [plannedDate, setPlannedDate] = useState("2026-07-31");
@@ -41,7 +44,6 @@ export default function ProductionPlanModal({
   const [remarks, setRemarks] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  // 제품 선택 변경 시 기본 생산라인 및 단위 자동 반영
   const handleProductChange = (code: string) => {
     setProductCode(code);
     const selectedProd = products.find((p) => p.code === code);
@@ -86,7 +88,6 @@ export default function ProductionPlanModal({
 
   if (!isOpen) return null;
 
-  // 선택된 생산라인의 최대 생산 용량 정보
   const selectedLineObj = productionLines.find((l) => l.name === productionLine);
   const isExceedingCapacity =
     selectedLineObj && typeof plannedQuantity === "number"
@@ -105,12 +106,8 @@ export default function ProductionPlanModal({
       setErrorMessage("생산라인을 선택하세요.");
       return;
     }
-    if (typeof plannedQuantity !== "number" || plannedQuantity <= 0) {
-      setErrorMessage("계획 수량은 0보다 커야 합니다.");
-      return;
-    }
-    if (endTime <= startTime) {
-      setErrorMessage("계획 종료시간은 시작시간보다 늦어야 합니다.");
+    if (!plannedQuantity || Number(plannedQuantity) <= 0) {
+      setErrorMessage("계획 수량은 1 이상이어야 합니다.");
       return;
     }
 
@@ -128,19 +125,27 @@ export default function ProductionPlanModal({
       endTime,
       priority,
       manager,
-      remarks,
+      remarks: remarks.trim() || undefined,
     };
 
+    let success = false;
     if (mode === "create") {
-      const success = onSubmit(payload);
-      if (success) onClose();
+      success = onSubmit(payload);
     } else if (mode === "edit" && item && onUpdate) {
-      const success = onUpdate(item.id, payload);
-      if (success) onClose();
+      success = onUpdate(item.id, payload);
+    }
+
+    if (success) {
+      onClose();
     }
   };
 
-  const title = mode === "create" ? "신규 생산계획 등록" : "생산계획 수정";
+  const title =
+    mode === "create"
+      ? t("production.plan.createModalTitle")
+      : mode === "edit"
+      ? t("production.plan.editModalTitle")
+      : t("production.plan.detailModalTitle");
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
@@ -170,10 +175,9 @@ export default function ProductionPlanModal({
             {/* 생산 예정일 */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                생산 예정일 <span className="text-red-500">*</span>
+                {t("production.plan.date")} <span className="text-red-500">*</span>
               </label>
-              <input
-                type="date"
+              <DateInput
                 value={plannedDate}
                 onChange={(e) => setPlannedDate(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
@@ -184,7 +188,7 @@ export default function ProductionPlanModal({
             {/* 제품 선택 */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                제품 <span className="text-red-500">*</span>
+                {t("master.field.productName")} <span className="text-red-500">*</span>
               </label>
               <select
                 value={productCode}
@@ -192,10 +196,10 @@ export default function ProductionPlanModal({
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 required
               >
-                <option value="">-- 제품 선택 --</option>
+                <option value="">-- {t("master.field.productName")} --</option>
                 {products.map((p) => (
                   <option key={p.id} value={p.code}>
-                    [{p.code}] {p.name} (기본: {p.defaultLine})
+                    [{p.code}] {localizedName({ locale: language, ko: p.name, ja: p.nameJa })}
                   </option>
                 ))}
               </select>
@@ -204,7 +208,7 @@ export default function ProductionPlanModal({
             {/* 생산라인 선택 */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                생산라인 <span className="text-red-500">*</span>
+                {t("master.tab.lines")} <span className="text-red-500">*</span>
               </label>
               <select
                 value={productionLine}
@@ -212,10 +216,10 @@ export default function ProductionPlanModal({
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 required
               >
-                <option value="">-- 생산라인 선택 --</option>
+                <option value="">-- {t("master.tab.lines")} --</option>
                 {productionLines.map((line) => (
                   <option key={line.id} value={line.name}>
-                    {line.name} (최대용량: {line.maxCapacity.toLocaleString()}{line.unit})
+                    {localizedName({ locale: language, ko: line.name, ja: line.nameJa })}
                   </option>
                 ))}
               </select>
@@ -225,7 +229,7 @@ export default function ProductionPlanModal({
             <div className="grid grid-cols-3 gap-2">
               <div className="col-span-2">
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  계획 수량 <span className="text-red-500">*</span>
+                  {t("production.plan.quantity")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -237,10 +241,10 @@ export default function ProductionPlanModal({
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">단위</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">{t("master.field.unit")}</label>
                 <input
                   type="text"
-                  value={unit}
+                  value={localizedName({ locale: language, ko: unit })}
                   readOnly
                   className="w-full px-3 py-2 border border-gray-200 bg-gray-100 text-gray-600 rounded-lg text-sm"
                 />
@@ -255,7 +259,7 @@ export default function ProductionPlanModal({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <span>
-                ⚠️ 계획 수량(<strong>{Number(plannedQuantity).toLocaleString()}{unit}</strong>)이 선택한 {productionLine}의 최대 용량(<strong>{selectedLineObj?.maxCapacity.toLocaleString()}{unit}</strong>)을 초과합니다.
+                ⚠️ 계획 수량(<strong>{Number(plannedQuantity).toLocaleString()}{localizedName({ locale: language, ko: unit })}</strong>)이 선택한 {localizedName({ locale: language, ko: productionLine, ja: selectedLineObj?.nameJa })}의 최대 용량(<strong>{selectedLineObj?.maxCapacity.toLocaleString()}{localizedName({ locale: language, ko: unit })}</strong>)을 초과합니다.
               </span>
             </div>
           )}
@@ -292,7 +296,7 @@ export default function ProductionPlanModal({
             {/* 우선순위 */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                우선순위 <span className="text-red-500">*</span>
+                {t("production.plan.priority")} <span className="text-red-500">*</span>
               </label>
               <select
                 value={priority}
@@ -300,35 +304,32 @@ export default function ProductionPlanModal({
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 required
               >
-                {PLAN_PRIORITY_OPTIONS.filter((o) => o.value !== "ALL").map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
+                <option value="URGENT">{t("production.priority.urgent")}</option>
+                <option value="HIGH">{t("production.priority.high")}</option>
+                <option value="NORMAL">{t("production.priority.normal")}</option>
+                <option value="LOW">{t("production.priority.low")}</option>
               </select>
             </div>
           </div>
 
           {/* 담당자 */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">담당 생산관리자</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">{t("master.field.manager")}</label>
             <input
               type="text"
-              value={manager}
+              value={localizedName({ locale: language, ko: manager })}
               onChange={(e) => setManager(e.target.value)}
-              placeholder="담당자 이름"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* 비고 */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">비고</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">{t("common.remarks")}</label>
             <textarea
               rows={2}
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              placeholder="생산 지시사항 및 특이사항 입력..."
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -340,13 +341,13 @@ export default function ProductionPlanModal({
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
             >
-              취소
+              {t("action.cancel")}
             </button>
             <button
               type="submit"
               className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
             >
-              {mode === "create" ? "생산계획 저장" : "수정 완료"}
+              {t("action.save")}
             </button>
           </div>
         </form>

@@ -202,12 +202,7 @@ export default function MaterialClient() {
     };
 
     try {
-      await createInboundBundle({
-        inbound: newInbound,
-        inventory: newInventory,
-        transaction: newTxn,
-        purchaseRequestId: receivingRequestId,
-      });
+      const { inboundNo } = await createInboundBundle(formData, currentUser.name);
       await refreshMaterials();
       setReceivingRequestId(null);
       setInboundModal({ isOpen: false, mode: "create" });
@@ -254,7 +249,7 @@ export default function MaterialClient() {
     };
 
     try {
-      await cancelInboundBundle(inbound, newTxn);
+      await cancelInboundBundle(inbound, currentUser.name);
       await refreshMaterials();
       showToast(`입고 [${inbound.inboundNo}] 건이 취소 처리되었습니다.`);
     } catch (error) {
@@ -266,41 +261,8 @@ export default function MaterialClient() {
   const handleCreateOutbound = async (
     formData: Omit<MaterialOutbound, "id" | "outboundNo" | "outboundStatus">
   ) => {
-    const dateTag = formData.outboundDate.replace(/-/g, "");
-    const seqNum = String(outbounds.length + 1).padStart(3, "0");
-    const outboundNo = `OUT-${dateTag}-${seqNum}`;
-
-    const newOutbound: MaterialOutbound = {
-      id: `out-${Date.now()}`,
-      outboundNo,
-      outboundStatus: "COMPLETED",
-      ...formData,
-    };
-
-    const sourceInventory = inventories.find((inventory) => inventory.lotNo === formData.lotNo);
-    const updatedBalance = sourceInventory
-      ? Math.max(0, sourceInventory.currentStock - formData.quantity)
-      : 0;
-
-    // 3. 수불 이력 추가
-    const nowStr = new Date().toISOString().replace("T", " ").substring(0, 19);
-    const newTxn: MaterialTransaction = {
-      id: `txn-${Date.now()}`,
-      timestamp: nowStr,
-      transactionNo: `TXN-${dateTag}-${String(transactions.length + 1).padStart(3, "0")}`,
-      transactionType: "OUTBOUND",
-      materialCode: formData.materialCode,
-      materialName: formData.materialName,
-      lotNo: formData.lotNo,
-      inboundQty: 0,
-      outboundQty: formData.quantity,
-      balanceAfter: updatedBalance,
-      handler: formData.handler,
-      remarks: `생산 출고 (${outboundNo}) / ${formData.productionLine}`,
-    };
-
     try {
-      await createOutboundBundle(newOutbound, newTxn);
+      const { outboundNo } = await createOutboundBundle(formData, currentUser.name);
       await refreshMaterials();
       setOutboundModal({ isOpen: false, mode: "create" });
       showToast(`출고 [${outboundNo}] 처리 완료! 재고 ${formData.quantity}${formData.unit} 차감되었습니다.`);
@@ -319,31 +281,8 @@ export default function MaterialClient() {
       return;
     }
 
-    const sourceInventory = inventories.find((inventory) => inventory.lotNo === outbound.lotNo);
-    const restoredBalance = sourceInventory
-      ? sourceInventory.currentStock + outbound.quantity
-      : outbound.quantity;
-
-    // 3. 수불 이력 추가
-    const nowStr = new Date().toISOString().replace("T", " ").substring(0, 19);
-    const dateTag = outbound.outboundDate.replace(/-/g, "");
-    const newTxn: MaterialTransaction = {
-      id: `txn-${Date.now()}`,
-      timestamp: nowStr,
-      transactionNo: `TXN-${dateTag}-${String(transactions.length + 1).padStart(3, "0")}`,
-      transactionType: "OUTBOUND_CANCEL",
-      materialCode: outbound.materialCode,
-      materialName: outbound.materialName,
-      lotNo: outbound.lotNo,
-      inboundQty: outbound.quantity,
-      outboundQty: 0,
-      balanceAfter: restoredBalance,
-      handler: currentUser.name,
-      remarks: `출고 취소 복원 (${outbound.outboundNo})`,
-    };
-
     try {
-      await cancelOutboundBundle(outbound, newTxn);
+      await cancelOutboundBundle(outbound, currentUser.name);
       await refreshMaterials();
       showToast(`출고 [${outbound.outboundNo}] 건이 취소되어 재고가 복원되었습니다.`);
     } catch (error) {
@@ -397,9 +336,9 @@ export default function MaterialClient() {
     }));
 
     try {
-      await createPurchaseRequests(newRequests);
+      await createPurchaseRequests(materialCodes, currentUser.name);
       await refreshMaterials();
-      showToast(`${newRequests.length}건의 부족 자재를 발주 요청했습니다.`);
+      showToast(`${materialCodes.length}건의 부족 자재를 발주 요청했습니다.`);
     } catch (error) {
       showToast(error instanceof Error ? error.message : "발주 요청에 실패했습니다.", "error");
     }

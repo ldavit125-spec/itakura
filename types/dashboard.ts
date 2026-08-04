@@ -73,7 +73,9 @@ export interface MonitoringKpi {
 
 export interface LineProgressItem {
   lineName: string;
+  lineNameJa?: string | null;
   productName: string;
+  productNameJa?: string | null;
   planQuantity: number;
   productionQuantity: number;
   achievementRate: number;

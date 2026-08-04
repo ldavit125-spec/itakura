@@ -1,10 +1,17 @@
+"use client";
+
 import React from "react";
 import type { ProductionTab } from "@/types/production";
-import { PRODUCTION_TABS, PRODUCTION_TAB_LABELS } from "@/constants/production-labels";
+import { PRODUCTION_TABS } from "@/constants/production-labels";
+import { useLanguage } from "@/context/LanguageContext";
 
-// ============================================================
-// 생산관리 탭 네비게이션 컴포넌트
-// ============================================================
+const PRODUCTION_TAB_KEYS: Record<ProductionTab, string> = {
+  plan: "production.tab.plan",
+  "work-order": "production.tab.workOrder",
+  progress: "production.tab.progress",
+  result: "production.tab.result",
+  "fg-lot": "production.tab.fgLot",
+};
 
 interface ProductionTabsProps {
   activeTab: ProductionTab;
@@ -17,9 +24,11 @@ export default function ProductionTabs({
   onChange,
   inProgressCount = 0,
 }: ProductionTabsProps) {
+  const { t } = useLanguage();
+
   return (
     <div className="border-b border-gray-200 bg-white px-4 sm:px-6">
-      <nav role="tablist" aria-label="생산관리 탭 목록" className="-mb-px flex space-x-2 sm:space-x-4 overflow-x-auto">
+      <nav role="tablist" aria-label={t("production.tabs.aria")} className="-mb-px flex space-x-2 sm:space-x-4 overflow-x-auto">
         {PRODUCTION_TABS.map((tab) => {
           const isActive = activeTab === tab;
           const showBadge = tab === "progress" && inProgressCount > 0;
@@ -38,7 +47,7 @@ export default function ProductionTabs({
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
-              <span>{PRODUCTION_TAB_LABELS[tab]}</span>
+              <span>{t(PRODUCTION_TAB_KEYS[tab])}</span>
               {showBadge && (
                 <span
                   className={`px-2 py-0.5 text-xs font-bold rounded-full ${

@@ -41,8 +41,10 @@ export interface MaterialInbound {
   inboundDate: string;
   materialCode: string;
   materialName: string;
+  materialNameJa?: string | null;
   lotNo: string;
   supplierName: string;
+  supplierNameJa?: string | null;
   quantity: number;
   unit: string;
   manufactureDate: string;
@@ -57,6 +59,7 @@ export interface MaterialInventory {
   id: string;
   materialCode: string;
   materialName: string;
+  materialNameJa?: string | null;
   lotNo: string;
   currentStock: number;
   availableStock: number;
@@ -68,6 +71,7 @@ export interface MaterialInventory {
   inventoryStatus: InventoryStatus;
   inspectionStatus: InspectionStatus;
   supplierName: string;
+  supplierNameJa?: string | null;
 }
 
 // ── 자재 출고 엔티티 ──────────────────────────────────────────
@@ -77,10 +81,12 @@ export interface MaterialOutbound {
   outboundDate: string;
   materialCode: string;
   materialName: string;
+  materialNameJa?: string | null;
   lotNo: string;
   quantity: number;
   unit: string;
   productionLine: string;
+  productionLineJa?: string | null;
   workOrderNo: string;
   handler: string;
   outboundStatus: OutboundStatus;
@@ -95,6 +101,7 @@ export interface MaterialTransaction {
   transactionType: TransactionType;
   materialCode: string;
   materialName: string;
+  materialNameJa?: string | null;
   lotNo: string;
   inboundQty: number;
   outboundQty: number;
@@ -107,11 +114,13 @@ export interface MaterialTransaction {
 export interface MaterialShortageItem {
   materialCode: string;
   materialName: string;
+  materialNameJa?: string | null;
   currentStock: number;
   safetyStock: number;
   shortageQty: number;
   unit: string;
   defaultSupplier: string;
+  defaultSupplierJa?: string | null;
   inventoryStatus: InventoryStatus;
   orderStatus: "REQUIRED" | "REQUESTED";
 }
@@ -123,7 +132,9 @@ export interface MaterialPurchaseRequest {
   requestDate: string;
   materialCode: string;
   materialName: string;
+  materialNameJa?: string | null;
   supplierName: string;
+  supplierNameJa?: string | null;
   requestedQuantity: number;
   unit: string;
   status: MaterialPurchaseRequestStatus;

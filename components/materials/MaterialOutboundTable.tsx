@@ -3,6 +3,8 @@ import type { MaterialOutbound } from "@/types/materials";
 import { useMasterData } from "@/context/MasterDataContext";
 import { OutboundStatusBadge } from "./MaterialStatusBadge";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
+import DateInput from "@/components/ui/DateInput";
 
 // ============================================================
 // 자재 출고 목록 테이블 컴포넌트
@@ -21,7 +23,7 @@ export default function MaterialOutboundTable({
   onOpenDetail,
   onCancelOutbound,
 }: MaterialOutboundTableProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { productionLines } = useMasterData();
   const [searchTerm, setSearchTerm] = useState("");
   const [dateSearch, setDateSearch] = useState("");
@@ -84,8 +86,7 @@ export default function MaterialOutboundTable({
 
           {/* 출고일 검색 */}
           <div className="relative">
-            <input
-              type="date"
+            <DateInput
               value={dateSearch}
               onChange={(e) => setDateSearch(e.target.value)}
               className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
@@ -112,7 +113,7 @@ export default function MaterialOutboundTable({
             <option value="ALL">{t("materials.outbound.allLines")}</option>
             {productionLines.map((line) => (
               <option key={line.id} value={line.name}>
-                {line.name}
+                {localizedName({ locale: language, ko: line.name, ja: line.nameJa })}
               </option>
             ))}
           </select>
@@ -160,19 +161,19 @@ export default function MaterialOutboundTable({
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">{item.outboundDate}</td>
                     <td className="px-4 py-3 font-mono text-gray-600">{item.materialCode}</td>
-                    <td className="px-4 py-3 font-semibold text-gray-900">{item.materialName}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900">{localizedName({ locale: language, ko: item.materialName, ja: item.materialNameJa })}</td>
                     <td className="px-4 py-3 font-mono text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded inline-block my-1">
                       {item.lotNo}
                     </td>
                     <td className="px-4 py-3 text-right font-bold text-gray-900">
                       {item.quantity.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-gray-500">{item.unit}</td>
-                    <td className="px-4 py-3 font-medium text-gray-800">{item.productionLine}</td>
+                    <td className="px-4 py-3 text-gray-500">{localizedName({ locale: language, ko: item.unit })}</td>
+                    <td className="px-4 py-3 font-medium text-gray-800">{localizedName({ locale: language, ko: item.productionLine, ja: item.productionLineJa })}</td>
                     <td className="px-4 py-3 font-mono text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded inline-block">
                       {item.workOrderNo}
                     </td>
-                    <td className="px-4 py-3 text-gray-700">{item.handler}</td>
+                    <td className="px-4 py-3 text-gray-700">{localizedName({ locale: language, ko: item.handler })}</td>
                     <td className="px-4 py-3 text-center">
                       <OutboundStatusBadge status={item.outboundStatus} />
                     </td>

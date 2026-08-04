@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import type { FinishedGoodsLot } from "@/types/production";
 import { QualityStatusBadge } from "./ProductionStatusBadge";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 완제품 LOT 목록 테이블 컴포넌트
@@ -18,13 +20,15 @@ export default function FinishedGoodsLotTable({
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
+  const { t, language } = useLanguage();
 
   const filteredData = useMemo(() => {
     return fgLots.filter((item) => {
+      const localizedProd = localizedName({ locale: language, ko: item.productName, ja: item.productNameJa });
       if (
         searchTerm &&
         !item.fgLotNo.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !item.productName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !localizedProd.toLowerCase().includes(searchTerm.toLowerCase()) &&
         !item.productCode.toLowerCase().includes(searchTerm.toLowerCase()) &&
         !item.resultNo.toLowerCase().includes(searchTerm.toLowerCase())
       ) {
@@ -32,7 +36,7 @@ export default function FinishedGoodsLotTable({
       }
       return true;
     });
-  }, [fgLots, searchTerm]);
+  }, [fgLots, searchTerm, language]);
 
   const totalPages = Math.ceil(filteredData.length / pageSize) || 1;
   const paginatedData = useMemo(() => {
@@ -47,7 +51,7 @@ export default function FinishedGoodsLotTable({
         <div className="relative flex-1 max-w-md">
           <input
             type="text"
-            placeholder="완제품 LOT 번호, 제품명, 코드, 실적번호 검색..."
+            placeholder={t("production.fgLot.searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -75,26 +79,26 @@ export default function FinishedGoodsLotTable({
         <table className="w-full text-sm text-left text-gray-700 min-w-[1050px]">
           <thead className="text-xs uppercase bg-gray-50 text-gray-500 border-b border-gray-200">
             <tr>
-              <th className="px-4 py-3 font-semibold">완제품 LOT 번호</th>
-              <th className="px-4 py-3 font-semibold">생산실적 번호</th>
-              <th className="px-4 py-3 font-semibold">작업지시 번호</th>
-              <th className="px-4 py-3 font-semibold">생산일</th>
-              <th className="px-4 py-3 font-semibold">제품 코드</th>
-              <th className="px-4 py-3 font-semibold">제품명</th>
-              <th className="px-4 py-3 font-semibold">생산라인</th>
-              <th className="px-4 py-3 font-semibold text-right">총 생산량</th>
-              <th className="px-4 py-3 font-semibold text-right text-green-700">양품 수량</th>
-              <th className="px-4 py-3 font-semibold">유통기한</th>
-              <th className="px-4 py-3 font-semibold text-center">품질 상태</th>
-              <th className="px-4 py-3 font-semibold text-center">출고 가능 여부</th>
-              <th className="px-4 py-3 font-semibold text-center">작업</th>
+              <th className="px-4 py-3 font-semibold">{t("production.result.fgLot")}</th>
+              <th className="px-4 py-3 font-semibold">{t("production.result.number")}</th>
+              <th className="px-4 py-3 font-semibold">{t("production.workOrder.number")}</th>
+              <th className="px-4 py-3 font-semibold">{t("production.fgLot.manufactureDate")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.field.productCode")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.field.productName")}</th>
+              <th className="px-4 py-3 font-semibold">{t("master.tab.lines")}</th>
+              <th className="px-4 py-3 font-semibold text-right">{t("production.result.totalQty")}</th>
+              <th className="px-4 py-3 font-semibold text-right text-green-700">{t("production.result.goodQty")}</th>
+              <th className="px-4 py-3 font-semibold">{t("production.fgLot.expirationDate")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("production.result.qualityStatus")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("production.fgLot.shipmentStatus")}</th>
+              <th className="px-4 py-3 font-semibold text-center">{t("production.plan.status")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {paginatedData.length === 0 ? (
               <tr>
                 <td colSpan={13} className="px-4 py-12 text-center text-gray-500">
-                  생성된 완제품 LOT가 없습니다.
+                  {t("production.fgLot.empty")}
                 </td>
               </tr>
             ) : (
@@ -107,13 +111,17 @@ export default function FinishedGoodsLotTable({
                   <td className="px-4 py-3 font-mono text-xs text-gray-600">{item.workOrderNo}</td>
                   <td className="px-4 py-3 whitespace-nowrap">{item.productionDate}</td>
                   <td className="px-4 py-3 font-mono text-gray-600">{item.productCode}</td>
-                  <td className="px-4 py-3 font-semibold text-gray-900">{item.productName}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{item.productionLine}</td>
+                  <td className="px-4 py-3 font-semibold text-gray-900">
+                    {localizedName({ locale: language, ko: item.productName, ja: item.productNameJa })}
+                  </td>
+                  <td className="px-4 py-3 font-medium text-gray-800">
+                    {localizedName({ locale: language, ko: item.productionLine, ja: item.lineNameJa })}
+                  </td>
                   <td className="px-4 py-3 text-right font-bold text-gray-900">
-                    {item.totalQuantity.toLocaleString()} {item.unit}
+                    {item.totalQuantity.toLocaleString()} {localizedName({ locale: language, ko: item.unit })}
                   </td>
                   <td className="px-4 py-3 text-right font-extrabold text-green-600">
-                    {item.goodQuantity.toLocaleString()} {item.unit}
+                    {item.goodQuantity.toLocaleString()} {localizedName({ locale: language, ko: item.unit })}
                   </td>
                   <td className="px-4 py-3 font-mono text-xs font-semibold whitespace-nowrap text-amber-700">
                     {item.expirationDate}
@@ -124,11 +132,11 @@ export default function FinishedGoodsLotTable({
                   <td className="px-4 py-3 text-center">
                     {item.isReleaseAvailable ? (
                       <span className="px-2 py-0.5 text-xs font-bold text-green-700 bg-green-100 rounded-full border border-green-200">
-                        출고 가능
+                        {localizedName({ locale: language, ko: "출고 가능", ja: "出荷可能" })}
                       </span>
                     ) : (
                       <span className="px-2 py-0.5 text-xs font-medium text-gray-500 bg-gray-100 rounded-full border border-gray-200">
-                        출고 불가 (검사 대기)
+                        {localizedName({ locale: language, ko: "출고 불가 (검사 대기)", ja: "出荷不可 (検査待機)" })}
                       </span>
                     )}
                   </td>
@@ -137,7 +145,7 @@ export default function FinishedGoodsLotTable({
                       onClick={() => onOpenDetail(item)}
                       className="px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
                     >
-                      상세
+                      {t("action.detail")}
                     </button>
                   </td>
                 </tr>
@@ -159,7 +167,7 @@ export default function FinishedGoodsLotTable({
               disabled={currentPage === 1}
               className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              이전
+              {t("action.prev")}
             </button>
             <span className="px-3 py-1 font-semibold">{currentPage} / {totalPages}</span>
             <button
@@ -167,7 +175,7 @@ export default function FinishedGoodsLotTable({
               disabled={currentPage === totalPages}
               className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              다음
+              {t("action.next")}
             </button>
           </div>
         </div>

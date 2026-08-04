@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import type { WorkOrder } from "@/types/production";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 interface ProductionPauseModalProps {
   item: WorkOrder;
@@ -14,6 +16,7 @@ export default function ProductionPauseModal({
 }: ProductionPauseModalProps) {
   const [reason, setReason] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const { t, language } = useLanguage();
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -30,7 +33,7 @@ export default function ProductionPauseModal({
       <div className="w-full max-w-md overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
           <div>
-            <h3 className="text-base font-bold text-gray-900">작업 일시정지</h3>
+            <h3 className="text-base font-bold text-gray-900">{t("production.progress.pause")}</h3>
             <p className="mt-0.5 font-mono text-xs text-gray-500">{item.workOrderNo}</p>
           </div>
           <button type="button" onClick={onClose} aria-label="닫기" className="p-1 text-gray-400 hover:text-gray-600">
@@ -42,13 +45,13 @@ export default function ProductionPauseModal({
 
         <form onSubmit={handleSubmit} className="space-y-4 p-6">
           <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs text-gray-700">
-            <p><strong>제품:</strong> {item.productName}</p>
-            <p className="mt-1"><strong>생산라인:</strong> {item.productionLine}</p>
+            <p><strong>{t("master.field.productName")}:</strong> {localizedName({ locale: language, ko: item.productName, ja: item.productNameJa })}</p>
+            <p className="mt-1"><strong>{t("master.tab.lines")}:</strong> {localizedName({ locale: language, ko: item.productionLine, ja: item.lineNameJa })}</p>
           </div>
 
           <div>
             <label className="mb-1 block text-xs font-semibold text-gray-700">
-              일시정지 사유 <span className="text-red-500">*</span>
+              {t("production.progress.pauseReason")} <span className="text-red-500">*</span>
             </label>
             <textarea
               value={reason}
@@ -65,8 +68,8 @@ export default function ProductionPauseModal({
           </div>
 
           <div className="flex justify-end gap-2 border-t border-gray-200 pt-4">
-            <button type="button" onClick={onClose} className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200">취소</button>
-            <button type="submit" className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700">일시정지 적용</button>
+            <button type="button" onClick={onClose} className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200">{t("action.cancel")}</button>
+            <button type="submit" className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700">{t("production.progress.pause")}</button>
           </div>
         </form>
       </div>

@@ -3,6 +3,8 @@ import type { MaterialInbound, InspectionStatus } from "@/types/materials";
 import { INSPECTION_STATUS_OPTIONS } from "@/constants/material-labels";
 import { InspectionStatusBadge, InboundStatusBadge } from "./MaterialStatusBadge";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
+import DateInput from "@/components/ui/DateInput";
 
 // ============================================================
 // 자재 입고 목록 테이블 컴포넌트
@@ -23,7 +25,7 @@ export default function MaterialInboundTable({
   onOpenDetail,
   onCancelInbound,
 }: MaterialInboundTableProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [dateSearch, setDateSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<InspectionStatus | "ALL">("ALL");
@@ -55,8 +57,7 @@ export default function MaterialInboundTable({
         <div className="flex flex-wrap items-center gap-3 flex-1">
           {/* 입고일 검색 */}
           <div className="relative">
-            <input
-              type="date"
+            <DateInput
               value={dateSearch}
               onChange={(e) => setDateSearch(e.target.value)}
               className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
@@ -153,15 +154,15 @@ export default function MaterialInboundTable({
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">{item.inboundDate}</td>
                     <td className="px-4 py-3 font-mono text-gray-600">{item.materialCode}</td>
-                    <td className="px-4 py-3 font-semibold text-gray-900">{item.materialName}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900">{localizedName({ locale: language, ko: item.materialName, ja: item.materialNameJa })}</td>
                     <td className="px-4 py-3 font-mono text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded inline-block my-1">
                       {item.lotNo}
                     </td>
-                    <td className="px-4 py-3">{item.supplierName}</td>
+                    <td className="px-4 py-3">{localizedName({ locale: language, ko: item.supplierName, ja: item.supplierNameJa })}</td>
                     <td className="px-4 py-3 text-right font-semibold text-gray-900">
                       {item.quantity.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-gray-500">{item.unit}</td>
+                    <td className="px-4 py-3 text-gray-500">{localizedName({ locale: language, ko: item.unit })}</td>
                     <td className="px-4 py-3 whitespace-nowrap">{item.expirationDate}</td>
                     <td className="px-4 py-3 text-center">
                       <InspectionStatusBadge status={item.inspectionStatus} />

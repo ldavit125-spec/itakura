@@ -1,6 +1,8 @@
 import React from "react";
 import type { MaterialRequirement } from "@/types/production";
 import { MaterialIssueStatusBadge } from "./ProductionStatusBadge";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 작업지시용 BOM 기반 자재 소요량 현황 표 컴포넌트
@@ -17,6 +19,8 @@ export default function MaterialRequirementTable({
   workOrderNo,
   onNavigateToMaterials,
 }: MaterialRequirementTableProps) {
+  const { t, language } = useLanguage();
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -42,19 +46,21 @@ export default function MaterialRequirementTable({
           <thead className="bg-gray-50 text-gray-500 uppercase border-b border-gray-200">
             <tr>
               <th className="px-3 py-2 font-semibold">자재 코드</th>
-              <th className="px-3 py-2 font-semibold">자재명</th>
+              <th className="px-3 py-2 font-semibold">{t("master.field.materialName")}</th>
               <th className="px-3 py-2 font-semibold text-right">예상 소요량</th>
               <th className="px-3 py-2 font-semibold text-right text-blue-700">실제 출고량</th>
               <th className="px-3 py-2 font-semibold text-right text-green-700">가용 재고</th>
-              <th className="px-3 py-2 font-semibold">단위</th>
-              <th className="px-3 py-2 font-semibold text-center">출고 상태</th>
+              <th className="px-3 py-2 font-semibold">{t("master.field.unit")}</th>
+              <th className="px-3 py-2 font-semibold text-center">{t("production.workOrder.issueStatus")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {requirements.map((req) => (
               <tr key={req.materialCode} className="hover:bg-gray-50">
                 <td className="px-3 py-2 font-mono text-gray-600">{req.materialCode}</td>
-                <td className="px-3 py-2 font-semibold text-gray-900">{req.materialName}</td>
+                <td className="px-3 py-2 font-semibold text-gray-900">
+                  {localizedName({ locale: language, ko: req.materialName, ja: req.materialNameJa })}
+                </td>
                 <td className="px-3 py-2 text-right font-bold text-gray-900">
                   {req.requiredQuantity.toLocaleString()}
                 </td>
@@ -64,7 +70,9 @@ export default function MaterialRequirementTable({
                 <td className="px-3 py-2 text-right font-medium text-green-700">
                   {req.currentStock.toLocaleString()}
                 </td>
-                <td className="px-3 py-2 text-gray-500">{req.unit}</td>
+                <td className="px-3 py-2 text-gray-500">
+                  {localizedName({ locale: language, ko: req.unit })}
+                </td>
                 <td className="px-3 py-2 text-center">
                   <MaterialIssueStatusBadge status={req.status} />
                 </td>
