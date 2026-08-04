@@ -18,7 +18,7 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser, users, roles, switchDemoUser, isAdminAuthenticated, logoutAdmin } = useAdmin();
-  const { t } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const roleLabel = roles
     .filter((role) => currentUser.roleIds.includes(role.id))
     .map((role) => t(ROLE_KEYS[role.code] ?? ""))
@@ -43,6 +43,16 @@ export default function Header() {
             ))}
           </select>
         </label>
+        <div className="w-px h-6 bg-gray-200" aria-hidden="true" />
+        <select
+          value={language}
+          onChange={(event) => setLanguage(event.target.value as "ko" | "ja")}
+          className="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-xs text-gray-700 font-medium"
+          aria-label="Language Selector"
+        >
+          <option value="ko">한국어</option>
+          <option value="ja">日本語</option>
+        </select>
         <div className="w-px h-6 bg-gray-200" aria-hidden="true" />
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
