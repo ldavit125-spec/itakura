@@ -31,16 +31,20 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center bg-slate-950 px-4">
-      <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-white p-8 shadow-2xl">
+    <main
+      className="relative flex min-h-screen items-center justify-center bg-cover bg-center bg-no-repeat px-4"
+      style={{ backgroundImage: "url('/login_bg.png')" }}
+    >
+      <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]" />
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-700/60 bg-white/95 p-8 shadow-2xl backdrop-blur-md">
         <div className="mb-7 text-center">
           <div className="mx-auto mb-4 flex items-center justify-center">
             <Image
-              src="/logo.png"
+              src="/logo_white.png"
               alt="이타쿠라 베이커리 (ITAKURA BAKERY)"
               width={240}
               height={80}
-              className="h-16 w-auto object-contain rounded-lg p-2 bg-amber-50/90 shadow-sm"
+              className="h-14 w-auto object-contain drop-shadow-md brightness-0"
               priority
             />
           </div>
