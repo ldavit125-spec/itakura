@@ -123,11 +123,11 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
 
   const loginAdmin = useCallback((identifier: string, password?: string): AdminLoginResult => {
     const auth = authenticateAdmin(users, roles, identifier, password);
-    if (auth.failure === "INVALID_CREDENTIALS") return { success: false, message: "사번(또는 이메일) 또는 비밀번호를 확인하세요." };
-    if (auth.failure === "INACTIVE") return { success: false, message: "비활성 계정은 로그인할 수 없습니다." };
-    if (auth.failure === "NOT_ADMIN") return { success: false, message: "ADMIN 역할이 있는 계정만 관리자 화면에 로그인할 수 있습니다." };
+    if (auth.failure === "INVALID_CREDENTIALS") return { success: false, message: "auth.invalidCredentials" };
+    if (auth.failure === "INACTIVE") return { success: false, message: "auth.inactiveAccount" };
+    if (auth.failure === "NOT_ADMIN") return { success: false, message: "auth.permissionDenied" };
     const user = auth.user;
-    if (!user) return { success: false, message: "로그인에 실패했습니다." };
+    if (!user) return { success: false, message: "auth.invalidCredentials" };
     setAuthenticatedAdminId(user.id);
     setCurrentUserId(user.id);
     window.localStorage.setItem(ADMIN_SESSION_KEY, user.id);
