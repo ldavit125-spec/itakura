@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 
 // ============================================================
-// 루트 경로 → 대시보드 리다이렉트
+// 루트 경로 → 관리자 로그인 리다이렉트
 // ============================================================
 
 export default function RootPage() {
-  redirect("/dashboard");
+  redirect("/admin/login");
 }
