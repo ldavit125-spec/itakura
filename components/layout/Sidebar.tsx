@@ -63,13 +63,13 @@ export default function Sidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 z-30 w-60 flex flex-col bg-[#1e2a4a] border-r border-slate-700">
       {/* 로고 영역 */}
-      <div className="flex items-center justify-center px-4 py-4 border-b border-slate-700 bg-amber-50/10">
+      <div className="flex items-center justify-center px-4 py-4 border-b border-slate-700">
         <Image
-          src="/logo.png"
+          src="/logo_white.png"
           alt="이타쿠라 베이커리 (ITAKURA BAKERY)"
           width={180}
           height={60}
-          className="h-12 w-auto object-contain rounded-md p-1 bg-amber-50/90 shadow-sm"
+          className="h-12 w-auto object-contain"
           priority
         />
       </div>
