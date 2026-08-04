@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { NAV_ITEMS } from "@/constants/navigation";
@@ -62,31 +63,15 @@ export default function Sidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 z-30 w-60 flex flex-col bg-[#1e2a4a] border-r border-slate-700">
       {/* 로고 영역 */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-700">
-        <div className="w-8 h-8 rounded-md bg-blue-600 flex items-center justify-center flex-shrink-0">
-          <svg
-            className="w-5 h-5 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-            />
-          </svg>
-        </div>
-        <div className="min-w-0">
-          <p className="text-white font-bold text-sm leading-tight truncate">
-            {t("brand.name")}
-          </p>
-          <p className="text-slate-400 text-xs leading-tight truncate">
-            {t("brand.system")}
-          </p>
-        </div>
+      <div className="flex items-center justify-center px-4 py-4 border-b border-slate-700 bg-amber-50/10">
+        <Image
+          src="/logo.png"
+          alt="이타쿠라 베이커리 (ITAKURA BAKERY)"
+          width={180}
+          height={60}
+          className="h-12 w-auto object-contain rounded-md p-1 bg-amber-50/90 shadow-sm"
+          priority
+        />
       </div>
 
       {/* 네비게이션 메뉴 */}

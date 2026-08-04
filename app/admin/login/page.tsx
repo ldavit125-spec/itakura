@@ -1,7 +1,7 @@
 "use client";
-"use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAdmin } from "@/context/AdminContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -34,7 +34,16 @@ export default function AdminLoginPage() {
     <main className="relative flex min-h-screen items-center justify-center bg-slate-950 px-4">
       <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-white p-8 shadow-2xl">
         <div className="mb-7 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-xl font-bold text-white">관</div>
+          <div className="mx-auto mb-4 flex items-center justify-center">
+            <Image
+              src="/logo.png"
+              alt="이타쿠라 베이커리 (ITAKURA BAKERY)"
+              width={240}
+              height={80}
+              className="h-16 w-auto object-contain rounded-lg p-2 bg-amber-50/90 shadow-sm"
+              priority
+            />
+          </div>
           <h1 className="text-2xl font-bold text-gray-900">{t("admin.login.title")}</h1>
           <p className="mt-2 text-sm text-gray-500">{t("admin.login.description")}</p>
         </div>
