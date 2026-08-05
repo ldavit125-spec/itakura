@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import type { FinishedGoodsInspection } from "@/types/quality";
 import { InspectionStatusBadge, InspectionJudgmentBadge } from "./QualityStatusBadge";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 완제품검사 목록 테이블 컴포넌트 (다국어 지원)
@@ -18,7 +19,7 @@ export default function FinishedGoodsInspectionTable({
   onOpenCreate,
   onOpenDetail,
 }: FinishedGoodsInspectionTableProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
@@ -106,13 +107,13 @@ export default function FinishedGoodsInspectionTable({
                   <td className="px-4 py-3 font-mono text-xs text-blue-600 font-bold">{item.fgLotNo}</td>
                   <td className="px-4 py-3 font-mono text-xs text-gray-600">{item.workOrderNo}</td>
                   <td className="px-4 py-3 whitespace-nowrap text-gray-800">{item.productionDate}</td>
-                  <td className="px-4 py-3 font-semibold text-gray-900">{item.productName}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{item.productionLine}</td>
+                  <td className="px-4 py-3 font-semibold text-gray-900">{localizedName({ locale, ko: item.productName })}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800">{localizedName({ locale, ko: item.productionLine })}</td>
                   <td className="px-4 py-3 text-right font-extrabold text-gray-900">
-                    {item.totalQuantity.toLocaleString()} {item.unit}
+                    {item.totalQuantity.toLocaleString()} {localizedName({ locale, ko: item.unit })}
                   </td>
                   <td className="px-4 py-3 text-right font-mono font-bold text-indigo-700">{item.avgWeight}g</td>
-                  <td className="px-4 py-3 text-gray-800 font-medium">{item.inspector}</td>
+                  <td className="px-4 py-3 text-gray-800 font-medium">{localizedName({ locale, ko: item.inspector })}</td>
                   <td className="px-4 py-3 text-center">
                     <InspectionJudgmentBadge judgment={item.judgment} />
                   </td>

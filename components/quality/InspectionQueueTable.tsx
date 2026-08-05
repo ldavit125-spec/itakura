@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import type { InspectionQueueItem, InspectionCategory, InspectionStatus, PriorityLevel } from "@/types/quality";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 import {
   InspectionCategoryBadge,
   InspectionStatusBadge,
@@ -21,7 +22,7 @@ export default function InspectionQueueTable({
   onOpenAssign,
   onStartInspection,
 }: InspectionQueueTableProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const [targetSearch, setTargetSearch] = useState("");
   const [lotSearch, setLotSearch] = useState("");
@@ -200,13 +201,13 @@ export default function InspectionQueueTable({
                       <InspectionCategoryBadge category={item.category} />
                     </td>
                     <td className="px-4 py-3 font-mono text-xs text-gray-900 font-semibold">{item.targetNo}</td>
-                    <td className="px-4 py-3 font-semibold text-gray-900">{item.targetName}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900">{localizedName({ locale, ko: item.targetName })}</td>
                     <td className="px-4 py-3 font-mono text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded inline-block my-1">{item.lotNo}</td>
-                    <td className="px-4 py-3 font-medium text-gray-700 whitespace-nowrap">{item.lineOrSupplier}</td>
-                    <td className="px-4 py-3 text-gray-700">{item.requester}</td>
+                    <td className="px-4 py-3 font-medium text-gray-700 whitespace-nowrap">{localizedName({ locale, ko: item.lineOrSupplier })}</td>
+                    <td className="px-4 py-3 text-gray-700">{localizedName({ locale, ko: item.requester })}</td>
                     <td className="px-4 py-3 font-semibold text-gray-900">
                       {item.inspector ? (
-                        item.inspector
+                        localizedName({ locale, ko: item.inspector })
                       ) : (
                         <span className="text-red-500 font-normal text-xs">{t("quality.unassigned")}</span>
                       )}

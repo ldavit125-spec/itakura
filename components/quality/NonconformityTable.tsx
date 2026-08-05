@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import type { Nonconformity, NonconformityType, SeverityLevel, NonconformityStatus } from "@/types/quality";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 import {
   InspectionCategoryBadge,
   SeverityLevelBadge,
@@ -74,7 +75,7 @@ export default function NonconformityTable({
   onUpdateStatus,
   onRequestCA,
 }: NonconformityTableProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<NonconformityType | "ALL">("ALL");
   const [severityFilter, setSeverityFilter] = useState<SeverityLevel | "ALL">("ALL");
@@ -185,13 +186,13 @@ export default function NonconformityTable({
                     <InspectionCategoryBadge category={item.category} />
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-gray-600">{item.inspectionNo}</td>
-                  <td className="px-4 py-3 font-semibold text-gray-900">{item.targetName}</td>
+                  <td className="px-4 py-3 font-semibold text-gray-900">{localizedName({ locale, ko: item.targetName })}</td>
                   <td className="px-4 py-3 font-mono text-xs text-purple-700">{item.lotNo}</td>
                   <td className="px-4 py-3 font-medium text-gray-800">
                     {t(NC_TYPE_LABEL_KEYS[item.ncType])}
                   </td>
                   <td className="px-4 py-3 text-right font-bold text-red-600">
-                    {item.defectQuantity.toLocaleString()} {item.unit}
+                    {item.defectQuantity.toLocaleString()} {localizedName({ locale, ko: item.unit })}
                   </td>
                   <td className="px-4 py-3 text-center">
                     <SeverityLevelBadge severity={item.severity} />
@@ -199,7 +200,7 @@ export default function NonconformityTable({
                   <td className="px-4 py-3 text-center">
                     <NonconformityStatusBadge status={item.ncStatus} />
                   </td>
-                  <td className="px-4 py-3 text-gray-800 font-medium">{item.handler}</td>
+                  <td className="px-4 py-3 text-gray-800 font-medium">{localizedName({ locale, ko: item.handler })}</td>
                   <td className="px-4 py-3 text-center whitespace-nowrap">
                     <div className="flex items-center justify-center gap-1">
                       <button

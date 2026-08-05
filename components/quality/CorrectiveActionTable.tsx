@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import type { CorrectiveAction, CorrectiveActionStatus, DepartmentCode } from "@/types/quality";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 import {
   CorrectiveActionStatusBadge,
   VerificationStatusBadge,
@@ -42,7 +43,7 @@ export default function CorrectiveActionTable({
   onCloseCA,
   onCreate,
 }: CorrectiveActionTableProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<CorrectiveActionStatus | "ALL">("ALL");
   const [currentPage, setCurrentPage] = useState(1);
@@ -148,8 +149,8 @@ export default function CorrectiveActionTable({
                     <td className="px-4 py-3 font-semibold text-gray-900">
                       {t(DEPT_LABEL_KEYS[item.targetDepartment])}
                     </td>
-                    <td className="px-4 py-3 text-gray-800 font-medium">{item.handler}</td>
-                    <td className="px-4 py-3 font-medium text-gray-900 max-w-xs truncate">{item.problemSummary}</td>
+                    <td className="px-4 py-3 text-gray-800 font-medium">{localizedName({ locale, ko: item.handler })}</td>
+                    <td className="px-4 py-3 font-medium text-gray-900 max-w-xs truncate">{localizedName({ locale, ko: item.problemSummary })}</td>
                     <td className="px-4 py-3 text-center">
                       <CorrectiveActionStatusBadge status={item.caStatus} />
                     </td>

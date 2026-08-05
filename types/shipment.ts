@@ -1,5 +1,5 @@
 export type ShipmentStatus = "PLANNED" | "READY" | "COMPLETED" | "CANCELLED";
-export type ShipmentTab = "register" | "status" | "history";
+export type ShipmentTab = "plan" | "register" | "waiting" | "completed" | "history";
 
 export interface Shipment {
   id: string;
@@ -26,6 +26,8 @@ export type ShipmentInput = Pick<
 export interface ShipmentMutationResult {
   success: boolean;
   message: string;
+  messageKey?: string;
+  messageParams?: Record<string, string | number>;
   shipmentId?: string;
 }
 
@@ -33,6 +35,7 @@ export interface ShipmentLotAvailability {
   lotNumber: string;
   productId: string;
   productName: string;
+  productNameJa?: string | null;
   productionDate: string;
   productionQuantity: number;
   qualityStatus: string;
@@ -43,6 +46,7 @@ export interface ShipmentLotAvailability {
   availableQuantity: number;
   canShip: boolean;
   reason?: string;
+  reasonKey?: string;
 }
 
 export interface ShipmentKpi {

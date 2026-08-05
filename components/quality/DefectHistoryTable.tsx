@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { DefectHistory, DefectProcessingStatus, DefectType } from "@/types/quality";
 import DefectStatusBadge from "./DefectStatusBadge";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // 불량 유형 코드 → 번역 키
 const DEFECT_TYPE_KEYS: Record<DefectType, string> = {
@@ -39,7 +40,7 @@ export default function DefectHistoryTable({
   onOpen: (item: DefectHistory) => void;
   onCreate?: () => void;
 }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [date, setDate] = useState("");
   const [lot, setLot] = useState("");
   const [product, setProduct] = useState("");
@@ -159,10 +160,10 @@ export default function DefectHistoryTable({
                 >
                   <td className="px-4 py-3 font-mono font-bold text-blue-700">{item.defectNo}</td>
                   <td className="px-4 py-3 font-mono text-xs text-blue-600 underline">{item.lotNumber}</td>
-                  <td className="px-4 py-3 font-semibold">{item.productName}</td>
+                  <td className="px-4 py-3 font-semibold">{localizedName({ locale, ko: item.productName })}</td>
                   <td className="px-4 py-3">{item.productionDate}</td>
                   <td className="px-4 py-3">{item.inspectionDate}</td>
-                  <td className="px-4 py-3">{item.inspector}</td>
+                  <td className="px-4 py-3">{localizedName({ locale, ko: item.inspector })}</td>
                   <td className="px-4 py-3">{t(DEFECT_TYPE_KEYS[item.defectType])}</td>
                   <td className="px-4 py-3 text-right font-bold text-red-600">
                     {item.defectQuantity.toLocaleString()}
@@ -171,7 +172,7 @@ export default function DefectHistoryTable({
                   <td className="px-4 py-3 text-center">
                     <DefectStatusBadge status={item.status} />
                   </td>
-                  <td className="px-4 py-3">{item.assignee}</td>
+                  <td className="px-4 py-3">{localizedName({ locale, ko: item.assignee })}</td>
                 </tr>
               ))
             )}

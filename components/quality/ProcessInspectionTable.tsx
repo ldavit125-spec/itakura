@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import type { ProcessInspection, ProcessCode } from "@/types/quality";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 import { InspectionStatusBadge, InspectionJudgmentBadge } from "./QualityStatusBadge";
 
 // ============================================================
@@ -41,7 +42,7 @@ export default function ProcessInspectionTable({
   onOpenCreate,
   onOpenDetail,
 }: ProcessInspectionTableProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [processFilter, setProcessFilter] = useState<ProcessCode | "ALL">("ALL");
   const [currentPage, setCurrentPage] = useState(1);
@@ -145,16 +146,16 @@ export default function ProcessInspectionTable({
                   <td className="px-4 py-3 font-mono font-bold text-purple-700 bg-purple-50/50 my-1 inline-block rounded">{item.pqcNo}</td>
                   <td className="px-4 py-3 font-mono text-xs text-gray-600">{item.workOrderNo}</td>
                   <td className="px-4 py-3 whitespace-nowrap text-gray-800">{item.productionDate}</td>
-                  <td className="px-4 py-3 font-semibold text-gray-900">{item.productName}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{item.productionLine}</td>
+                  <td className="px-4 py-3 font-semibold text-gray-900">{localizedName({ locale, ko: item.productName })}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800">{localizedName({ locale, ko: item.productionLine })}</td>
                   <td className="px-4 py-3 text-center whitespace-nowrap">
                     <span className="px-2 py-0.5 text-xs font-bold text-purple-800 bg-purple-100 rounded border border-purple-200">
                       {t(PROCESS_LABEL_KEYS[item.process])}
                     </span>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-600">{item.inspectionTiming}</td>
-                  <td className="px-4 py-3 text-gray-700">{item.worker}</td>
-                  <td className="px-4 py-3 text-gray-800 font-medium">{item.inspector}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-gray-600">{localizedName({ locale, ko: item.inspectionTiming })}</td>
+                  <td className="px-4 py-3 text-gray-700">{localizedName({ locale, ko: item.worker })}</td>
+                  <td className="px-4 py-3 text-gray-800 font-medium">{localizedName({ locale, ko: item.inspector })}</td>
                   <td className="px-4 py-3 text-center">
                     <InspectionStatusBadge status={item.status} />
                   </td>

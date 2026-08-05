@@ -17,12 +17,14 @@ function interpolate(value: string, params?: TranslationParams): string {
 
 interface LanguageValue {
   language: Locale;
+  locale: Locale;
   setLanguage: (lang: Locale) => void;
   t: (key: TranslationKey | string, params?: TranslationParams) => string;
 }
 
 const LanguageContext = createContext<LanguageValue>({
   language: "ko",
+  locale: "ko",
   setLanguage: () => {},
   t: () => "",
 });
@@ -60,7 +62,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     [language]
   );
 
-  const value = useMemo(() => ({ language, setLanguage, t }), [language, setLanguage, t]);
+  const value = useMemo(
+    () => ({
+      language,
+      locale: language,
+      setLanguage,
+      t,
+    }),
+    [language, setLanguage, t]
+  );
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
 

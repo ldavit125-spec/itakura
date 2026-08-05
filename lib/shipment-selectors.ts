@@ -27,14 +27,16 @@ export function getShipmentLotAvailability(
   const availableQuantity = Math.max(0, currentStock - reservedQuantity);
 
   let reason: string | undefined;
-  if (!inspectionCompleted) reason = "품질검사 미완료";
-  else if (!inspectionPassed || lot.qualityStatus !== "PASSED" || !lot.isReleaseAvailable) reason = "품질검사 불합격 또는 출하 보류";
-  else if (availableQuantity <= 0) reason = "출하 가능 재고 부족";
+  let reasonKey: string | undefined;
+  if (!inspectionCompleted) { reason = "품질검사 미완료"; reasonKey = "shipment.reason.inspectionIncomplete"; }
+  else if (!inspectionPassed || lot.qualityStatus !== "PASSED" || !lot.isReleaseAvailable) { reason = "품질검사 불합격 또는 출하 보류"; reasonKey = "shipment.reason.inspectionBlocked"; }
+  else if (availableQuantity <= 0) { reason = "출하 가능 재고 부족"; reasonKey = "shipment.reason.insufficientStock"; }
 
   return {
     lotNumber: lot.fgLotNo,
     productId: lot.productCode,
     productName: lot.productName,
+    productNameJa: lot.productNameJa,
     productionDate: lot.productionDate,
     productionQuantity: lot.totalQuantity,
     qualityStatus: lot.qualityStatus,
@@ -45,6 +47,7 @@ export function getShipmentLotAvailability(
     availableQuantity,
     canShip: !reason,
     reason,
+    reasonKey,
   };
 }
 
