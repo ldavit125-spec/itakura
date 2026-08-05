@@ -63,66 +63,90 @@ export default function DefectHistoryTable({
     [date, inspector, items, lot, product, status, type]
   );
 
+  const resetFilters = () => {
+    setDate("");
+    setLot("");
+    setProduct("");
+    setInspector("");
+    setType("ALL");
+    setStatus("ALL");
+  };
+
   return (
     <div className="p-4 sm:p-6 space-y-4">
-      <div className="flex justify-end">
-        {onCreate && (
-          <button
-            onClick={onCreate}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700"
+      {/* 2행: 날짜 + 검색창 + 필터 + 초기화 */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-2.5 flex-1">
+          {/* 검사일 */}
+          <div className="min-w-[140px]">
+            <DateInput
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            />
+          </div>
+
+          {/* LOT번호 검색 */}
+          <input
+            value={lot}
+            onChange={(e) => setLot(e.target.value)}
+            placeholder={t("quality.search.lotNo")}
+            className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[130px]"
+          />
+
+          {/* 제품명 */}
+          <input
+            value={product}
+            onChange={(e) => setProduct(e.target.value)}
+            placeholder={t("quality.col.productName")}
+            className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[130px]"
+          />
+
+          {/* 검사담당자 */}
+          <input
+            value={inspector}
+            onChange={(e) => setInspector(e.target.value)}
+            placeholder={t("quality.col.inspectorName")}
+            className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[110px]"
+          />
+
+          {/* 불량타입 필터 */}
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value as DefectType | "ALL")}
+            className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           >
-            {t("quality.btn.registerDefect")}
+            <option value="ALL">{t("quality.defectType.all")}</option>
+            {DEFECT_TYPE_CODE_LIST.map((code) => (
+              <option key={code} value={code}>
+                {t(DEFECT_TYPE_KEYS[code])}
+              </option>
+            ))}
+          </select>
+
+          {/* 처리상태 필터 */}
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value as DefectProcessingStatus | "ALL")}
+            className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          >
+            <option value="ALL">{t("quality.defectStatus.all")}</option>
+            {DEFECT_STATUS_CODE_LIST.map((code) => (
+              <option key={code} value={code}>
+                {t(DEFECT_STATUS_KEYS[code])}
+              </option>
+            ))}
+          </select>
+
+          {/* 초기화 버튼 */}
+          <button
+            onClick={resetFilters}
+            className="px-2.5 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            title={t("action.reset")}
+          >
+            {t("action.reset")}
           </button>
-        )}
-      </div>
-      <div className="grid gap-2 md:grid-cols-3 xl:grid-cols-6">
-        <DateInput
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-        />
-        <input
-          value={lot}
-          onChange={(e) => setLot(e.target.value)}
-          placeholder={t("quality.search.lotNo")}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-        />
-        <input
-          value={product}
-          onChange={(e) => setProduct(e.target.value)}
-          placeholder={t("quality.col.productName")}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-        />
-        <input
-          value={inspector}
-          onChange={(e) => setInspector(e.target.value)}
-          placeholder={t("quality.col.inspectorName")}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-        />
-        <select
-          value={type}
-          onChange={(e) => setType(e.target.value as DefectType | "ALL")}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-        >
-          <option value="ALL">{t("quality.defectType.all")}</option>
-          {DEFECT_TYPE_CODE_LIST.map((code) => (
-            <option key={code} value={code}>
-              {t(DEFECT_TYPE_KEYS[code])}
-            </option>
-          ))}
-        </select>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value as DefectProcessingStatus | "ALL")}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-        >
-          <option value="ALL">{t("quality.defectStatus.all")}</option>
-          {DEFECT_STATUS_CODE_LIST.map((code) => (
-            <option key={code} value={code}>
-              {t(DEFECT_STATUS_KEYS[code])}
-            </option>
-          ))}
-        </select>
+        </div>
       </div>
       <p className="text-xs text-gray-500">
         {t("quality.total")} {filtered.length}{t("quality.summary.unit")} · {t("quality.clickForDetail")}

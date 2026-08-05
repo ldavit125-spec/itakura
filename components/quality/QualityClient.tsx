@@ -135,16 +135,64 @@ export default function QualityClient() {
           />
         )}
 
-        {/* 탭 2: 원재료 입고검사 */}
+        {/* 탭 2: 원재료 입고검사/공정검사/완제품검사 서브탭 (1행: 서브탭 + 우측 신규등록) */}
         {activeTab === "results" && (
-          <div className="flex gap-2 border-b border-gray-200 bg-gray-50 px-5 py-3">
-            {([
-              ["incoming", t("quality.tab.incoming")],
-              ["process", t("quality.tab.process")],
-              ["finished", t("quality.tab.finished")],
-            ] as const).map(([value, label]) => (
-              <button key={value} onClick={() => setResultView(value)} className={`rounded-lg px-3 py-2 text-sm font-semibold ${resultView === value ? "bg-blue-600 text-white" : "border border-gray-200 bg-white text-gray-600"}`}>{label}</button>
-            ))}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-200 bg-gray-50 px-4 sm:px-6 py-3">
+            <div className="flex flex-wrap items-center gap-2">
+              {([
+                ["incoming", t("quality.tab.incoming")],
+                ["process", t("quality.tab.process")],
+                ["finished", t("quality.tab.finished")],
+              ] as const).map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => setResultView(value)}
+                  className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors ${
+                    resultView === value
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div>
+              {resultView === "incoming" && (
+                <button
+                  onClick={() => hasPermission("QUALITY_CREATE") && setIncomingModal({ isOpen: true })}
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>{t("quality.btn.registerIncoming")}</span>
+                </button>
+              )}
+              {resultView === "process" && (
+                <button
+                  onClick={() => hasPermission("QUALITY_CREATE") && setProcessModal({ isOpen: true })}
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>{t("quality.btn.registerProcess")}</span>
+                </button>
+              )}
+              {resultView === "finished" && (
+                <button
+                  onClick={() => hasPermission("QUALITY_CREATE") && setFgModal({ isOpen: true })}
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>{t("quality.btn.registerFinished")}</span>
+                </button>
+              )}
+            </div>
           </div>
         )}
         {activeTab === "results" && resultView === "incoming" && (
@@ -173,16 +221,64 @@ export default function QualityClient() {
           />
         )}
 
-        {/* 탭 5: 부적합 관리 */}
+        {/* 탭 5: 불량/부적합/시정조치 서브탭 (1행: 서브탭 + 우측 신규등록) */}
         {activeTab === "defects" && (
-          <div className="flex gap-2 border-b border-gray-200 bg-gray-50 px-5 py-3">
-            {([
-              ["history", t("quality.tab.history")],
-              ["nonconformity", t("quality.tab.nonconformity")],
-              ["corrective", t("quality.tab.corrective")],
-            ] as const).map(([value, label]) => (
-              <button key={value} onClick={() => setDefectView(value)} className={`rounded-lg px-3 py-2 text-sm font-semibold ${defectView === value ? "bg-red-600 text-white" : "border border-gray-200 bg-white text-gray-600"}`}>{label}</button>
-            ))}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-200 bg-gray-50 px-4 sm:px-6 py-3">
+            <div className="flex flex-wrap items-center gap-2">
+              {([
+                ["history", t("quality.tab.history")],
+                ["nonconformity", t("quality.tab.nonconformity")],
+                ["corrective", t("quality.tab.corrective")],
+              ] as const).map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => setDefectView(value)}
+                  className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors ${
+                    defectView === value
+                      ? "bg-red-600 text-white shadow-sm"
+                      : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div>
+              {defectView === "history" && (
+                <button
+                  onClick={() => hasPermission("QUALITY_CREATE") && setDefectCreateOpen(true)}
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors shadow-sm whitespace-nowrap"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>{t("quality.btn.registerDefect")}</span>
+                </button>
+              )}
+              {defectView === "nonconformity" && (
+                <button
+                  onClick={() => hasPermission("QUALITY_CREATE") && setNcModal({ isOpen: true })}
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors shadow-sm whitespace-nowrap"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>{t("quality.btn.registerNc")}</span>
+                </button>
+              )}
+              {defectView === "corrective" && (
+                <button
+                  onClick={() => hasPermission("QUALITY_CREATE") && setCorrectiveCreateOpen(true)}
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors shadow-sm whitespace-nowrap"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>{t("quality.btn.registerCA")}</span>
+                </button>
+              )}
+            </div>
           </div>
         )}
         {activeTab === "defects" && defectView === "history" && <DefectHistoryTable items={defectHistory} onOpen={setDefectDetail} onCreate={() => hasPermission("QUALITY_CREATE") && setDefectCreateOpen(true)} />}

@@ -53,11 +53,23 @@ export function getShipmentLotAvailability(
 
 export function getShipmentKpi(shipments: Shipment[], now = new Date()): ShipmentKpi {
   const today = getBusinessDate(now);
-  const todayItems = shipments.filter((item) => isSameBusinessDate(item.plannedDate, today) && item.status !== "CANCELLED");
-  const completed = todayItems.filter((item) => item.status === "COMPLETED");
+  const todayCompleted = shipments.filter(
+    (item) => item.status === "COMPLETED" && isSameBusinessDate(item.shippedDate || item.plannedDate, today)
+  );
+
+  const todayPlannedOrCompleted = shipments.filter(
+    (item) =>
+      item.status !== "CANCELLED" &&
+      (isSameBusinessDate(item.plannedDate, today) ||
+        (item.status === "COMPLETED" && isSameBusinessDate(item.shippedDate, today)))
+  );
+
   return {
-    todayShipmentCount: completed.length,
-    todayShipmentQuantity: completed.reduce((sum, item) => sum + item.quantity, 0),
-    completionRate: todayItems.length > 0 ? Math.round((completed.length / todayItems.length) * 1000) / 10 : 0,
+    todayShipmentCount: todayCompleted.length,
+    todayShipmentQuantity: todayCompleted.reduce((sum, item) => sum + item.quantity, 0),
+    completionRate:
+      todayPlannedOrCompleted.length > 0
+        ? Math.round((todayCompleted.length / todayPlannedOrCompleted.length) * 1000) / 10
+        : 0,
   };
 }

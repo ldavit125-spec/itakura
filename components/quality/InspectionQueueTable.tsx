@@ -86,80 +86,105 @@ export default function InspectionQueueTable({
     return filteredData.slice(start, start + pageSize);
   }, [filteredData, currentPage, pageSize]);
 
+  const resetFilters = () => {
+    setTargetSearch("");
+    setLotSearch("");
+    setCategoryFilter("ALL");
+    setStatusFilter("ALL");
+    setPriorityFilter("ALL");
+    setCurrentPage(1);
+  };
+
   return (
     <div className="p-4 sm:p-6">
-      {/* 검색 및 필터 컨트롤 바 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 mb-4">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder={t("quality.search.queue")}
-            value={targetSearch}
+      {/* 2행: 검색창 + 필터 + 초기화 */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <div className="flex flex-wrap items-center gap-2.5 flex-1">
+          {/* 검사대상/요청번호 검색 */}
+          <div className="relative flex-1 min-w-[180px] max-w-xs">
+            <input
+              type="text"
+              placeholder={t("quality.search.queue")}
+              value={targetSearch}
+              onChange={(e) => {
+                setTargetSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+            />
+            <svg className="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+
+          {/* LOT번호 검색 */}
+          <div className="relative min-w-[150px]">
+            <input
+              type="text"
+              placeholder={t("quality.search.lotNo")}
+              value={lotSearch}
+              onChange={(e) => {
+                setLotSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+            />
+            <svg className="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 12h10M7 17h10" />
+            </svg>
+          </div>
+
+          {/* 구분 필터 */}
+          <select
+            value={categoryFilter}
             onChange={(e) => {
-              setTargetSearch(e.target.value);
+              setCategoryFilter(e.target.value as InspectionCategory | "ALL");
               setCurrentPage(1);
             }}
-            className="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
-          />
-          <svg className="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
+            className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          >
+            {CATEGORY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
+            ))}
+          </select>
 
-        <div className="relative">
-          <input
-            type="text"
-            placeholder={t("quality.search.lotNo")}
-            value={lotSearch}
+          {/* 진행상태 필터 */}
+          <select
+            value={statusFilter}
             onChange={(e) => {
-              setLotSearch(e.target.value);
+              setStatusFilter(e.target.value as InspectionStatus | "ALL");
               setCurrentPage(1);
             }}
-            className="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
-          />
-          <svg className="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 12h10M7 17h10" />
-          </svg>
+            className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          >
+            {STATUS_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
+            ))}
+          </select>
+
+          {/* 우선순위 필터 */}
+          <select
+            value={priorityFilter}
+            onChange={(e) => {
+              setPriorityFilter(e.target.value as PriorityLevel | "ALL");
+              setCurrentPage(1);
+            }}
+            className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          >
+            {PRIORITY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
+            ))}
+          </select>
+
+          {/* 초기화 버튼 */}
+          <button
+            onClick={resetFilters}
+            className="px-2.5 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            title={t("action.reset")}
+          >
+            {t("action.reset")}
+          </button>
         </div>
-
-        <select
-          value={categoryFilter}
-          onChange={(e) => {
-            setCategoryFilter(e.target.value as InspectionCategory | "ALL");
-            setCurrentPage(1);
-          }}
-          className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-        >
-          {CATEGORY_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
-          ))}
-        </select>
-
-        <select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value as InspectionStatus | "ALL");
-            setCurrentPage(1);
-          }}
-          className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-        >
-          {STATUS_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
-          ))}
-        </select>
-
-        <select
-          value={priorityFilter}
-          onChange={(e) => {
-            setPriorityFilter(e.target.value as PriorityLevel | "ALL");
-            setCurrentPage(1);
-          }}
-          className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-        >
-          {PRIORITY_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
-          ))}
-        </select>
       </div>
 
       {/* 테이블 영역 */}

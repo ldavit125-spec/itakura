@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import type { Nonconformity, NonconformityType, SeverityLevel, NonconformityStatus } from "@/types/quality";
 import { useLanguage } from "@/context/LanguageContext";
 import { localizedName } from "@/lib/i18n/localized";
+import DateInput from "@/components/ui/DateInput";
 import {
   InspectionCategoryBadge,
   SeverityLevelBadge,
@@ -76,6 +77,7 @@ export default function NonconformityTable({
   onRequestCA,
 }: NonconformityTableProps) {
   const { t, locale } = useLanguage();
+  const [dateSearch, setDateSearch] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<NonconformityType | "ALL">("ALL");
   const [severityFilter, setSeverityFilter] = useState<SeverityLevel | "ALL">("ALL");
@@ -86,6 +88,7 @@ export default function NonconformityTable({
 
   const filteredData = useMemo(() => {
     return nonconformities.filter((item) => {
+      if (dateSearch && !item.occurredDate.includes(dateSearch)) return false;
       if (
         searchTerm &&
         !item.ncNo.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -100,7 +103,7 @@ export default function NonconformityTable({
       if (statusFilter !== "ALL" && item.ncStatus !== statusFilter) return false;
       return true;
     });
-  }, [nonconformities, searchTerm, typeFilter, severityFilter, statusFilter]);
+  }, [nonconformities, dateSearch, searchTerm, typeFilter, severityFilter, statusFilter]);
 
   const totalPages = Math.ceil(filteredData.length / pageSize) || 1;
   const paginatedData = useMemo(() => {
@@ -108,48 +111,73 @@ export default function NonconformityTable({
     return filteredData.slice(start, start + pageSize);
   }, [filteredData, currentPage, pageSize]);
 
+  const resetFilters = () => {
+    setDateSearch("");
+    setSearchTerm("");
+    setTypeFilter("ALL");
+    setSeverityFilter("ALL");
+    setStatusFilter("ALL");
+    setCurrentPage(1);
+  };
+
   return (
     <div className="p-4 sm:p-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 mb-4">
-        <div className="relative col-span-1 sm:col-span-2">
-          <input
-            type="text"
-            placeholder={t("quality.search.nc")}
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
-          />
-          <svg className="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+      {/* 2행: 날짜 + 검색창 + 필터 + 초기화 */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <div className="flex flex-wrap items-center gap-2.5 flex-1">
+          {/* 발생일 */}
+          <div className="min-w-[140px]">
+            <DateInput
+              value={dateSearch}
+              onChange={(e) => {
+                setDateSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            />
+          </div>
+
+          {/* 검색창 */}
+          <div className="relative flex-1 min-w-[200px] max-w-md">
+            <input
+              type="text"
+              placeholder={t("quality.search.nc")}
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+            />
+            <svg className="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+
+          {/* 부적합 타입 필터 */}
+          <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value as NonconformityType | "ALL"); setCurrentPage(1); }} className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+            {NC_TYPE_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>)}
+          </select>
+
+          {/* 심각도 필터 */}
+          <select value={severityFilter} onChange={(e) => { setSeverityFilter(e.target.value as SeverityLevel | "ALL"); setCurrentPage(1); }} className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+            {SEVERITY_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>)}
+          </select>
+
+          {/* 상태 필터 */}
+          <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value as NonconformityStatus | "ALL"); setCurrentPage(1); }} className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+            {NC_STATUS_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>)}
+          </select>
+
+          {/* 초기화 버튼 */}
+          <button
+            onClick={resetFilters}
+            className="px-2.5 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            title={t("action.reset")}
+          >
+            {t("action.reset")}
+          </button>
         </div>
-
-        <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value as NonconformityType | "ALL"); setCurrentPage(1); }} className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-          {NC_TYPE_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>)}
-        </select>
-
-        <select value={severityFilter} onChange={(e) => { setSeverityFilter(e.target.value as SeverityLevel | "ALL"); setCurrentPage(1); }} className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-          {SEVERITY_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>)}
-        </select>
-
-        <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value as NonconformityStatus | "ALL"); setCurrentPage(1); }} className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-          {NC_STATUS_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>)}
-        </select>
-      </div>
-
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={onOpenCreate}
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors shadow-sm whitespace-nowrap"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          <span>{t("quality.btn.registerNc")}</span>
-        </button>
       </div>
 
       <div className="overflow-x-auto border border-gray-200 rounded-lg bg-white shadow-sm">

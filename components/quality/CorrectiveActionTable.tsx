@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import type { CorrectiveAction, CorrectiveActionStatus, DepartmentCode } from "@/types/quality";
 import { useLanguage } from "@/context/LanguageContext";
 import { localizedName } from "@/lib/i18n/localized";
+import DateInput from "@/components/ui/DateInput";
 import {
   CorrectiveActionStatusBadge,
   VerificationStatusBadge,
@@ -44,6 +45,7 @@ export default function CorrectiveActionTable({
   onCreate,
 }: CorrectiveActionTableProps) {
   const { t, locale } = useLanguage();
+  const [dateSearch, setDateSearch] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<CorrectiveActionStatus | "ALL">("ALL");
   const [currentPage, setCurrentPage] = useState(1);
@@ -51,6 +53,7 @@ export default function CorrectiveActionTable({
 
   const filteredData = useMemo(() => {
     return correctiveActions.filter((item) => {
+      if (dateSearch && !item.requestDate.includes(dateSearch)) return false;
       if (
         searchTerm &&
         !item.caNo.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -63,7 +66,7 @@ export default function CorrectiveActionTable({
       if (statusFilter !== "ALL" && item.caStatus !== statusFilter) return false;
       return true;
     });
-  }, [correctiveActions, searchTerm, statusFilter]);
+  }, [correctiveActions, dateSearch, searchTerm, statusFilter]);
 
   const totalPages = Math.ceil(filteredData.length / pageSize) || 1;
   const paginatedData = useMemo(() => {
@@ -71,11 +74,32 @@ export default function CorrectiveActionTable({
     return filteredData.slice(start, start + pageSize);
   }, [filteredData, currentPage, pageSize]);
 
+  const resetFilters = () => {
+    setDateSearch("");
+    setSearchTerm("");
+    setStatusFilter("ALL");
+    setCurrentPage(1);
+  };
+
   return (
     <div className="p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-        <div className="flex flex-1 items-center gap-2 max-w-lg">
-          <div className="relative flex-1">
+      {/* 2행: 날짜 + 검색창 + 필터 + 초기화 */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <div className="flex flex-wrap items-center gap-2.5 flex-1">
+          {/* 요청일 */}
+          <div className="min-w-[140px]">
+            <DateInput
+              value={dateSearch}
+              onChange={(e) => {
+                setDateSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            />
+          </div>
+
+          {/* 검색창 */}
+          <div className="relative flex-1 min-w-[200px] max-w-md">
             <input
               type="text"
               placeholder={t("quality.search.ca")}
@@ -91,6 +115,7 @@ export default function CorrectiveActionTable({
             </svg>
           </div>
 
+          {/* 상태 필터 */}
           <select
             value={statusFilter}
             onChange={(e) => {
@@ -103,15 +128,19 @@ export default function CorrectiveActionTable({
               <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
             ))}
           </select>
+
+          {/* 초기화 버튼 */}
+          <button
+            onClick={resetFilters}
+            className="px-2.5 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            title={t("action.reset")}
+          >
+            {t("action.reset")}
+          </button>
         </div>
 
-        <div className="flex items-center gap-3 text-xs text-gray-500 font-medium">
-          {onCreate && (
-            <button onClick={onCreate} className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700">
-              {t("quality.btn.registerCA")}
-            </button>
-          )}
-          {t("quality.incompleteCA")}: <strong className="text-amber-600">{correctiveActions.filter(c => c.caStatus !== "CLOSED").length}{t("quality.summary.unit")}</strong>
+        <div className="flex items-center gap-3 text-xs text-gray-500 font-medium whitespace-nowrap">
+          {t("quality.incompleteCA")}: <strong className="text-amber-600 ml-1">{correctiveActions.filter(c => c.caStatus !== "CLOSED").length}{t("quality.summary.unit")}</strong>
         </div>
       </div>
 
