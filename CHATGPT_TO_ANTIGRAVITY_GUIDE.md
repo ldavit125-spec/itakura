@@ -10,11 +10,44 @@
 
 ## 0. 2026-08-05 현재 인수인계 상태 (가장 먼저 읽기)
 
+### 최신 상태 요약
+
+- 현재 브랜치: `feature/japanese-ui`
+- GitHub 원격 브랜치: `origin/feature/japanese-ui`
+- 최신 푸시 커밋: `51923fd fix: localize shipment date filter placeholder`
+- 직전 주요 커밋:
+  - `c98ac87 fix: 출하계획 탭 제거 및 일본어 모드 한글 표시 수정`
+  - `c6ec30c feat: complete quality and shipment localization`
+- `npm.cmd exec -- tsc --noEmit`: 성공
+- `npm.cmd run build`: 성공
+- Vercel Production: `https://itakura.vercel.app`
+- Vercel Production 재배포 및 기준정보 조회 정상 확인
+- 이 문서를 갱신하기 직전 작업 트리는 깨끗했으며, 이 문서 수정분만 새 변경으로 남을 수 있음
+
+### Vercel/Supabase 연결 복구 이력
+
+Vercel 기준정보 화면에서 `TypeError: Failed to fetch`가 발생했습니다. 원인은 코드가 아니라 Vercel 환경변수 누락·불일치였습니다.
+
+- 코드가 사용하는 변수:
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- 변수가 없을 때 코드의 fallback:
+  - `https://placeholder.supabase.co`
+  - `placeholder-key`
+- Production과 Preview에 두 환경변수를 로컬 `.env.local`의 현재 정상값으로 등록함
+- Production을 재배포하고 `https://itakura.vercel.app/master-data`에서 제품 8행 조회 확인
+- Vercel 콘솔 오류 0건 확인
+- A001 / `admin1234` 로그인 후 `/admin` 이동 확인
+- 기준정보 수정 모달 진입 확인. 데이터 보호를 위해 실제 저장·삭제는 수행하지 않음
+
+> [!IMPORTANT]
+> Vercel 환경변수는 이미 복구되었습니다. `.env.local` 값을 문서나 콘솔에 출력하지 말고, 환경변수를 삭제하거나 placeholder 값으로 다시 설정하지 마세요. 새 배포에서 연결 문제가 생기면 먼저 Vercel의 Production/Preview 적용 범위와 재배포 여부를 확인하세요.
+
 ### 현재 요청 범위
 
 현재 진행 중인 작업은 **출하관리 메뉴의 한국어/일본어 전환 보완**입니다. 다음 영역만 대상입니다.
 
-- 출하계획, 출하등록, 출하대기, 출하완료, 출하이력
+- 출하등록, 출하대기, 출하완료, 출하이력 (`출하계획` 탭은 후속 커밋 `c98ac87`에서 제거됨)
 - 출하관리의 검색, 필터, 표, 상세 모달, 상태 라벨, 성공·오류 메시지
 - 제품명·거래처명은 기존 `nameJa`/`name_ja` 데이터가 있을 때 일본어로 표시
 - 일본어명이 없으면 한국어 원본으로 표시
@@ -32,13 +65,16 @@
 
 ### 구현된 내용
 
-- 출하관리 탭을 `출하계획 / 출하등록 / 출하대기 / 출하완료 / 출하이력`으로 구성
+- 출하관리 탭을 `출하등록 / 출하대기 / 출하완료 / 출하이력`으로 구성
 - 모든 출하 UI 라벨을 `shipment.*` 번역 키로 연결
 - 상태 코드 `PLANNED`, `READY`, `COMPLETED`, `CANCELLED`는 그대로 유지하고 화면 라벨만 번역
 - 제품·거래처 표시 시 기존 일본어 데이터 사용, 일본어 값이 없으면 한국어 원본 유지
 - 언어 전환 시 `ShipmentProvider`를 재마운트하거나 데이터를 재조회하지 않음
 - PASSED LOT 출하 허용, FAILED/HOLD 및 검사 미완료 LOT 차단 로직 유지
 - 출하 상세의 감사 로그 설명은 화면에서만 언어별로 표시
+- 출하대기·출하완료·출하이력의 날짜 필터는 공통 `DateInput`을 사용
+  - 한국어: `연도-월-일`
+  - 일본어: `年 - 月 - 日`
 - DB 쿼리, Supabase client, Auth, RLS, 재고/LOT 관계 로직은 변경하지 않음
 
 ### 실제 검증 결과
@@ -59,17 +95,17 @@
 
 ### 아직 확인하거나 정리할 항목
 
-- 마지막 감사 로그 번역 수정 후 브라우저에서 상세 모달을 한 번 더 확인
-- 브라우저 콘솔 error 0건 확인
-- `Failed to fetch`, `column does not exist`가 없는지 최종 확인
+- 마지막 감사 로그 번역 수정 후 상세 모달의 문구를 필요 시 한 번 더 확인
+- 새 변경 뒤에도 브라우저 콘솔 error 0건인지 확인
+- `Failed to fetch`, `column does not exist`가 재발하지 않는지 확인
 - FAILED/HOLD LOT은 출하 선택 목록에 노출되지 않는지 확인 (비즈니스 로직 자체는 유지됨)
 - 제품·거래처의 `name_ja`가 현재 DB에 비어 있으면 일본어 모드에서도 한국어가 표시되는 것이 **요구된 fallback 동작**임
 - 담당자 `이임원`은 기존 `localizedName()` 자동 음역 때문에 `アアンアン`처럼 부자연스럽게 보일 수 있음. 이를 고칠 때 Auth/사용자 데이터 구조를 바꾸지 말고, 출하 화면 표시 범위에서만 안전하게 처리할 것
-- 현재 Git commit, push, Vercel 배포는 아직 수행하지 않음
+- GitHub 푸시와 Vercel Production 배포는 완료됨
 
 ### 현재 Git 작업 트리 주의
 
-현재 작업 트리는 깨끗하지 않습니다. 출하관리 외에 품질관리 현지화 변경이 함께 있습니다.
+품질관리와 출하관리 현지화 변경은 이미 커밋·푸시되었습니다. 새 작업을 시작할 때는 반드시 `git status --short`로 이후에 추가된 로컬 변경이 있는지 확인하세요.
 
 ```text
 components/quality/*.tsx          품질관리 현지화 변경
@@ -98,14 +134,15 @@ git diff -- lib/i18n/translations.ts
 ```text
 CHATGPT_TO_ANTIGRAVITY_GUIDE.md를 처음부터 끝까지 읽고 작업을 이어가세요.
 
-현재 우선 작업은 출하관리 한국어/일본어 전환의 최종 회귀 검증입니다.
-가이드 0장의 현재 상태, 이미 생성된 테스트 출하와 Git 혼합 작업 트리를 반드시 확인하세요.
+현재 우선 작업은 사용자가 새로 지정하는 화면의 최소 범위 수정입니다.
+가이드 0장의 최신 커밋, Vercel/Supabase 복구 상태와 이미 생성된 테스트 출하를 반드시 확인하세요.
 
 DB reset, seed 재실행, migration 수정·추가, DELETE/TRUNCATE/DROP,
-Auth/RLS/권한/Supabase client/환경변수 변경은 금지합니다.
+Auth/RLS/권한/Supabase client 변경은 금지합니다.
+Vercel 환경변수는 이미 정상화되었으므로 삭제·초기화하거나 값을 출력하지 마세요.
 출하 가능 판정, 재고 차감, LOT 연결, CRUD 로직은 변경하지 마세요.
 
-먼저 git status와 diff를 읽고, 마지막 감사 로그 일본어 표시와 콘솔 오류를 확인한 뒤
+먼저 git status와 최근 커밋을 확인하고, 수정 대상 파일만 읽은 뒤
 npm.cmd exec -- tsc --noEmit 및 npm.cmd run build를 실행하세요.
 이미 생성된 SHP-20260805-003을 다시 만들거나 삭제하지 마세요.
 ```

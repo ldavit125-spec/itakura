@@ -5,6 +5,7 @@ import Link from "next/link";
 import { NAV_ITEMS } from "@/constants/navigation";
 import { useAdmin } from "@/context/AdminContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 function getCurrentPageLabel(pathname: string): string {
   return NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))?.label ?? "header.page";
@@ -19,6 +20,11 @@ export default function Header() {
   const router = useRouter();
   const { currentUser, users, roles, switchDemoUser, isAdminAuthenticated, logoutAdmin } = useAdmin();
   const { language, setLanguage, t } = useLanguage();
+  const displayUserName = (user: { id: string; name: string }) =>
+    language === "ja" && user.id !== "user-admin"
+      ? localizedName({ locale: "ja", ko: user.name })
+      : user.name;
+  const currentUserDisplayName = displayUserName(currentUser);
   const roleLabel = roles
     .filter((role) => currentUser.roleIds.includes(role.id))
     .map((role) => t(ROLE_KEYS[role.code] ?? ""))
@@ -39,7 +45,7 @@ export default function Header() {
             aria-label={t("header.demoUserSwitch")}
           >
             {users.filter((user) => user.status === "ACTIVE").map((user) => (
-              <option key={user.id} value={user.id}>{user.name}</option>
+              <option key={user.id} value={user.id}>{displayUserName(user)}</option>
             ))}
           </select>
         </label>
@@ -56,10 +62,10 @@ export default function Header() {
         <div className="w-px h-6 bg-gray-200" aria-hidden="true" />
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
-            {currentUser.name.slice(0, 1)}
+            {currentUserDisplayName.slice(0, 1)}
           </div>
           <div className="hidden sm:block max-w-52">
-            <p className="text-sm font-medium text-gray-800 leading-tight">{currentUser.name}</p>
+            <p className="text-sm font-medium text-gray-800 leading-tight">{currentUserDisplayName}</p>
             <p className="text-xs text-gray-500 leading-tight truncate">{roleLabel}</p>
           </div>
         </div>

@@ -812,7 +812,7 @@ export const ja: Partial<Record<TranslationKey, string>> = {
   "role.worker": "現場作業者",
   "header.page": "ページ",
   "header.demoUserSwitch": "デモユーザー切り替え",
-  "header.demoUser": "デ모ユーザー",
+  "header.demoUser": "デモユーザー",
   "header.adminLogin": "管理者ログイン",
   "development.planned": "開発予定",
   "dashboard.page.description": "本日の生産実績と不良状況をリアルタイムで確認します。",
