@@ -14,7 +14,7 @@
 
 - 현재 브랜치: `feature/japanese-ui`
 - GitHub 원격 브랜치: `origin/feature/japanese-ui`
-- 최신 작업 커밋: `fix: enable shipment number generation control` (정확한 해시는 `git log -1 --oneline`으로 확인)
+- 최신 푸시 커밋: `102fe97 fix: enable shipment number generation control`
 - 직전 주요 커밋:
   - `eb289d0 fix: localize demo user names in header`
   - `51923fd fix: localize shipment date filter placeholder`
@@ -24,7 +24,9 @@
 - `npm.cmd run build`: 성공
 - Vercel Production: `https://itakura.vercel.app`
 - Vercel Production 재배포 및 기준정보 조회 정상 확인
-- 이 문서를 갱신하기 직전 작업 트리는 깨끗했으며, 이 문서 수정분만 새 변경으로 남을 수 있음
+- 최신 기능 커밋은 GitHub `origin/feature/japanese-ui`에 푸시 완료
+- 이 문서를 갱신하기 직전 작업 트리는 깨끗했으며, 이번 문서 수정분만 새 변경으로 남음
+- `102fe97` 이후 Vercel Production 재배포는 별도로 수행하지 않았으므로, Production 반영 여부는 배포 목록에서 확인할 것
 
 ### Vercel/Supabase 연결 복구 이력
 
@@ -64,6 +66,20 @@ Vercel 기준정보 화면에서 `TypeError: Failed to fetch`가 발생했습니
 > [!CAUTION]
 > 사용자 표시 이름을 고치기 위해 `AdminUser.name`, 사용자 ID, 역할 ID, Auth, 세션 또는 감사 로그 원본 데이터를 변경하지 마세요. `이임원`을 일본어로 음역하거나 번역 사전에 넣지 마세요.
 
+### 품질관리 불량품 이력 날짜 필터
+
+품질관리 → 불량품 이력 탭의 날짜 필터가 브라우저 기본 한국어 형식 `연도-월-일`로 남아 있던 문제를 수정했습니다.
+
+- 수정 파일: `components/quality/DefectHistoryTable.tsx`
+- 기존 `<input type="date">`를 공통 `components/ui/DateInput.tsx`로 교체
+- 한국어 모드: `연도-월-일`
+- 일본어 모드: `年 - 月 - 日`
+- 날짜 state, `inspectionDate` 비교 필터, 품질 데이터 조회 및 CRUD 로직은 변경하지 않음
+- `npm.cmd exec -- tsc --noEmit` 및 `npm.cmd run build` 성공
+
+> [!CAUTION]
+> 날짜 문구를 수정하기 위해 검사일 데이터 형식이나 DB 컬럼을 변경하지 마세요. `DateInput`은 화면의 빈 날짜 안내만 현지화하며 실제 값은 기존 `YYYY-MM-DD` 형식을 유지합니다.
+
 ### 현재 요청 범위
 
 현재 진행 중인 작업은 **출하관리 메뉴의 한국어/일본어 전환 보완**입니다. 다음 영역만 대상입니다.
@@ -73,7 +89,7 @@ Vercel 기준정보 화면에서 `TypeError: Failed to fetch`가 발생했습니
 - 제품명·거래처명은 기존 `nameJa`/`name_ja` 데이터가 있을 때 일본어로 표시
 - 일본어명이 없으면 한국어 원본으로 표시
 
-출하관리와 무관한 메뉴를 추가로 수정하지 마세요. 현재 작업 트리에는 앞서 진행한 **품질관리 현지화 변경도 함께 남아 있으므로**, 출하 작업이라고 생각하고 품질 파일을 되돌리거나 덮어쓰면 안 됩니다.
+출하관리와 무관한 메뉴를 추가로 수정하지 마세요. 앞서 진행한 **품질관리 현지화 변경은 이미 커밋·푸시된 사용자 작업**이므로, 출하 작업 과정에서 품질 파일을 되돌리거나 덮어쓰면 안 됩니다.
 
 ### 이번 작업에서 이미 수정한 파일
 
@@ -126,7 +142,8 @@ Vercel 기준정보 화면에서 `TypeError: Failed to fetch`가 발생했습니
 - FAILED/HOLD LOT은 출하 선택 목록에 노출되지 않는지 확인 (비즈니스 로직 자체는 유지됨)
 - 제품·거래처의 `name_ja`가 현재 DB에 비어 있으면 일본어 모드에서도 한국어가 표시되는 것이 **요구된 fallback 동작**임
 - 출하 상세의 담당자 `이임원`이 별도 화면에서 자동 음역되어 보이는지 확인할 수 있음. 수정이 필요하면 `user-admin` 예외 표시 규칙을 재사용하되 Auth/사용자 원본 데이터는 변경하지 말 것
-- GitHub 푸시와 Vercel Production 배포는 완료됨
+- GitHub 푸시는 `102fe97`까지 완료됨
+- Vercel Production의 Supabase 연결 복구 배포는 완료됐지만, 최신 UI 커밋의 Production 반영은 별도 확인 필요
 
 ### 현재 Git 작업 트리 주의
 

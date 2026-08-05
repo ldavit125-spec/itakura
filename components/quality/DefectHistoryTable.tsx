@@ -5,6 +5,7 @@ import type { DefectHistory, DefectProcessingStatus, DefectType } from "@/types/
 import DefectStatusBadge from "./DefectStatusBadge";
 import { useLanguage } from "@/context/LanguageContext";
 import { localizedName } from "@/lib/i18n/localized";
+import DateInput from "@/components/ui/DateInput";
 
 // 불량 유형 코드 → 번역 키
 const DEFECT_TYPE_KEYS: Record<DefectType, string> = {
@@ -75,8 +76,7 @@ export default function DefectHistoryTable({
         )}
       </div>
       <div className="grid gap-2 md:grid-cols-3 xl:grid-cols-6">
-        <input
-          type="date"
+        <DateInput
           value={date}
           onChange={(e) => setDate(e.target.value)}
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
