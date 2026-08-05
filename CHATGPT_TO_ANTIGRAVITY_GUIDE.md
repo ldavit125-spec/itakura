@@ -14,8 +14,10 @@
 
 - 현재 브랜치: `feature/japanese-ui`
 - GitHub 원격 브랜치: `origin/feature/japanese-ui`
-- 최신 푸시 커밋: `51923fd fix: localize shipment date filter placeholder`
+- 최신 작업 커밋: `fix: enable shipment number generation control` (정확한 해시는 `git log -1 --oneline`으로 확인)
 - 직전 주요 커밋:
+  - `eb289d0 fix: localize demo user names in header`
+  - `51923fd fix: localize shipment date filter placeholder`
   - `c98ac87 fix: 출하계획 탭 제거 및 일본어 모드 한글 표시 수정`
   - `c6ec30c feat: complete quality and shipment localization`
 - `npm.cmd exec -- tsc --noEmit`: 성공
@@ -42,6 +44,25 @@ Vercel 기준정보 화면에서 `TypeError: Failed to fetch`가 발생했습니
 
 > [!IMPORTANT]
 > Vercel 환경변수는 이미 복구되었습니다. `.env.local` 값을 문서나 콘솔에 출력하지 말고, 환경변수를 삭제하거나 placeholder 값으로 다시 설정하지 마세요. 새 배포에서 연결 문제가 생기면 먼저 Vercel의 Production/Preview 적용 범위와 재배포 여부를 확인하세요.
+
+### 헤더 데모 사용자 이름 표시 규칙
+
+최신 커밋 `eb289d0`에서 헤더의 데모 사용자 선택기 표시를 수정했습니다.
+
+- 한국어 모드: 모든 사용자 이름을 기존 한국어 원본으로 표시
+- 일본어 모드: 기존 `localizedName()` 매핑을 사용해 일본어 사용자 이름 표시
+- 예외: 시스템 관리자 `user-admin`의 이름 `이임원`은 일본어 모드에서도 **반드시 한국어 그대로 유지**
+- 혼합 표기였던 `デ모ユーザー`를 `デモユーザー`로 수정
+- 드롭다운의 `value`는 사용자 ID를 그대로 사용하므로 사용자 전환·권한 로직에는 영향 없음
+- 헤더 우측 현재 사용자 이름과 아바타 문자에도 같은 표시 규칙 적용
+
+관련 파일:
+
+- `components/layout/Header.tsx`
+- `lib/i18n/translations.ts`
+
+> [!CAUTION]
+> 사용자 표시 이름을 고치기 위해 `AdminUser.name`, 사용자 ID, 역할 ID, Auth, 세션 또는 감사 로그 원본 데이터를 변경하지 마세요. `이임원`을 일본어로 음역하거나 번역 사전에 넣지 마세요.
 
 ### 현재 요청 범위
 
@@ -75,6 +96,10 @@ Vercel 기준정보 화면에서 `TypeError: Failed to fetch`가 발생했습니
 - 출하대기·출하완료·출하이력의 날짜 필터는 공통 `DateInput`을 사용
   - 한국어: `연도-월-일`
   - 일본어: `年 - 月 - 日`
+- 출하등록의 `출하번호 자동 생성` 요소를 실제 활성 버튼으로 변경
+  - 기존 `generateShipmentNumber()`를 재사용해 다음 출하번호 미리보기 표시
+  - 클릭 시 생성된 번호를 한국어/일본어 메시지로 안내
+  - 실제 등록 시 `ShipmentContext`가 사용하는 기존 번호 생성 로직과 CRUD는 변경하지 않음
 - DB 쿼리, Supabase client, Auth, RLS, 재고/LOT 관계 로직은 변경하지 않음
 
 ### 실제 검증 결과
@@ -100,7 +125,7 @@ Vercel 기준정보 화면에서 `TypeError: Failed to fetch`가 발생했습니
 - `Failed to fetch`, `column does not exist`가 재발하지 않는지 확인
 - FAILED/HOLD LOT은 출하 선택 목록에 노출되지 않는지 확인 (비즈니스 로직 자체는 유지됨)
 - 제품·거래처의 `name_ja`가 현재 DB에 비어 있으면 일본어 모드에서도 한국어가 표시되는 것이 **요구된 fallback 동작**임
-- 담당자 `이임원`은 기존 `localizedName()` 자동 음역 때문에 `アアンアン`처럼 부자연스럽게 보일 수 있음. 이를 고칠 때 Auth/사용자 데이터 구조를 바꾸지 말고, 출하 화면 표시 범위에서만 안전하게 처리할 것
+- 출하 상세의 담당자 `이임원`이 별도 화면에서 자동 음역되어 보이는지 확인할 수 있음. 수정이 필요하면 `user-admin` 예외 표시 규칙을 재사용하되 Auth/사용자 원본 데이터는 변경하지 말 것
 - GitHub 푸시와 Vercel Production 배포는 완료됨
 
 ### 현재 Git 작업 트리 주의
@@ -136,6 +161,9 @@ CHATGPT_TO_ANTIGRAVITY_GUIDE.md를 처음부터 끝까지 읽고 작업을 이�
 
 현재 우선 작업은 사용자가 새로 지정하는 화면의 최소 범위 수정입니다.
 가이드 0장의 최신 커밋, Vercel/Supabase 복구 상태와 이미 생성된 테스트 출하를 반드시 확인하세요.
+
+헤더의 데모 사용자 이름은 일본어 모드에서 일본어로 표시하지만,
+user-admin의 이름 이임원은 일본어 모드에서도 한국어 그대로 유지해야 합니다.
 
 DB reset, seed 재실행, migration 수정·추가, DELETE/TRUNCATE/DROP,
 Auth/RLS/권한/Supabase client 변경은 금지합니다.
