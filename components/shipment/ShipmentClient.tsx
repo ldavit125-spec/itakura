@@ -12,7 +12,6 @@ import { getBusinessDate } from "@/lib/selectors/business-date";
 import { localizedName } from "@/lib/i18n/localized";
 
 const TABS: Array<{ id: ShipmentTab; labelKey: string }> = [
-  { id: "plan", labelKey: "shipment.tab.plan" },
   { id: "register", labelKey: "shipment.tab.register" },
   { id: "waiting", labelKey: "shipment.tab.waiting" },
   { id: "completed", labelKey: "shipment.tab.completed" },
@@ -20,7 +19,8 @@ const TABS: Array<{ id: ShipmentTab; labelKey: string }> = [
 ];
 
 function displayName(locale: "ko" | "ja", ko: string, ja?: string | null) {
-  return locale === "ja" && ja?.trim() ? localizedName({ locale, ko, ja }) : ko;
+  if (locale === "ja" && ja?.trim()) return ja.trim();
+  return localizedName({ locale, ko });
 }
 
 export default function ShipmentClient() {
@@ -59,7 +59,7 @@ export default function ShipmentClient() {
       setQuantity("");
       setCustomer("");
       setMemo("");
-      setTab("plan");
+      setTab("waiting");
     }
   };
 
@@ -94,8 +94,7 @@ export default function ShipmentClient() {
         </form>
       )}
 
-      {tab === "plan" && <ShipmentList items={shipments.filter((item) => item.status === "PLANNED")} productJaByCode={productJaByCode} customerJaByName={customerJaByName} onOpen={setDetail} actions={(item) => <ShipmentActions item={item} hasPermission={hasPermission} runAction={runAction} updateShipmentStatus={updateShipmentStatus} completeShipment={completeShipment} cancelShipment={cancelShipment} /> } />}
-      {tab === "waiting" && <ShipmentList items={shipments.filter((item) => item.status === "READY")} productJaByCode={productJaByCode} customerJaByName={customerJaByName} onOpen={setDetail} actions={(item) => <ShipmentActions item={item} hasPermission={hasPermission} runAction={runAction} updateShipmentStatus={updateShipmentStatus} completeShipment={completeShipment} cancelShipment={cancelShipment} /> } />}
+      {tab === "waiting" && <ShipmentList items={shipments.filter((item) => item.status === "PLANNED" || item.status === "READY")} productJaByCode={productJaByCode} customerJaByName={customerJaByName} onOpen={setDetail} actions={(item) => <ShipmentActions item={item} hasPermission={hasPermission} runAction={runAction} updateShipmentStatus={updateShipmentStatus} completeShipment={completeShipment} cancelShipment={cancelShipment} /> } />}
       {tab === "completed" && <ShipmentList items={shipments.filter((item) => item.status === "COMPLETED")} productJaByCode={productJaByCode} customerJaByName={customerJaByName} history onOpen={setDetail} />}
       {tab === "history" && <ShipmentList items={shipments} productJaByCode={productJaByCode} customerJaByName={customerJaByName} history onOpen={setDetail} />}
       {detail && <ShipmentDetail item={detail} productNameJa={productJaByCode.get(detail.productId)} customerNameJa={customerJaByName.get(detail.customer)} lot={lotAvailability.find((lot) => lot.lotNumber === detail.lotNumber)} audits={auditLogs.filter((log) => log.targetType === "SHIPMENT" && log.targetId === detail.id)} onClose={() => setDetail(null)} />}

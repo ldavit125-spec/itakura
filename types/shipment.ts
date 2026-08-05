@@ -1,5 +1,5 @@
 export type ShipmentStatus = "PLANNED" | "READY" | "COMPLETED" | "CANCELLED";
-export type ShipmentTab = "plan" | "register" | "waiting" | "completed" | "history";
+export type ShipmentTab = "register" | "waiting" | "completed" | "history";
 
 export interface Shipment {
   id: string;
