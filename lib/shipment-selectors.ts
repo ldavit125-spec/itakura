@@ -57,19 +57,8 @@ export function getShipmentKpi(shipments: Shipment[], now = new Date()): Shipmen
     (item) => item.status === "COMPLETED" && isSameBusinessDate(item.shippedDate || item.plannedDate, today)
   );
 
-  const todayPlannedOrCompleted = shipments.filter(
-    (item) =>
-      item.status !== "CANCELLED" &&
-      (isSameBusinessDate(item.plannedDate, today) ||
-        (item.status === "COMPLETED" && isSameBusinessDate(item.shippedDate, today)))
-  );
-
   return {
     todayShipmentCount: todayCompleted.length,
     todayShipmentQuantity: todayCompleted.reduce((sum, item) => sum + item.quantity, 0),
-    completionRate:
-      todayPlannedOrCompleted.length > 0
-        ? Math.round((todayCompleted.length / todayPlannedOrCompleted.length) * 1000) / 10
-        : 0,
   };
 }

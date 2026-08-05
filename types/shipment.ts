@@ -52,5 +52,4 @@ export interface ShipmentLotAvailability {
 export interface ShipmentKpi {
   todayShipmentCount: number;
   todayShipmentQuantity: number;
-  completionRate: number;
 }

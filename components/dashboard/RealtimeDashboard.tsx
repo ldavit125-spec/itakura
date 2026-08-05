@@ -97,10 +97,9 @@ export default function RealtimeDashboard() {
             <p className="mt-1 text-xs text-gray-500">{t("dashboard.shipmentAutoRefresh")}</p>
           </div>
         </div>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           <DashboardCard data={{ id: "shipment-count", title: "dashboard.shipment.count", value: shipmentKpi.todayShipmentCount, unit: "unit.case", description: "dashboard.shipment.countDescription", status: "NEUTRAL" }} />
           <DashboardCard data={{ id: "shipment-quantity", title: "dashboard.shipment.quantity", value: shipmentKpi.todayShipmentQuantity.toLocaleString(), unit: "unit.item", description: "dashboard.shipment.quantityDescription", status: "GOOD" }} />
-          <DashboardCard data={{ id: "shipment-rate", title: "dashboard.shipment.rate", value: shipmentKpi.completionRate.toFixed(1), unit: "%", description: "dashboard.shipment.rateDescription", status: shipmentKpi.completionRate >= 80 ? "GOOD" : shipmentKpi.completionRate >= 50 ? "WARNING" : "DANGER" }} />
         </div>
       </section>
 
