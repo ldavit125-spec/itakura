@@ -1,9 +1,10 @@
 import React from "react";
 import type { TraceTab } from "@/types/traceability";
 import { TRACE_TABS, TRACE_TAB_LABELS } from "@/constants/traceability-labels";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
-// LOT 추적 5개 탭 네비게이션 컴포넌트
+// LOT 추적 4개 탭 네비게이션 컴포넌트
 // ============================================================
 
 interface TraceabilityTabsProps {
@@ -12,11 +13,15 @@ interface TraceabilityTabsProps {
 }
 
 export default function TraceabilityTabs({ activeTab, onChange }: TraceabilityTabsProps) {
+  const { locale } = useLanguage();
+
   return (
     <div className="border-b border-gray-200 bg-white px-4 sm:px-6">
       <nav role="tablist" aria-label="LOT 추적 탭 목록" className="-mb-px flex space-x-2 sm:space-x-6 overflow-x-auto">
         {TRACE_TABS.map((tab) => {
           const isActive = activeTab === tab;
+          const labelObj = TRACE_TAB_LABELS[tab];
+          const labelText = typeof labelObj === "string" ? labelObj : (locale === "ja" ? labelObj.ja : labelObj.ko);
 
           return (
             <button
@@ -32,7 +37,7 @@ export default function TraceabilityTabs({ activeTab, onChange }: TraceabilityTa
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
-              <span>{TRACE_TAB_LABELS[tab]}</span>
+              <span>{labelText}</span>
             </button>
           );
         })}

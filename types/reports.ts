@@ -78,6 +78,7 @@ export interface ProductionReportSummary {
 export interface ProductProductionMetric {
   productCode: string;
   productName: string;
+  productNameJa?: string;
   plannedQuantity: number;
   productionQuantity: number;
   goodQuantity: number;
@@ -112,6 +113,7 @@ export interface MaterialReportSummary {
 export interface MaterialInventoryMetric {
   materialCode: string;
   materialName: string;
+  materialNameJa?: string;
   totalInboundQty: number;
   totalOutboundQty: number;
   currentStock: number;
@@ -122,11 +124,13 @@ export interface MaterialInventoryMetric {
   unit: string;
   inventoryStatus: string;
   defaultSupplier: string;
+  supplierNameJa?: string;
 }
 
 export interface LotInventoryMetric {
   materialCode: string;
   materialName: string;
+  materialNameJa?: string;
   lotNo: string;
   inboundQty: number;
   outboundQty: number;
@@ -200,6 +204,7 @@ export interface FGLotTraceReportItem {
   fgLotNo: string;
   productCode: string;
   productName: string;
+  productNameJa?: string;
   productionDate: string;
   workOrderNo: string;
   resultNo: string;
@@ -215,7 +220,9 @@ export interface RawLotImpactReportItem {
   rawMaterialLotNo: string;
   materialCode: string;
   materialName: string;
+  materialNameJa?: string;
   supplierName: string;
+  supplierNameJa?: string;
   usedWorkOrdersCount: number;
   linkedFGLotsCount: number;
   affectedProductionQuantity: number;

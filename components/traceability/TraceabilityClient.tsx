@@ -15,12 +15,16 @@ import TraceHistoryTable from "./TraceHistoryTable";
 import RecallImpactModal from "./RecallImpactModal";
 import { useMaterials } from "@/context/MaterialsContext";
 import { useProduction } from "@/context/ProductionContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // LOT 통합 추적관리 클라이언트 메인 컨테이너
 // ============================================================
 
 export default function TraceabilityClient() {
+  const { locale } = useLanguage();
+  const isJa = locale === "ja";
+
   const {
     activeTab,
     setActiveTab,
@@ -64,7 +68,7 @@ export default function TraceabilityClient() {
     fgLots,
   });
 
-  if (traceLoading) return <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500">LOT 추적 데이터를 불러오는 중입니다...</div>;
+  if (traceLoading) return <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500">{isJa ? "LOT追跡データを読み込み中です..." : "LOT 추적 데이터를 불러오는 중입니다..."}</div>;
   if (traceError) return <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center text-red-700">{traceError}</div>;
 
   const handleGlobalSearch = (term: string) => {
@@ -99,18 +103,18 @@ export default function TraceabilityClient() {
             {/* 검색어 필터 바 */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200 text-xs">
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <span className="font-bold text-gray-700">검색 세부 필터:</span>
+                <span className="font-bold text-gray-700">{isJa ? "検索詳細フィルター:" : "검색 세부 필터:"}</span>
                 <select
                   value={targetTypeFilter}
                   onChange={(e) => setTargetTypeFilter(e.target.value)}
                   className="px-2.5 py-1 border border-gray-300 rounded bg-white font-medium"
                 >
-                  <option value="ALL">대상 구분 전체</option>
-                  <option value="RAW_MATERIAL_LOT">원재료 LOT</option>
-                  <option value="FINISHED_GOODS_LOT">완제품 LOT</option>
-                  <option value="WORK_ORDER">작업지시</option>
-                  <option value="PRODUCTION_RESULT">생산실적</option>
-                  <option value="NONCONFORMITY">부적합</option>
+                  <option value="ALL">{isJa ? "対象区分 全体" : "대상 구분 전체"}</option>
+                  <option value="RAW_MATERIAL_LOT">{isJa ? "原材料LOT" : "원재료 LOT"}</option>
+                  <option value="FINISHED_GOODS_LOT">{isJa ? "完成品LOT" : "완제품 LOT"}</option>
+                  <option value="WORK_ORDER">{isJa ? "作業指示" : "작업지시"}</option>
+                  <option value="PRODUCTION_RESULT">{isJa ? "생산실적" : "생산실적"}</option>
+                  <option value="NONCONFORMITY">{isJa ? "不適合" : "부적합"}</option>
                 </select>
 
                 <select
@@ -118,10 +122,10 @@ export default function TraceabilityClient() {
                   onChange={(e) => setQualityStatusFilter(e.target.value)}
                   className="px-2.5 py-1 border border-gray-300 rounded bg-white font-medium"
                 >
-                  <option value="ALL">품질 상태 전체</option>
-                  <option value="PASSED">합격 (PASSED)</option>
-                  <option value="HOLD">보류 (HOLD)</option>
-                  <option value="FAILED">불합격 (FAILED)</option>
+                  <option value="ALL">{isJa ? "品質状態 全体" : "품질 상태 전체"}</option>
+                  <option value="PASSED">{isJa ? "合格 (PASSED)" : "합격 (PASSED)"}</option>
+                  <option value="HOLD">{isJa ? "保留 (HOLD)" : "보류 (HOLD)"}</option>
+                  <option value="FAILED">{isJa ? "不合格 (FAILED)" : "불합격 (FAILED)"}</option>
                 </select>
               </div>
 
@@ -133,7 +137,7 @@ export default function TraceabilityClient() {
                 }}
                 className="text-gray-500 hover:text-gray-700 underline text-xs whitespace-nowrap self-end sm:self-center"
               >
-                검색 조건 초기화
+                {isJa ? "検索条件リセット" : "검색 조건 초기화"}
               </button>
             </div>
 

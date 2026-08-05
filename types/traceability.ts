@@ -59,6 +59,7 @@ export interface TraceSearchResult {
   targetType: TraceTargetType;
   targetNo: string;
   targetName: string;
+  targetNameJa?: string | null;
   lotNo: string;
   relatedWorkOrderNo?: string;
   relatedResultNo?: string;
@@ -73,9 +74,11 @@ export interface ForwardTraceData {
   rawMaterialLotNo: string;
   materialCode: string;
   materialName: string;
+  materialNameJa?: string | null;
   inboundNo: string;
   inboundDate: string;
   supplierName: string;
+  supplierNameJa?: string | null;
   inboundQuantity: number;
   currentStock: number;
   unit: string;
@@ -94,8 +97,10 @@ export interface ForwardTraceData {
     outboundQuantity: number;
     workOrderNo: string;
     productionLine: string;
+    lineNameJa?: string | null;
     productCode: string;
     productName: string;
+    productNameJa?: string | null;
     workStatus: string;
     resultNo?: string;
     fgLotNo?: string;
@@ -119,8 +124,10 @@ export interface BackwardTraceData {
   fgLotNo: string;
   productCode: string;
   productName: string;
+  productNameJa?: string | null;
   productionDate: string;
   productionLine: string;
+  lineNameJa?: string | null;
   totalQuantity: number;
   goodQuantity: number;
   unit: string;
@@ -142,11 +149,13 @@ export interface BackwardTraceData {
   usedMaterials: {
     materialCode: string;
     materialName: string;
+    materialNameJa?: string | null;
     rawMaterialLotNo: string;
     outboundNo: string;
     usedQuantity: number;
     unit: string;
     supplierName: string;
+    supplierNameJa?: string | null;
     inspectionStatus: string;
     manufactureDate: string;
     expirationDate: string;
@@ -192,17 +201,21 @@ export interface RecallImpactResult {
   targetLotNo: string;
   targetType: "RAW_MATERIAL_LOT" | "FINISHED_GOODS_LOT";
   targetName: string;
+  targetNameJa?: string | null;
 
   affectedWorkOrders: {
     workOrderNo: string;
     productName: string;
+    productNameJa?: string | null;
     productionLine: string;
+    lineNameJa?: string | null;
     workStatus: string;
   }[];
 
   affectedFGLots: {
     fgLotNo: string;
     productName: string;
+    productNameJa?: string | null;
     quantity: number;
     unit: string;
     qualityStatus: string;

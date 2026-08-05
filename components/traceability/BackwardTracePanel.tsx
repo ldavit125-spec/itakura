@@ -4,6 +4,7 @@ import BackwardTraceResult from "./BackwardTraceResult";
 import { useMaterials } from "@/context/MaterialsContext";
 import { useProduction } from "@/context/ProductionContext";
 import { useQuality } from "@/context/QualityContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ============================================================
 // 완제품 역방향 추적 패널 (검색 및 결과 연결)
@@ -22,6 +23,8 @@ export default function BackwardTracePanel({
   onTriggerForward,
   onOpenRecall,
 }: BackwardTracePanelProps) {
+  const { locale } = useLanguage();
+  const isJa = locale === "ja";
   const [inputLot, setInputLot] = useState(targetLotNo);
   const {inventories,inbounds,outbounds}=useMaterials(); const {workOrders,results,fgLots}=useProduction(); const {incoming,processList,finished,nonconformities,correctiveActions}=useQuality();
   const traceData = getBackwardTraceByFinishedGoodsLot(targetLotNo,{inventories,inbounds,outbounds,workOrders,results,fgLots,incoming,processList,finished,nonconformities,correctiveActions});
@@ -41,7 +44,7 @@ export default function BackwardTracePanel({
           <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          <span>완제품 LOT 역방향 추적: 완제품 ➔ 완제품검사 ➔ 생산 ➔ 원재료 LOT ➔ 공급업체</span>
+          <span>{isJa ? "完成品LOT逆方向追跡: 完成品 ➔ 完成品検査 ➔ 生産 ➔ 原材料LOT ➔ 供給企業" : "완제품 LOT 역방향 추적: 완제품 ➔ 완제품검사 ➔ 생산 ➔ 원재료 LOT ➔ 공급업체"}</span>
         </div>
 
         <form onSubmit={handleSubmit} className="flex gap-2 w-full sm:w-auto">
@@ -49,14 +52,14 @@ export default function BackwardTracePanel({
             type="text"
             value={inputLot}
             onChange={(e) => setInputLot(e.target.value)}
-            placeholder="완제품 LOT 번호 입력..."
+            placeholder={isJa ? "完成品LOT番号を入力..." : "완제품 LOT 번호 입력..."}
             className="px-3 py-2 text-xs border border-indigo-200 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64 bg-white"
           />
           <button
             type="submit"
             className="px-4 py-2 text-xs font-bold text-white bg-indigo-700 hover:bg-indigo-800 rounded-lg shadow-sm whitespace-nowrap"
           >
-            역방향 추적 실행
+            {isJa ? "逆方向追跡実行" : "역방향 추적 실행"}
           </button>
         </form>
       </div>
@@ -70,7 +73,9 @@ export default function BackwardTracePanel({
         />
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-500">
-          입력하신 완제품 LOT [{targetLotNo}] 에 해당하는 역방향 추적 기록이 없습니다.
+          {isJa
+            ? `入力された完成品LOT [${targetLotNo}] に該当する逆方向追跡記録がありません。`
+            : `입력하신 완제품 LOT [${targetLotNo}] 에 해당하는 역방향 추적 기록이 없습니다.`}
         </div>
       )}
     </div>

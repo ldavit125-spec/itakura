@@ -29,7 +29,9 @@ export interface ProductionReportData {
     resultNo: string;
     productCode: string;
     productName: string;
+    productNameJa?: string;
     productionLine: string;
+    lineNameJa?: string;
     plannedQuantity: number;
     productionQuantity: number;
     goodQuantity: number;
@@ -225,7 +227,9 @@ export function aggregateProductionReport(
       resultNo: r.resultNo,
       productCode: r.productCode,
       productName: r.productName,
+      productNameJa: r.productNameJa,
       productionLine: r.productionLine,
+      lineNameJa: r.lineNameJa,
       plannedQuantity: wo?.orderedQuantity || r.totalQuantity,
       productionQuantity: r.totalQuantity,
       goodQuantity: r.goodQuantity,
