@@ -186,6 +186,67 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
     };
   }, [plans, workOrders, results]);
 
+  // ── 완제품 LOT 자동 통합 집계 (생산 완료된 작업지시 및 실적 자동 매핑) ──
+  const allFgLots = useMemo<FinishedGoodsLot[]>(() => {
+    const list = [...fgLots];
+    const existingWoNos = new Set(fgLots.map((l) => l.workOrderNo));
+    const existingResultNos = new Set(fgLots.map((l) => l.resultNo));
+    let seq = fgLots.length + 1;
+
+    for (const res of results) {
+      if (!existingWoNos.has(res.workOrderNo) && !existingResultNos.has(res.resultNo)) {
+        existingWoNos.add(res.workOrderNo);
+        existingResultNos.add(res.resultNo);
+        list.push({
+          id: `fg-derived-res-${res.id}`,
+          fgLotNo: generateFGLotNo(res.productCode, res.productionDate, seq++),
+          resultNo: res.resultNo,
+          workOrderNo: res.workOrderNo,
+          productionDate: res.productionDate,
+          productCode: res.productCode,
+          productName: res.productName,
+          productNameJa: res.productNameJa,
+          productionLine: res.productionLine,
+          lineNameJa: res.lineNameJa,
+          totalQuantity: res.totalQuantity,
+          goodQuantity: res.goodQuantity,
+          unit: "개",
+          expirationDate: calculateFGExpirationDate(res.productCode, res.productionDate),
+          qualityStatus: "PASSED",
+          isReleaseAvailable: true,
+        });
+      }
+    }
+
+    for (const wo of workOrders) {
+      if (wo.workStatus === "COMPLETED" && !existingWoNos.has(wo.workOrderNo)) {
+        existingWoNos.add(wo.workOrderNo);
+        const prodDate = wo.plannedDate || new Date().toISOString().substring(0, 10);
+        const totalQty = wo.currentQuantity > 0 ? wo.currentQuantity : wo.orderedQuantity;
+        list.push({
+          id: `fg-derived-wo-${wo.id}`,
+          fgLotNo: generateFGLotNo(wo.productCode, prodDate, seq++),
+          resultNo: `RESULT-${wo.workOrderNo}`,
+          workOrderNo: wo.workOrderNo,
+          productionDate: prodDate,
+          productCode: wo.productCode,
+          productName: wo.productName,
+          productNameJa: wo.productNameJa,
+          productionLine: wo.productionLine,
+          lineNameJa: wo.lineNameJa,
+          totalQuantity: totalQty,
+          goodQuantity: totalQty,
+          unit: wo.unit || "개",
+          expirationDate: calculateFGExpirationDate(wo.productCode, prodDate),
+          qualityStatus: "PASSED",
+          isReleaseAvailable: true,
+        });
+      }
+    }
+
+    return list;
+  }, [fgLots, results, workOrders]);
+
   const updateWorkOrderQualityStatus = (
     workOrderNo: string,
     status: WorkStatus,
@@ -222,7 +283,6 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
   const addPlan = (
     planData: Omit<ProductionPlan, "id" | "planNo" | "planStatus" | "materialReadiness">
   ): boolean => {
-    // 동일 라인 시간 중복 검사
     if (
       hasTimeOverlap(plans, {
         plannedDate: planData.plannedDate,
@@ -330,7 +390,6 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
     const plan = plans.find((p) => p.id === planId);
     if (!plan) return false;
 
-    // 이미 생성된 작업지시 중복 체크
     const exists = workOrders.some((w) => w.planNo === plan.planNo && w.workStatus !== "CANCELLED");
     if (exists) {
       showToast(`동일한 생산계획(${plan.planNo})에서 이미 작업지시가 생성되었습니다.`, "error");
@@ -340,7 +399,6 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
     const seq = workOrders.length + 1;
     const workOrderNo = generateWorkOrderNo(plan.plannedDate, seq);
 
-    // BOM 기준 자재 소요량 및 출고 현황 계산
     const reqs = calculateMaterialRequirements(plan.productCode, plan.plannedQuantity, workOrderNo, {
       materials,
       outbounds,
@@ -411,10 +469,6 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
     const wo = workOrders.find((w) => w.id === workOrderId);
     if (!wo) return false;
 
-    // 작업 시작 검증 조건 3가지:
-    // 1. workStatus === 'READY'
-    // 2. materialIssueStatus === 'ISSUED'
-    // 3. handler 필수
     if (wo.workStatus !== "READY") {
       showToast("작업 상태가 '작업 준비 완료'일 때만 작업을 시작할 수 있습니다.", "error");
       return false;
@@ -455,7 +509,6 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
       )
     );
 
-    // 연동된 계획의 상태도 'IN_PROGRESS'로 업데이트
     setPlans((prev) =>
       prev.map((p) => (p.planNo === wo.planNo ? { ...p, planStatus: "IN_PROGRESS" } : p))
     );
@@ -498,15 +551,53 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
   const completeWorkOrderRequest = (workOrderId: string) => {
     const nowStr = new Date().toISOString().replace("T", " ").substring(0, 16);
     const target = workOrders.find((workOrder) => workOrder.id === workOrderId);
-    if (target) persist(() => saveWorkOrder({ ...target, workStatus: "COMPLETED", actualEndTime: nowStr }));
-    setWorkOrders((prev) =>
-      prev.map((w) =>
-        w.id === workOrderId
-          ? { ...w, workStatus: "COMPLETED", actualEndTime: nowStr }
-          : w
-      )
-    );
-    showToast("작업 완수가 요청되어 실적 입력 단계로 이동합니다.");
+    if (target) {
+      const updatedWO: WorkOrder = { ...target, workStatus: "COMPLETED", actualEndTime: nowStr };
+      const prodDate = target.plannedDate || nowStr.substring(0, 10);
+      const totalQty = target.currentQuantity > 0 ? target.currentQuantity : target.orderedQuantity;
+
+      const fgSeq = fgLots.length + 1;
+      const fgLotNo = generateFGLotNo(target.productCode, prodDate, fgSeq);
+      const expirationDate = calculateFGExpirationDate(target.productCode, prodDate);
+
+      const newFGLot: FinishedGoodsLot = {
+        id: `fg-${Date.now()}`,
+        fgLotNo,
+        resultNo: `RESULT-${target.workOrderNo}`,
+        workOrderNo: target.workOrderNo,
+        productionDate: prodDate,
+        productCode: target.productCode,
+        productName: target.productName,
+        productNameJa: target.productNameJa,
+        productionLine: target.productionLine,
+        lineNameJa: target.lineNameJa,
+        totalQuantity: totalQty,
+        goodQuantity: totalQty,
+        unit: target.unit || "개",
+        expirationDate,
+        qualityStatus: "PASSED",
+        isReleaseAvailable: true,
+      };
+
+      setWorkOrders((prev) =>
+        prev.map((w) => (w.id === workOrderId ? updatedWO : w))
+      );
+      setFgLots((prev) => [newFGLot, ...prev]);
+
+      const linkedPlan = plans.find((p) => p.planNo === target.planNo);
+      if (linkedPlan) {
+        setPlans((prev) =>
+          prev.map((p) => (p.planNo === target.planNo ? { ...p, planStatus: "COMPLETED" } : p))
+        );
+      }
+
+      persist(async () => {
+        await saveWorkOrder(updatedWO);
+        if (linkedPlan) await saveProductionPlan({ ...linkedPlan, planStatus: "COMPLETED" });
+        await saveFinishedGoodsLot(newFGLot);
+      });
+    }
+    showToast("작업 완수가 완료되어 완제품 LOT가 자동 생성되었습니다.");
   };
 
   // ── 탭 4: 생산실적 핸들러 ────────────────────────────────────
@@ -516,13 +607,11 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
       "id" | "resultNo" | "achievementRate" | "defectRate" | "workingHours" | "resultStatus"
     >
   ): boolean => {
-    // 1. 총 생산량 > 0 검증
     if (resultData.totalQuantity <= 0) {
       showToast("총 생산량은 0보다 커야 합니다.", "error");
       return false;
     }
 
-    // 2. 양품 + 불량 + 재작업 = 총생산량 엄격 검증
     const sum =
       resultData.goodQuantity + resultData.defectQuantity + resultData.reworkQuantity;
     if (sum !== resultData.totalQuantity) {
@@ -533,7 +622,6 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
       return false;
     }
 
-    // 3. 동일 작업지시에 실적 중복 등록 금지
     const exists = results.some((r) => r.workOrderNo === resultData.workOrderNo);
     if (exists) {
       showToast(`이미 실적이 등록된 작업지시(${resultData.workOrderNo})입니다.`, "error");
@@ -566,9 +654,36 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
       ...resultData,
     };
 
+    const fgSeq = fgLots.length + 1;
+    const fgLotNo = generateFGLotNo(resultData.productCode, resultData.productionDate, fgSeq);
+    const expirationDate = calculateFGExpirationDate(resultData.productCode, resultData.productionDate);
+
+    const newFGLot: FinishedGoodsLot = {
+      id: `fg-res-${Date.now()}`,
+      fgLotNo,
+      resultNo,
+      workOrderNo: resultData.workOrderNo,
+      productionDate: resultData.productionDate,
+      productCode: resultData.productCode,
+      productName: resultData.productName,
+      productNameJa: resultData.productNameJa,
+      productionLine: resultData.productionLine,
+      lineNameJa: resultData.lineNameJa,
+      totalQuantity: resultData.totalQuantity,
+      goodQuantity: resultData.goodQuantity,
+      unit: "개",
+      expirationDate,
+      qualityStatus: "PASSED",
+      isReleaseAvailable: true,
+    };
+
     setResults((prev) => [newResult, ...prev]);
-    persist(() => saveProductionResult(newResult));
-    showToast(`생산실적(${resultNo})이 임시저장(DRAFT) 되었습니다.`);
+    setFgLots((prev) => [newFGLot, ...prev]);
+    persist(async () => {
+      await saveProductionResult(newResult);
+      await saveFinishedGoodsLot(newFGLot);
+    });
+    showToast(`생산실적(${resultNo}) 및 완제품 LOT[${fgLotNo}]가 자동 생성되었습니다.`);
     return true;
   };
 
@@ -636,7 +751,7 @@ export function ProductionProvider({ children }: { children: React.ReactNode }) 
         plans,
         workOrders,
         results,
-        fgLots,
+        fgLots: allFgLots,
         summary,
         toast,
         showToast,
