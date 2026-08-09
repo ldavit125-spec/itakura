@@ -57,15 +57,15 @@ export default function MaterialShortageRegistrationModal({
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!selectedMaterial) {
-      setErrorMessage("부족 자재를 선택해 주세요.");
+      setErrorMessage(localizedName({ locale: language, ko: "부족 자재를 선택해 주세요.", ja: "不足資材を選択してください。" }));
       return;
     }
     if (typeof requiredStock !== "number" || !Number.isFinite(requiredStock) || requiredStock <= 0) {
-      setErrorMessage("필요 재고 기준은 0보다 커야 합니다.");
+      setErrorMessage(localizedName({ locale: language, ko: "필요 재고 기준은 0보다 커야 합니다.", ja: "必要在庫基準は0より大きくしてください。" }));
       return;
     }
     if (requiredStock <= currentAvailableStock) {
-      setErrorMessage("필요 재고 기준은 현재 가용재고보다 커야 부족 자재로 등록됩니다.");
+      setErrorMessage(localizedName({ locale: language, ko: "필요 재고 기준은 현재 가용재고보다 커야 부족 자재로 등록됩니다.", ja: "必要在庫基準は現在の使用可能在庫より大きくしてください。" }));
       return;
     }
 
@@ -78,7 +78,7 @@ export default function MaterialShortageRegistrationModal({
         <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
           <div>
             <h3 className="text-lg font-bold text-gray-900">{t("materials.shortage.registerButton")}</h3>
-            <p className="mt-0.5 text-xs text-gray-500">자재별 필요 재고 기준을 등록합니다.</p>
+          <p className="mt-0.5 text-xs text-gray-500">{localizedName({ locale: language, ko: "자재별 필요 재고 기준을 등록합니다.", ja: "資材ごとの必要在庫基準を登録します。" })}</p>
           </div>
           <button
             type="button"

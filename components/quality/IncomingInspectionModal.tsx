@@ -4,6 +4,8 @@ import { RAW_MATERIAL_INSPECTION_STANDARDS } from "@/data/inspection-standards";
 import { useMasterData } from "@/context/MasterDataContext";
 import InspectionItemForm from "./InspectionItemForm";
 import { useAdmin } from "@/context/AdminContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 원재료 입고검사 수행 / 등록 모달 컴포넌트
@@ -22,6 +24,8 @@ export default function IncomingInspectionModal({
   onClose,
   onSubmit,
 }: IncomingInspectionModalProps) {
+  const { locale } = useLanguage();
+  const tr = (ko: string, ja: string) => localizedName({ locale, ko, ja });
   const { materials } = useMasterData();
   const { getAssignableUsers } = useAdmin();
   const inspectors = getAssignableUsers(["QUALITY_MANAGER"]);
@@ -115,7 +119,7 @@ export default function IncomingInspectionModal({
       <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl overflow-hidden border border-gray-100 my-8">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">원재료 입고검사 수행 및 판정</h3>
+            <h3 className="text-lg font-bold text-gray-900">{tr("원재료 입고검사 수행 및 판정", "原材料受入検査実施および判定")}</h3>
             <p className="text-xs text-gray-500 font-mono mt-0.5">IQC (Incoming Quality Control)</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
@@ -136,7 +140,7 @@ export default function IncomingInspectionModal({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                원재료 선택 <span className="text-red-500">*</span>
+                {tr("원재료 선택", "原材料選択")} <span className="text-red-500">*</span>
               </label>
               <select
                 value={selectedMaterialCode}
@@ -153,7 +157,7 @@ export default function IncomingInspectionModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">입고 번호 *</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("입고 번호 *", "入庫番号 *")}</label>
               <input
                 type="text"
                 list="incoming-inspector-options"
@@ -166,7 +170,7 @@ export default function IncomingInspectionModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">자재 LOT 번호 *</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("자재 LOT 번호 *", "原材料LOT番号 *")}</label>
               <input
                 type="text"
                 value={lotNo}
@@ -177,7 +181,7 @@ export default function IncomingInspectionModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">입고 수량 *</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("입고 수량 *", "入庫数量 *")}</label>
               <div className="flex gap-2">
                 <input
                   type="number"
@@ -192,7 +196,7 @@ export default function IncomingInspectionModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">제조일자</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("제조일자", "製造日")}</label>
               <input
                 type="date"
                 value={manufactureDate}
@@ -203,7 +207,7 @@ export default function IncomingInspectionModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">유통기한</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("유통기한", "賞味期限")}</label>
               <input
                 type="date"
                 value={expirationDate}
@@ -221,7 +225,7 @@ export default function IncomingInspectionModal({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
             <div>
               <label className="block text-xs font-bold text-gray-800 mb-1">
-                담당 검사원 <span className="text-red-500">*</span>
+                {tr("담당 검사원", "担当検査員")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -234,7 +238,7 @@ export default function IncomingInspectionModal({
 
             <div>
               <label className="block text-xs font-bold text-gray-800 mb-1">
-                최종 판정 <span className="text-red-500">*</span>
+                {tr("최종 판정", "最終判定")} <span className="text-red-500">*</span>
               </label>
               <select
                 value={judgment}
@@ -250,22 +254,22 @@ export default function IncomingInspectionModal({
                 }`}
                 required
               >
-                <option value="PASSED">합격 (PASSED)</option>
-                <option value="CONDITIONAL_PASS">조건부 합격 (CONDITIONAL_PASS)</option>
-                <option value="HOLD">보류 (HOLD)</option>
-                <option value="FAILED">불합격 (FAILED)</option>
+                <option value="PASSED">{tr("합격 (PASSED)", "合格（PASSED）")}</option>
+                <option value="CONDITIONAL_PASS">{tr("조건부 합격 (CONDITIONAL_PASS)", "条件付き合格（CONDITIONAL_PASS）")}</option>
+                <option value="HOLD">{tr("보류 (HOLD)", "保留（HOLD）")}</option>
+                <option value="FAILED">{tr("불합격 (FAILED)", "不合格（FAILED）")}</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">검사 성적서 첨부 (선택)</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("검사 성적서 첨부 (선택)", "検査成績書添付（任意）")}</label>
               <div className="flex items-center gap-2">
                 <label className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 text-xs font-medium cursor-pointer">
-                  파일 선택
+                  {tr("파일 선택", "ファイル選択")}
                   <input type="file" onChange={handleFileChange} className="hidden" />
                 </label>
                 <span className="text-xs text-gray-500 truncate max-w-[150px]">
-                  {attachmentFileName || "선택된 파일 없음"}
+                  {attachmentFileName || tr("선택된 파일 없음", "選択されたファイルはありません")}
                 </span>
               </div>
             </div>
@@ -273,16 +277,16 @@ export default function IncomingInspectionModal({
 
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">
-              판정 사유 및 종합 의견
+              {tr("판정 사유 및 종합 의견", "判定理由および総合意見")}
               {(judgment === "HOLD" || judgment === "FAILED" || judgment === "CONDITIONAL_PASS") && (
-                <span className="text-red-500 ml-1">(해당 판정 시 필수 입력)</span>
+                <span className="text-red-500 ml-1">{tr("(해당 판정 시 필수 입력)", "（該当判定時は入力必須）")}</span>
               )}
             </label>
             <textarea
               rows={2}
               value={judgmentReason}
               onChange={(e) => setJudgmentReason(e.target.value)}
-              placeholder="검사 소견 및 수입검증 판정 사유를 입력하세요..."
+              placeholder={tr("검사 소견 및 수입검증 판정 사유를 입력하세요...", "検査所見および受入検証の判定理由を入力してください...")}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -293,13 +297,13 @@ export default function IncomingInspectionModal({
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
             >
-              취소
+              {tr("취소", "キャンセル")}
             </button>
             <button
               type="submit"
               className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm"
             >
-              검사 판정 완료
+              {tr("검사 판정 완료", "検査判定完了")}
             </button>
           </div>
         </form>

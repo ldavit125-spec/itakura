@@ -28,7 +28,7 @@ export default function FinishedGoodsLotDetailModal({
       <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden border border-gray-100 my-8">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">완제품 LOT 상세 정보</h3>
+            <h3 className="text-lg font-bold text-gray-900">{localizedName({ locale: language, ko: "완제품 LOT 상세 정보", ja: "完成品LOT詳細情報" })}</h3>
             <p className="text-xs text-blue-600 font-mono font-bold mt-0.5">{item.fgLotNo}</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
@@ -96,7 +96,7 @@ export default function FinishedGoodsLotDetailModal({
           </div>
 
           <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
-            ℹ️ 품질 상태는 향후 품질관리 모듈의 검사 결과와 자동 연동되어 관리됩니다.
+            ℹ️ {localizedName({ locale: language, ko: "품질 상태는 향후 품질관리 모듈의 검사 결과와 자동 연동되어 관리됩니다.", ja: "品質状態は品質管理モジュールの検査結果と自動連携して管理されます。" })}
           </div>
 
           <div className="flex justify-end pt-2">

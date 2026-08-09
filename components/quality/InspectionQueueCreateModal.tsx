@@ -173,12 +173,12 @@ export default function InspectionQueueCreateModal({
     e.preventDefault();
 
     if (!targetNo.trim() || !targetName.trim() || !lotNo.trim()) {
-      alert("검사 대상 및 LOT 정보를 선택하거나 입력해주세요.");
+      alert(localizedName({ locale, ko: "검사 대상 및 LOT 정보를 선택하거나 입력해주세요.", ja: "検査対象とLOT情報を選択または入力してください。" }));
       return;
     }
 
     if (!requester.trim()) {
-      alert("요청자를 입력해주세요.");
+      alert(localizedName({ locale, ko: "요청자를 입력해주세요.", ja: "依頼者を入力してください。" }));
       return;
     }
 
@@ -187,7 +187,7 @@ export default function InspectionQueueCreateModal({
       targetNo: targetNo.trim(),
       targetName: targetName.trim(),
       lotNo: lotNo.trim(),
-      lineOrSupplier: lineOrSupplier.trim() || (category === "INCOMING" ? "원재료 공급사" : "생산라인"),
+      lineOrSupplier: lineOrSupplier.trim() || (category === "INCOMING" ? localizedName({ locale, ko: "원재료 공급사", ja: "原材料仕入先" }) : localizedName({ locale, ko: "생산라인", ja: "生産ライン" })),
       requester: requester.trim(),
       priority,
       notes: notes.trim() || undefined,

@@ -87,7 +87,7 @@ export default function RecallImpactModal({
                   <tr>
                     <th className="px-3 py-2 font-semibold">{isJa ? "完成品LOT番号" : "완제품 LOT 번호"}</th>
                     <th className="px-3 py-2 font-semibold">{isJa ? "製品名" : "제품명"}</th>
-                    <th className="px-3 py-2 font-semibold text-right">{isJa ? "생산 수량" : "생산 수량"}</th>
+                    <th className="px-3 py-2 font-semibold text-right">{isJa ? "生産数量" : "생산 수량"}</th>
                     <th className="px-3 py-2 font-semibold text-center">{isJa ? "品質状態" : "품질 상태"}</th>
                     <th className="px-3 py-2 font-semibold text-center">{isJa ? "出荷統制有無" : "출고 통제 여부"}</th>
                   </tr>

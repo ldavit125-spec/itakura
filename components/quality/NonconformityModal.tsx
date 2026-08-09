@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import type { Nonconformity, InspectionCategory, NonconformityType, SeverityLevel } from "@/types/quality";
 import { NONCONFORMITY_TYPE_OPTIONS, SEVERITY_LEVEL_OPTIONS } from "@/constants/quality-labels";
 import { useAdmin } from "@/context/AdminContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 부적합 내역 수동 등록 모달 컴포넌트
@@ -18,6 +20,8 @@ export default function NonconformityModal({
   onClose,
   onSubmit,
 }: NonconformityModalProps) {
+  const { locale } = useLanguage();
+  const tr = (ko: string, ja: string) => localizedName({ locale, ko, ja });
   const { getAssignableUsers } = useAdmin();
   const handlers = getAssignableUsers(["QUALITY_MANAGER", "MATERIAL_MANAGER"]);
   const [occurredDate, setOccurredDate] = useState("2026-07-31");
@@ -72,7 +76,7 @@ export default function NonconformityModal({
       <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden border border-gray-100 my-8">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">부적합 내역 신규 등록</h3>
+            <h3 className="text-lg font-bold text-gray-900">{tr("부적합 내역 신규 등록", "不適合履歴新規登録")}</h3>
             <p className="text-xs text-gray-500 font-mono mt-0.5">Nonconformity Management</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
@@ -85,7 +89,7 @@ export default function NonconformityModal({
         <form onSubmit={handleSubmit} className="p-6 space-y-4 text-sm">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-red-50/50 p-4 rounded-xl border border-red-100">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">발생일자 *</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("발생일자 *", "発生日 *")}</label>
               <input
                 type="date"
                 value={occurredDate}
@@ -96,21 +100,21 @@ export default function NonconformityModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">검사 구분 *</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("검사 구분 *", "検査区分 *")}</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as InspectionCategory)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold bg-white"
                 required
               >
-                <option value="INCOMING">원재료 입고검사</option>
-                <option value="PROCESS">공정검사</option>
-                <option value="FINISHED_GOODS">완제품검사</option>
+                <option value="INCOMING">{tr("원재료 입고검사", "原材料受入検査")}</option>
+                <option value="PROCESS">{tr("공정검사", "工程検査")}</option>
+                <option value="FINISHED_GOODS">{tr("완제품검사", "完成品検査")}</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">검사 번호 *</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("검사 번호 *", "検査番号 *")}</label>
               <input
                 type="text"
                 list="nonconformity-handler-options"
@@ -123,19 +127,19 @@ export default function NonconformityModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">대상명 *</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("대상명 *", "対象名 *")}</label>
               <input
                 type="text"
                 value={targetName}
                 onChange={(e) => setTargetName(e.target.value)}
-                placeholder="예: 강력분 / 버터"
+                placeholder={tr("예: 강력분 / 버터", "例: 強力粉／バター")}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">LOT 번호 *</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("LOT 번호 *", "LOT番号 *")}</label>
               <input
                 type="text"
                 value={lotNo}
@@ -146,7 +150,7 @@ export default function NonconformityModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">부적합 수량 *</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("부적합 수량 *", "不適合数量 *")}</label>
               <div className="flex gap-2">
                 <input
                   type="number"
@@ -170,7 +174,7 @@ export default function NonconformityModal({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                부적합 유형 <span className="text-red-500">*</span>
+                {tr("부적합 유형", "不適合種別")} <span className="text-red-500">*</span>
               </label>
               <select
                 value={ncType}
@@ -188,7 +192,7 @@ export default function NonconformityModal({
 
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                심각도 구분 <span className="text-red-500">*</span>
+                {tr("심각도 구분", "重大度区分")} <span className="text-red-500">*</span>
               </label>
               <select
                 value={severity}
@@ -198,14 +202,14 @@ export default function NonconformityModal({
               >
                 {SEVERITY_LEVEL_OPTIONS.filter((o) => o.value !== "ALL").map((o) => (
                   <option key={o.value} value={o.value}>
-                    {o.label} (치명/중대 시 시정조치 CAPA 자동발행)
+                    {localizedName({ locale, ko: o.label })} {tr("(치명/중대 시 시정조치 CAPA 자동발행)", "（致命的／重大の場合、是正措置CAPAを自動発行）")}
                   </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">담당자 *</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("담당자 *", "担当者 *")}</label>
               <input
                 type="text"
                 value={handler}
@@ -217,24 +221,24 @@ export default function NonconformityModal({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">부적합 발생 상세 내용 *</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("부적합 발생 상세 내용 *", "不適合発生詳細内容 *")}</label>
             <textarea
               rows={2}
               value={details}
               onChange={(e) => setDetails(e.target.value)}
-              placeholder="발생 원인 및 부적합 현상을 상세히 기술하세요..."
+              placeholder={tr("발생 원인 및 부적합 현상을 상세히 기술하세요...", "発生原因および不適合現象を詳しく記載してください...")}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-red-500"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">임시조치 (봉인/격리/반품 등)</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("임시조치 (봉인/격리/반품 등)", "暫定措置（封印／隔離／返品など）")}</label>
             <textarea
               rows={2}
               value={interimAction}
               onChange={(e) => setInterimAction(e.target.value)}
-              placeholder="현장 응급 임시조치 내용을 기술하세요..."
+              placeholder={tr("현장 응급 임시조치 내용을 기술하세요...", "現場での緊急暫定措置内容を記載してください...")}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -245,13 +249,13 @@ export default function NonconformityModal({
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
             >
-              취소
+              {tr("취소", "キャンセル")}
             </button>
             <button
               type="submit"
               className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-sm"
             >
-              부적합 등록 완료
+              {tr("부적합 등록 완료", "不適合登録完了")}
             </button>
           </div>
         </form>

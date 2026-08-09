@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import type { InspectionQueueItem } from "@/types/quality";
 import { useAdmin } from "@/context/AdminContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 검사 담당자 배정 모달 컴포넌트
@@ -20,6 +22,8 @@ export default function InspectionAssignmentModal({
   onAssign,
 }: InspectionAssignmentModalProps) {
   const { getAssignableUsers } = useAdmin();
+  const { locale } = useLanguage();
+  const tr = (ko: string, ja: string) => localizedName({ locale, ko, ja });
   const inspectors = getAssignableUsers(["QUALITY_MANAGER"]);
   const [inspectorName, setInspectorName] = useState<string>(inspectors[0]?.name ?? "");
 
@@ -44,7 +48,7 @@ export default function InspectionAssignmentModal({
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden border border-gray-100">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div>
-            <h3 className="text-base font-bold text-gray-900">검사 담당자 배정</h3>
+            <h3 className="text-base font-bold text-gray-900">{tr("검사 담당자 배정", "検査担当者割当")}</h3>
             <p className="text-xs text-gray-500 font-mono mt-0.5">{item.requestNo}</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
@@ -56,14 +60,14 @@ export default function InspectionAssignmentModal({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100 text-xs space-y-1">
-            <div><strong>검사 구분:</strong> {item.category}</div>
-            <div><strong>대상:</strong> [{item.targetNo}] {item.targetName}</div>
-            <div><strong>LOT 번호:</strong> {item.lotNo}</div>
+            <div><strong>{tr("검사 구분:", "検査区分:")}</strong> {item.category}</div>
+            <div><strong>{tr("대상:", "対象:")}</strong> [{item.targetNo}] {item.targetName}</div>
+            <div><strong>{tr("LOT 번호:", "LOT番号:")}</strong> {item.lotNo}</div>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">
-              담당 검사원 성명 <span className="text-red-500">*</span>
+              {tr("담당 검사원 성명", "担当検査員氏名")} <span className="text-red-500">*</span>
             </label>
             <select
               value={inspectorName}
@@ -71,7 +75,7 @@ export default function InspectionAssignmentModal({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               required
             >
-              {inspectors.map((user) => <option key={user.id} value={user.name}>{user.name} ({user.department || "품질 담당"})</option>)}
+              {inspectors.map((user) => <option key={user.id} value={user.name}>{user.name} ({user.department || tr("품질 담당", "品質担当")})</option>)}
             </select>
           </div>
 
@@ -81,13 +85,13 @@ export default function InspectionAssignmentModal({
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
             >
-              취소
+              {tr("취소", "キャンセル")}
             </button>
             <button
               type="submit"
               className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm"
             >
-              배정 완료
+              {tr("배정 완료", "割当完了")}
             </button>
           </div>
         </form>

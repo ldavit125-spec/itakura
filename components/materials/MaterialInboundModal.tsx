@@ -95,19 +95,19 @@ export default function MaterialInboundModal({
 
     // 검증 규칙
     if (!materialCode) {
-      setErrorMessage("자재를 선택해주세요.");
+      setErrorMessage(localizedName({ locale: language, ko: "자재를 선택해주세요.", ja: "資材を選択してください。" }));
       return;
     }
     if (!supplierName) {
-      setErrorMessage("거래처를 선택해주세요.");
+      setErrorMessage(localizedName({ locale: language, ko: "거래처를 선택해주세요.", ja: "仕入先を選択してください。" }));
       return;
     }
     if (typeof quantity !== "number" || quantity <= 0) {
-      setErrorMessage("입고 수량은 0보다 커야 합니다.");
+      setErrorMessage(localizedName({ locale: language, ko: "입고 수량은 0보다 커야 합니다.", ja: "入庫数量は0より大きくしてください。" }));
       return;
     }
     if (manufactureDate && expirationDate && expirationDate < manufactureDate) {
-      setErrorMessage("유통기한은 제조일보다 이전 일자일 수 없습니다.");
+      setErrorMessage(localizedName({ locale: language, ko: "유통기한은 제조일보다 이전 일자일 수 없습니다.", ja: "賞味期限は製造日より前に設定できません。" }));
       return;
     }
 
@@ -145,7 +145,7 @@ export default function MaterialInboundModal({
 
   const isDetail = mode === "detail";
   const title =
-    mode === "create" ? "자재 입고 등록" : mode === "edit" ? "자재 입고 정보 수정" : "자재 입고 상세 조회";
+    mode === "create" ? localizedName({ locale: language, ko: "자재 입고 등록", ja: "資材入庫登録" }) : mode === "edit" ? localizedName({ locale: language, ko: "자재 입고 정보 수정", ja: "資材入庫情報編集" }) : localizedName({ locale: language, ko: "자재 입고 상세 조회", ja: "資材入庫詳細" });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
@@ -178,21 +178,21 @@ export default function MaterialInboundModal({
           <div className="p-6 space-y-4 text-sm">
             <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
               <div>
-                <p className="text-xs text-gray-500">입고 번호</p>
+              <p className="text-xs text-gray-500">{localizedName({ locale: language, ko: "입고 번호", ja: "入庫番号" })}</p>
                 <p className="font-mono font-bold text-gray-900">{item.inboundNo}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500">자재 LOT</p>
+              <p className="text-xs text-gray-500">{localizedName({ locale: language, ko: "자재 LOT", ja: "資材LOT" })}</p>
                 <p className="font-mono font-bold text-blue-600">{item.lotNo}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500">검사 상태</p>
+              <p className="text-xs text-gray-500">{localizedName({ locale: language, ko: "검사 상태", ja: "検査状態" })}</p>
                 <div className="mt-1">
                   <InspectionStatusBadge status={item.inspectionStatus} />
                 </div>
               </div>
               <div>
-                <p className="text-xs text-gray-500">입고 상태</p>
+              <p className="text-xs text-gray-500">{localizedName({ locale: language, ko: "입고 상태", ja: "入庫状態" })}</p>
                 <div className="mt-1">
                   <InboundStatusBadge status={item.inboundStatus} />
                 </div>
@@ -201,38 +201,38 @@ export default function MaterialInboundModal({
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <span className="font-medium text-gray-500">입고일:</span>
+                <span className="font-medium text-gray-500">{localizedName({ locale: language, ko: "입고일", ja: "入庫日" })}:</span>
                 <span className="ml-2 text-gray-900 font-semibold">{item.inboundDate}</span>
               </div>
               <div>
-                <span className="font-medium text-gray-500">자재:</span>
+                <span className="font-medium text-gray-500">{localizedName({ locale: language, ko: "자재", ja: "資材" })}:</span>
                 <span className="ml-2 text-gray-900 font-semibold">
                   [{item.materialCode}] {item.materialName}
                 </span>
               </div>
               <div>
-                <span className="font-medium text-gray-500">거래처:</span>
+                <span className="font-medium text-gray-500">{localizedName({ locale: language, ko: "거래처", ja: "仕入先" })}:</span>
                 <span className="ml-2 text-gray-900">{item.supplierName}</span>
               </div>
               <div>
-                <span className="font-medium text-gray-500">입고 수량:</span>
+                <span className="font-medium text-gray-500">{localizedName({ locale: language, ko: "입고 수량", ja: "入庫数量" })}:</span>
                 <span className="ml-2 text-gray-900 font-bold">
                   {item.quantity.toLocaleString()} {item.unit}
                 </span>
               </div>
               <div>
-                <span className="font-medium text-gray-500">제조일:</span>
+                <span className="font-medium text-gray-500">{localizedName({ locale: language, ko: "제조일", ja: "製造日" })}:</span>
                 <span className="ml-2 text-gray-900">{item.manufactureDate}</span>
               </div>
               <div>
-                <span className="font-medium text-gray-500">유통기한:</span>
+                <span className="font-medium text-gray-500">{localizedName({ locale: language, ko: "유통기한", ja: "賞味期限" })}:</span>
                 <span className="ml-2 text-gray-900">{item.expirationDate}</span>
               </div>
             </div>
 
             {item.remarks && (
               <div className="pt-2 border-t border-gray-100">
-                <p className="font-medium text-gray-500">비고:</p>
+              <p className="font-medium text-gray-500">{localizedName({ locale: language, ko: "비고", ja: "備考" })}:</p>
                 <p className="mt-1 text-gray-700 bg-gray-50 p-2.5 rounded-md">{item.remarks}</p>
               </div>
             )}
@@ -242,7 +242,7 @@ export default function MaterialInboundModal({
                 onClick={onClose}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
               >
-                닫기
+                {t("action.close")}
               </button>
             </div>
           </div>
@@ -251,7 +251,7 @@ export default function MaterialInboundModal({
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
             {mode === "edit" && item && (
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs font-mono text-blue-800 flex justify-between">
-                <span>입고번호: {item.inboundNo}</span>
+              <span>{localizedName({ locale: language, ko: "입고번호", ja: "入庫番号" })}: {item.inboundNo}</span>
                 <span>LOT: {item.lotNo}</span>
               </div>
             )}
@@ -260,7 +260,7 @@ export default function MaterialInboundModal({
               {/* 입고일 */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  입고일 <span className="text-red-500">*</span>
+              {localizedName({ locale: language, ko: "입고일", ja: "入庫日" })} <span className="text-red-500">*</span>
                 </label>
                 <DateInput
                   value={inboundDate}
@@ -273,7 +273,7 @@ export default function MaterialInboundModal({
               {/* 자재 선택 */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  자재 <span className="text-red-500">*</span>
+              {localizedName({ locale: language, ko: "자재", ja: "資材" })} <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={materialCode}
@@ -314,7 +314,7 @@ export default function MaterialInboundModal({
               <div className="grid grid-cols-3 gap-2">
                 <div className="col-span-2">
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    입고 수량 <span className="text-red-500">*</span>
+              {localizedName({ locale: language, ko: "입고 수량", ja: "入庫数量" })} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
@@ -323,12 +323,12 @@ export default function MaterialInboundModal({
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value === "" ? "" : Number(e.target.value))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="수량 입력"
+                placeholder={localizedName({ locale: language, ko: "수량 입력", ja: "数量を入力" })}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">단위</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">{localizedName({ locale: language, ko: "단위", ja: "単位" })}</label>
                   <input
                     type="text"
                     value={unit}
@@ -340,7 +340,7 @@ export default function MaterialInboundModal({
 
               {/* 제조일 */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">제조일</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">{localizedName({ locale: language, ko: "제조일", ja: "製造日" })}</label>
                 <DateInput
                   value={manufactureDate}
                   onChange={(e) => setManufactureDate(e.target.value)}
@@ -351,7 +351,7 @@ export default function MaterialInboundModal({
               {/* 유통기한 */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  유통기한 <span className="text-red-500">*</span>
+              {localizedName({ locale: language, ko: "유통기한", ja: "賞味期限" })} <span className="text-red-500">*</span>
                 </label>
                 <DateInput
                   value={expirationDate}
@@ -364,7 +364,7 @@ export default function MaterialInboundModal({
               {/* 검사 상태 */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  검사 상태 <span className="text-red-500">*</span>
+              {localizedName({ locale: language, ko: "검사 상태", ja: "検査状態" })} <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={inspectionStatus}
@@ -383,12 +383,12 @@ export default function MaterialInboundModal({
 
             {/* 비고 */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">비고</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">{localizedName({ locale: language, ko: "비고", ja: "備考" })}</label>
               <textarea
                 rows={2}
                 value={remarks}
                 onChange={(e) => setRemarks(e.target.value)}
-                placeholder="특이사항 또는 특이 입고 사유 입력..."
+              placeholder={localizedName({ locale: language, ko: "특이사항 또는 특이 입고 사유 입력...", ja: "特記事項または入庫理由を入力..." })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -400,13 +400,13 @@ export default function MaterialInboundModal({
                 onClick={onClose}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
               >
-                취소
+              {t("action.cancel")}
               </button>
               <button
                 type="submit"
                 className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
               >
-                {mode === "create" ? "입고 저장" : "수정 완료"}
+              {mode === "create" ? localizedName({ locale: language, ko: "입고 저장", ja: "入庫を保存" }) : localizedName({ locale: language, ko: "수정 완료", ja: "編集を完了" })}
               </button>
             </div>
           </form>

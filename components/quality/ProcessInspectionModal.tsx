@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 import type { ProcessInspection, ProcessCode, InspectionJudgment, InspectionItemResult } from "@/types/quality";
 import { useProduction } from "@/context/ProductionContext";
 import { PROCESS_INSPECTION_STANDARDS } from "@/data/inspection-standards";
@@ -23,6 +25,8 @@ export default function ProcessInspectionModal({
   onClose,
   onSubmit,
 }: ProcessInspectionModalProps) {
+  const { locale } = useLanguage();
+  const tr = (ko: string, ja: string) => localizedName({ locale, ko, ja });
   const { workOrders } = useProduction();
   const { getAssignableUsers } = useAdmin();
   const workers = getAssignableUsers(["WORKER", "PRODUCTION_MANAGER"]);
@@ -94,7 +98,7 @@ export default function ProcessInspectionModal({
     setErrorMessage("");
 
     if (!selectedWorkOrderNo) {
-      setErrorMessage("작업지시를 선택해주세요.");
+      setErrorMessage(tr("작업지시를 선택해주세요.", "作業指示を選択してください。"));
       return;
     }
 
@@ -122,7 +126,7 @@ export default function ProcessInspectionModal({
       <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl overflow-hidden border border-gray-100 my-8">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">생산 공정검사 등록 및 판정</h3>
+            <h3 className="text-lg font-bold text-gray-900">{tr("생산 공정검사 등록 및 판정", "生産工程検査登録および判定")}</h3>
             <p className="text-xs text-gray-500 font-mono mt-0.5">PQC (Process Quality Control)</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
@@ -143,7 +147,7 @@ export default function ProcessInspectionModal({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                작업지시 선택 <span className="text-red-500">*</span>
+                {tr("작업지시 선택", "作業指示選択")} <span className="text-red-500">*</span>
               </label>
               <select
                 value={selectedWorkOrderNo}
@@ -161,7 +165,7 @@ export default function ProcessInspectionModal({
 
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                검사 공정 <span className="text-red-500">*</span>
+                {tr("검사 공정", "検査工程")} <span className="text-red-500">*</span>
               </label>
               <select
                 value={process}
@@ -171,20 +175,20 @@ export default function ProcessInspectionModal({
               >
                 {PROCESS_CODE_OPTIONS.filter((o) => o.value !== "ALL").map((o) => (
                   <option key={o.value} value={o.value}>
-                    {o.label} 공정
+                    {localizedName({ locale, ko: o.label })} {tr("공정", "工程")}
                   </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">검사 시점</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("검사 시점", "検査時点")}</label>
               <input
                 type="text"
                 list="process-worker-options"
                 value={inspectionTiming}
                 onChange={(e) => setInspectionTiming(e.target.value)}
-                placeholder="예: 소성 중반 210℃ 구간"
+                placeholder={tr("예: 소성 중반 210℃ 구간", "例: 焼成中盤210℃区間")}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs"
                 required
               />
@@ -192,7 +196,7 @@ export default function ProcessInspectionModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">담당 작업자</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("담당 작업자", "担当作業者")}</label>
               <input
                 type="text"
                 list="process-inspector-options"
@@ -205,7 +209,7 @@ export default function ProcessInspectionModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">담당 검사원 *</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("담당 검사원 *", "担当検査員 *")}</label>
               <input
                 type="text"
                 value={inspector}
@@ -216,7 +220,7 @@ export default function ProcessInspectionModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">생산일자</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("생산일자", "生産日")}</label>
               <input
                 type="date"
                 value={productionDate}
@@ -234,7 +238,7 @@ export default function ProcessInspectionModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-purple-50/50 p-4 rounded-xl border border-purple-100">
             <div>
               <label className="block text-xs font-bold text-gray-800 mb-1">
-                최종 판정 <span className="text-red-500">*</span>
+                {tr("최종 판정", "最終判定")} <span className="text-red-500">*</span>
               </label>
               <select
                 value={judgment}
@@ -250,25 +254,25 @@ export default function ProcessInspectionModal({
                 }`}
                 required
               >
-                <option value="PASSED">합격 (PASSED)</option>
-                <option value="CONDITIONAL_PASS">조건부 합격 (CONDITIONAL_PASS)</option>
-                <option value="HOLD">생산 보류 (HOLD - 작업지시 일시정지 연동)</option>
-                <option value="FAILED">불합격 (FAILED - 작업지시 일시정지 연동)</option>
+                <option value="PASSED">{tr("합격 (PASSED)", "合格（PASSED）")}</option>
+                <option value="CONDITIONAL_PASS">{tr("조건부 합격 (CONDITIONAL_PASS)", "条件付き合格（CONDITIONAL_PASS）")}</option>
+                <option value="HOLD">{tr("생산 보류 (HOLD - 작업지시 일시정지 연동)", "生産保留（HOLD - 作業指示一時停止連動）")}</option>
+                <option value="FAILED">{tr("불합격 (FAILED - 작업지시 일시정지 연동)", "不合格（FAILED - 作業指示一時停止連動）")}</option>
               </select>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                판정 사유 및 조치 사항
+                {tr("판정 사유 및 조치 사항", "判定理由および措置事項")}
                 {(judgment === "HOLD" || judgment === "FAILED" || judgment === "CONDITIONAL_PASS") && (
-                  <span className="text-red-500 ml-1">(필수 입력)</span>
+                  <span className="text-red-500 ml-1">{tr("(필수 입력)", "（入力必須）")}</span>
                 )}
               </label>
               <input
                 type="text"
                 value={judgmentReason}
                 onChange={(e) => setJudgmentReason(e.target.value)}
-                placeholder="판정 소견 및 공정 조치 사유를 입력하세요..."
+                placeholder={tr("판정 소견 및 공정 조치 사유를 입력하세요...", "判定所見および工程措置理由を入力してください...")}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -280,13 +284,13 @@ export default function ProcessInspectionModal({
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
             >
-              취소
+              {tr("취소", "キャンセル")}
             </button>
             <button
               type="submit"
               className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm"
             >
-              공정검사 완료
+              {tr("공정검사 완료", "工程検査完了")}
             </button>
           </div>
         </form>

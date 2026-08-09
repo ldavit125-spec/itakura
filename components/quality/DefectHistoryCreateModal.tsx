@@ -4,6 +4,7 @@ import { FormEvent, useMemo, useState } from "react";
 import { useAdmin } from "@/context/AdminContext";
 import { useProduction } from "@/context/ProductionContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 import type { DefectHistory, DefectProcessingStatus, DefectType } from "@/types/quality";
 import { DEFECT_TYPE_CODE_LIST, DEFECT_STATUS_CODE_LIST } from "./DefectHistoryTable";
 
@@ -38,7 +39,8 @@ export default function DefectHistoryCreateModal({
   onClose: () => void;
   onSubmit: (data: Omit<DefectHistory, "id" | "defectNo" | "createdAt" | "updatedAt">) => boolean;
 }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const tr = (ko: string, ja: string) => localizedName({ locale, ko, ja });
   const { fgLots } = useProduction();
   const { activeUsers } = useAdmin();
 
@@ -88,7 +90,7 @@ export default function DefectHistoryCreateModal({
           <div className="grid gap-4 md:grid-cols-2">
             <Field label={`${t("quality.col.fgLotNo")} *`}>
               <select required value={lotNumber} onChange={(e) => setLotNumber(e.target.value)} className={input}>
-                <option value="">LOT 선택</option>
+                <option value="">{tr("LOT 선택", "LOTを選択")}</option>
                 {fgLots.map((item) => (
                   <option key={item.id} value={item.fgLotNo}>
                     {item.fgLotNo} · {item.productName}
@@ -128,16 +130,16 @@ export default function DefectHistoryCreateModal({
             <div className="rounded-lg bg-gray-50 p-3 text-sm">
               <p className="text-gray-500">{t("quality.col.productName")} / {t("quality.col.defectRate")}</p>
               <p className="mt-1 font-bold">
-                {lot?.productName ?? "LOT를 선택하세요"}{" "}
+                {lot?.productName ?? tr("LOT를 선택하세요", "LOTを選択してください")}{" "}
                 {lot && `· ${(defectQuantity / lot.totalQuantity * 100).toFixed(2)}%`}
               </p>
             </div>
           </div>
-          <Field label="불량 내용 및 원인 *">
-            <textarea required rows={3} value={cause} onChange={(e) => setCause(e.target.value)} className={input} placeholder="발견된 불량 내용과 원인을 입력하세요." />
+          <Field label={tr("불량 내용 및 원인 *", "不良内容および原因 *")}>
+            <textarea required rows={3} value={cause} onChange={(e) => setCause(e.target.value)} className={input} placeholder={tr("발견된 불량 내용과 원인을 입력하세요.", "発見された不良内容と原因を入力してください。")} />
           </Field>
-          <Field label="시정 조치 내용 *">
-            <textarea required rows={3} value={correctiveAction} onChange={(e) => setCorrectiveAction(e.target.value)} className={input} placeholder="불량에 대해 실시하거나 계획한 조치를 입력하세요." />
+          <Field label={tr("시정 조치 내용 *", "是正措置内容 *")}>
+            <textarea required rows={3} value={correctiveAction} onChange={(e) => setCorrectiveAction(e.target.value)} className={input} placeholder={tr("불량에 대해 실시하거나 계획한 조치를 입력하세요.", "不良に対して実施または計画した措置を入力してください。")} />
           </Field>
           <div className="flex justify-end gap-2 border-t pt-4">
             <button type="button" onClick={onClose} className="rounded-lg border px-4 py-2">{t("common.cancel")}</button>

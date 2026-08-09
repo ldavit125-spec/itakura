@@ -67,7 +67,7 @@ export default function ProductionProgressModal({
             </div>
             <div className="flex justify-between text-xs text-gray-600">
               <span>{t("production.workOrder.instructedQty")}: <strong>{item.orderedQuantity.toLocaleString()} {localizedName({ locale: language, ko: item.unit })}</strong></span>
-              <span>예정 시간: <strong>{item.startTime} ~ {item.endTime}</strong></span>
+              <span>{localizedName({ locale: language, ko: "예정 시간:", ja: "予定時間:" })} <strong>{item.startTime} ~ {item.endTime}</strong></span>
             </div>
           </div>
 
@@ -89,7 +89,7 @@ export default function ProductionProgressModal({
           {/* 실시간 진행률 Progress Bar */}
           <div>
             <div className="flex justify-between text-xs font-semibold mb-1">
-              <span className="text-gray-600">예상 실시간 진행률</span>
+              <span className="text-gray-600">{localizedName({ locale: language, ko: "예상 실시간 진행률", ja: "予想リアルタイム進捗率" })}</span>
               <span className="text-blue-600">{progressRate}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">

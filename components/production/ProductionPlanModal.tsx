@@ -99,15 +99,15 @@ export default function ProductionPlanModal({
     setErrorMessage("");
 
     if (!productCode) {
-      setErrorMessage("제품을 선택하세요.");
+      setErrorMessage(localizedName({ locale: language, ko: "제품을 선택하세요.", ja: "製品を選択してください。" }));
       return;
     }
     if (!productionLine) {
-      setErrorMessage("생산라인을 선택하세요.");
+      setErrorMessage(localizedName({ locale: language, ko: "생산라인을 선택하세요.", ja: "生産ラインを選択してください。" }));
       return;
     }
     if (!plannedQuantity || Number(plannedQuantity) <= 0) {
-      setErrorMessage("계획 수량은 1 이상이어야 합니다.");
+      setErrorMessage(localizedName({ locale: language, ko: "계획 수량은 1 이상이어야 합니다.", ja: "計画数量は1以上で入力してください。" }));
       return;
     }
 

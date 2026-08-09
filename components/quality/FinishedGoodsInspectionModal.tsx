@@ -5,6 +5,8 @@ import { FINISHED_GOODS_STANDARD_ITEMS } from "@/data/inspection-standards";
 import { PRODUCT_WEIGHT_STANDARDS, isWeightWithinAllowedRange } from "@/constants/quality-rules";
 import InspectionItemForm from "./InspectionItemForm";
 import { useAdmin } from "@/context/AdminContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 완제품 품질검사 수행 / 등록 모달 컴포넌트
@@ -23,6 +25,8 @@ export default function FinishedGoodsInspectionModal({
   onClose,
   onSubmit,
 }: FinishedGoodsInspectionModalProps) {
+  const { locale } = useLanguage();
+  const tr = (ko: string, ja: string) => localizedName({ locale, ko, ja });
   const { fgLots } = useProduction();
   const { getAssignableUsers } = useAdmin();
   const inspectors = getAssignableUsers(["QUALITY_MANAGER"]);
@@ -118,13 +122,13 @@ export default function FinishedGoodsInspectionModal({
     setErrorMessage("");
 
     if (!selectedFgLotNo) {
-      setErrorMessage("완제품 LOT를 선택해주세요.");
+      setErrorMessage(tr("완제품 LOT를 선택해주세요.", "完成品LOTを選択してください。"));
       return;
     }
 
     if (defectiveSampleQuantity > sampleQuantity) {
       setErrorMessage(
-        `부적합 샘플 수량(${defectiveSampleQuantity}개)이 전체 샘플 수량(${sampleQuantity}개)을 초과할 수 없습니다.`
+        tr(`부적합 샘플 수량(${defectiveSampleQuantity}개)이 전체 샘플 수량(${sampleQuantity}개)을 초과할 수 없습니다.`, `不適合サンプル数量（${defectiveSampleQuantity}個）は全サンプル数量（${sampleQuantity}個）を超えることはできません。`)
       );
       return;
     }
@@ -163,7 +167,7 @@ export default function FinishedGoodsInspectionModal({
       <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl overflow-hidden border border-gray-100 my-8">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">완제품 품질검사 수행 및 판정</h3>
+            <h3 className="text-lg font-bold text-gray-900">{tr("완제품 품질검사 수행 및 판정", "完成品品質検査実施および判定")}</h3>
             <p className="text-xs text-gray-500 font-mono mt-0.5">FQC (Finished Goods Quality Control)</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
@@ -184,7 +188,7 @@ export default function FinishedGoodsInspectionModal({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                완제품 LOT 선택 <span className="text-red-500">*</span>
+                {tr("완제품 LOT 선택", "完成品LOT選択")} <span className="text-red-500">*</span>
               </label>
               <select
                 value={selectedFgLotNo}
@@ -194,14 +198,14 @@ export default function FinishedGoodsInspectionModal({
               >
                 {fgLots.map((f) => (
                   <option key={f.id} value={f.fgLotNo}>
-                    [{f.fgLotNo}] {f.productName} ({f.totalQuantity.toLocaleString()}개)
+                      [{f.fgLotNo}] {f.productName} ({f.totalQuantity.toLocaleString()}{tr("개", "個")})
                   </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">작업지시 번호</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("작업지시 번호", "作業指示番号")}</label>
               <input
                 type="text"
                 list="finished-inspector-options"
@@ -213,7 +217,7 @@ export default function FinishedGoodsInspectionModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">생산 라인</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("생산 라인", "生産ライン")}</label>
               <input
                 type="text"
                 value={productionLine}
@@ -226,17 +230,17 @@ export default function FinishedGoodsInspectionModal({
           {/* 샘플링 및 수치 검사 (중량 자동 평가) */}
           <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 space-y-3">
             <div className="flex justify-between items-center text-xs font-bold text-indigo-900">
-              <span>■ 샘플링 및 수치 검사 (제품별 중량 표준 연동)</span>
+              <span>{tr("■ 샘플링 및 수치 검사 (제품별 중량 표준 연동)", "■ サンプリングおよび数値検査（製品別重量基準連動）")}</span>
               {stdWeight && (
                 <span className="font-normal text-indigo-700">
-                  기준: <strong>{stdWeight.baseWeight}g</strong> (허용범위: {stdWeight.minAllowed}g ~ {stdWeight.maxAllowed}g)
+                {tr("기준:", "基準:")} <strong>{stdWeight.baseWeight}g</strong> ({tr("허용범위:", "許容範囲:")} {stdWeight.minAllowed}g ~ {stdWeight.maxAllowed}g)
                 </span>
               )}
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
               <div>
-                <label className="block text-gray-700 font-medium mb-1">샘플 수량 (개)</label>
+              <label className="block text-gray-700 font-medium mb-1">{tr("샘플 수량 (개)", "サンプル数量（個）")}</label>
                 <input
                   type="number"
                   min="1"
@@ -248,7 +252,7 @@ export default function FinishedGoodsInspectionModal({
               </div>
 
               <div>
-                <label className="block text-red-700 font-bold mb-1">부적합 샘플 (개)</label>
+              <label className="block text-red-700 font-bold mb-1">{tr("부적합 샘플 (개)", "不適合サンプル（個）")}</label>
                 <input
                   type="number"
                   min="0"
@@ -261,7 +265,7 @@ export default function FinishedGoodsInspectionModal({
               </div>
 
               <div>
-                <label className="block text-indigo-900 font-bold mb-1">평균 중량 (g) *</label>
+              <label className="block text-indigo-900 font-bold mb-1">{tr("평균 중량 (g) *", "平均重量（g）*")}</label>
                 <input
                   type="number"
                   value={avgWeight}
@@ -272,7 +276,7 @@ export default function FinishedGoodsInspectionModal({
               </div>
 
               <div>
-                <label className="block text-gray-700 font-medium mb-1">최소 중량 (g)</label>
+              <label className="block text-gray-700 font-medium mb-1">{tr("최소 중량 (g)", "最小重量（g）")}</label>
                 <input
                   type="number"
                   value={minWeight}
@@ -282,7 +286,7 @@ export default function FinishedGoodsInspectionModal({
               </div>
 
               <div>
-                <label className="block text-gray-700 font-medium mb-1">최대 중량 (g)</label>
+              <label className="block text-gray-700 font-medium mb-1">{tr("최대 중량 (g)", "最大重量（g）")}</label>
                 <input
                   type="number"
                   value={maxWeight}
@@ -299,7 +303,7 @@ export default function FinishedGoodsInspectionModal({
           {/* 최종 판정 및 소견 */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
             <div>
-              <label className="block text-xs font-bold text-gray-800 mb-1">담당 검사원 *</label>
+              <label className="block text-xs font-bold text-gray-800 mb-1">{tr("담당 검사원 *", "担当検査員 *")}</label>
               <input
                 type="text"
                 value={inspector}
@@ -311,7 +315,7 @@ export default function FinishedGoodsInspectionModal({
 
             <div>
               <label className="block text-xs font-bold text-gray-800 mb-1">
-                최종 판정 <span className="text-red-500">*</span>
+                {tr("최종 판정", "最終判定")} <span className="text-red-500">*</span>
               </label>
               <select
                 value={judgment}
@@ -327,10 +331,10 @@ export default function FinishedGoodsInspectionModal({
                 }`}
                 required
               >
-                <option value="PASSED">합격 (PASSED - 출고 가능 연동)</option>
-                <option value="CONDITIONAL_PASS">조건부 합격 (CONDITIONAL_PASS)</option>
-                <option value="HOLD">보류 (HOLD - 출고 불가)</option>
-                <option value="FAILED">불합격 (FAILED - 출고 불가)</option>
+                <option value="PASSED">{tr("합격 (PASSED - 출고 가능 연동)", "合格（PASSED - 出荷可能連動）")}</option>
+                <option value="CONDITIONAL_PASS">{tr("조건부 합격 (CONDITIONAL_PASS)", "条件付き合格（CONDITIONAL_PASS）")}</option>
+                <option value="HOLD">{tr("보류 (HOLD - 출고 불가)", "保留（HOLD - 出荷不可）")}</option>
+                <option value="FAILED">{tr("불합격 (FAILED - 출고 불가)", "不合格（FAILED - 出荷不可）")}</option>
               </select>
             </div>
 
@@ -342,23 +346,23 @@ export default function FinishedGoodsInspectionModal({
                   onChange={(e) => setRecheckRequired(e.target.checked)}
                   className="w-4 h-4 text-blue-600 rounded"
                 />
-                <span>재검사 필요 여부 체크</span>
+                <span>{tr("재검사 필요 여부 체크", "再検査要否を確認")}</span>
               </label>
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">
-              판정 사유 및 출하 승인 소견
+              {tr("판정 사유 및 출하 승인 소견", "判定理由および出荷承認所見")}
               {(judgment === "HOLD" || judgment === "FAILED" || judgment === "CONDITIONAL_PASS") && (
-                <span className="text-red-500 ml-1">(필수 입력)</span>
+                <span className="text-red-500 ml-1">{tr("(필수 입력)", "（入力必須）")}</span>
               )}
             </label>
             <textarea
               rows={2}
               value={judgmentReason}
               onChange={(e) => setJudgmentReason(e.target.value)}
-              placeholder="완제품 관능 및 출하 판정 사유를 상세히 작성하세요..."
+              placeholder={tr("완제품 관능 및 출하 판정 사유를 상세히 작성하세요...", "完成品の官能評価および出荷判定理由を詳しく記載してください...")}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -369,13 +373,13 @@ export default function FinishedGoodsInspectionModal({
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
             >
-              취소
+              {tr("취소", "キャンセル")}
             </button>
             <button
               type="submit"
               className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm"
             >
-              완제품 검사 완료
+              {tr("완제품 검사 완료", "完成品検査完了")}
             </button>
           </div>
         </form>

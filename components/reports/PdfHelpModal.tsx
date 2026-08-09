@@ -42,9 +42,9 @@ export default function PdfHelpModal({ isOpen, onClose, onPrint }: PdfHelpModalP
               </>
             ) : (
               <>
-                <li>아래 <strong>「인쇄 창 열기」</strong> 버튼을 클릭합니다.</li>
-                <li>브라우저 인쇄 설정 창의 대상(프린터)에서 <strong>「PDF로 저장」</strong>을 선택합니다.</li>
-                <li>여백 및 배경 그래픽 옵션을 확인한 후 <strong>「저장」</strong>을 누릅니다.</li>
+                <li>下の<strong>「印刷画面を開く」</strong>ボタンをクリックします。</li>
+                <li>ブラウザーの印刷設定で、送信先に<strong>「PDFに保存」</strong>を選択します。</li>
+                <li>余白と背景グラフィックの設定を確認し、<strong>「保存」</strong>を押します。</li>
               </>
             )}
           </ol>

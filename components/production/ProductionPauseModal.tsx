@@ -22,7 +22,7 @@ export default function ProductionPauseModal({
     event.preventDefault();
     const trimmedReason = reason.trim();
     if (!trimmedReason) {
-      setErrorMessage("일시정지 사유를 입력해주세요.");
+      setErrorMessage(localizedName({ locale: language, ko: "일시정지 사유를 입력해주세요.", ja: "一時停止理由を入力してください。" }));
       return;
     }
     onSubmit(item.id, trimmedReason);
@@ -36,7 +36,7 @@ export default function ProductionPauseModal({
             <h3 className="text-base font-bold text-gray-900">{t("production.progress.pause")}</h3>
             <p className="mt-0.5 font-mono text-xs text-gray-500">{item.workOrderNo}</p>
           </div>
-          <button type="button" onClick={onClose} aria-label="닫기" className="p-1 text-gray-400 hover:text-gray-600">
+          <button type="button" onClick={onClose} aria-label={localizedName({ locale: language, ko: "닫기", ja: "閉じる" })} className="p-1 text-gray-400 hover:text-gray-600">
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -61,7 +61,7 @@ export default function ProductionPauseModal({
               }}
               rows={4}
               autoFocus
-              placeholder="설비 점검, 자재 부족, 품질 확인 등 일시정지 사유를 입력하세요."
+              placeholder={localizedName({ locale: language, ko: "설비 점검, 자재 부족, 품질 확인 등 일시정지 사유를 입력하세요.", ja: "設備点検、資材不足、品質確認など一時停止理由を入力してください。" })}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500"
             />
             {errorMessage && <p className="mt-1 text-xs font-medium text-red-600">{errorMessage}</p>}

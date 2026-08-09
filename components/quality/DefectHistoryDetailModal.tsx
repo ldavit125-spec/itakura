@@ -5,6 +5,7 @@ import type { DefectHistory, DefectProcessingStatus, DefectType } from "@/types/
 import DefectStatusBadge from "./DefectStatusBadge";
 import { DEFECT_STATUS_CODE_LIST, DEFECT_TYPE_CODE_LIST } from "./DefectHistoryTable";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // 번역 키 매핑 (모달 내부에서 재정의)
 const DEFECT_TYPE_KEYS: Record<DefectType, string> = {
@@ -36,7 +37,7 @@ export default function DefectHistoryDetailModal({
   onClose: () => void;
   onStatusChange: (status: DefectProcessingStatus) => void;
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   if (!item) return null;
 
   const rows: [string, string][] = [
@@ -77,11 +78,11 @@ export default function DefectHistoryDetailModal({
         </div>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div className="rounded-lg border border-gray-200 p-4">
-            <p className="text-xs font-bold text-gray-500">원인 분석</p>
+            <p className="text-xs font-bold text-gray-500">{localizedName({ locale: language, ko: "원인 분석", ja: "原因分析" })}</p>
             <p className="mt-2 text-sm leading-6">{item.cause}</p>
           </div>
           <div className="rounded-lg border border-gray-200 p-4">
-            <p className="text-xs font-bold text-gray-500">조치 내용</p>
+            <p className="text-xs font-bold text-gray-500">{localizedName({ locale: language, ko: "조치 내용", ja: "処置内容" })}</p>
             <p className="mt-2 text-sm leading-6">{item.correctiveAction}</p>
           </div>
         </div>
@@ -105,7 +106,7 @@ export default function DefectHistoryDetailModal({
               href={`/traceability?lot=${encodeURIComponent(item.lotNumber)}`}
               className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white"
             >
-              LOT 추적
+              {localizedName({ locale: language, ko: "LOT 추적", ja: "LOT追跡" })}
             </Link>
             <button
               onClick={onClose}

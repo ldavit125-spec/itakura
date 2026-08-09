@@ -108,7 +108,7 @@ export default function ProductionResultModal({
     setErrorMessage("");
 
     if (!selectedWorkOrderNo) {
-      setErrorMessage("작업지시를 선택하세요.");
+      setErrorMessage(localizedName({ locale: language, ko: "작업지시를 선택하세요.", ja: "作業指示を選択してください。" }));
       return;
     }
 
@@ -118,24 +118,24 @@ export default function ProductionResultModal({
       typeof defectQuantity !== "number" ||
       typeof reworkQuantity !== "number"
     ) {
-      setErrorMessage("수량을 올바르게 입력하세요.");
+      setErrorMessage(localizedName({ locale: language, ko: "수량을 올바르게 입력하세요.", ja: "数量を正しく入力してください。" }));
       return;
     }
 
     if (totalQuantity <= 0) {
-      setErrorMessage("총 생산량은 1 이상이어야 합니다.");
+      setErrorMessage(localizedName({ locale: language, ko: "총 생산량은 1 이상이어야 합니다.", ja: "総生産数量は1以上で入力してください。" }));
       return;
     }
 
     if (goodQuantity + defectQuantity + reworkQuantity !== totalQuantity) {
-      setErrorMessage("양품 수량 + 불량 수량 + 재작업 수량 합계가 총 생산량과 일치해야 합니다.");
+      setErrorMessage(localizedName({ locale: language, ko: "양품 수량 + 불량 수량 + 재작업 수량 합계가 총 생산량과 일치해야 합니다.", ja: "良品、不良、再作業数量の合計を総生産数量と一致させてください。" }));
       return;
     }
 
     if (defectQuantity > 0 && defectBreakdown.length > 0) {
       const breakdownSum = defectBreakdown.reduce((sum, b) => sum + b.quantity, 0);
       if (breakdownSum !== defectQuantity) {
-        setErrorMessage(`불량 세부 원인 수량 합계(${breakdownSum}개)가 총 불량 수량(${defectQuantity}개)과 일치하지 않습니다.`);
+      setErrorMessage(localizedName({ locale: language, ko: `불량 세부 원인 수량 합계(${breakdownSum}개)가 총 불량 수량(${defectQuantity}개)과 일치하지 않습니다.`, ja: `不良原因別数量の合計（${breakdownSum}個）が総不良数量（${defectQuantity}個）と一致しません。` }));
         return;
       }
     }
@@ -206,7 +206,7 @@ export default function ProductionResultModal({
                 <p className="text-xl font-bold text-red-600 mt-1">{item.defectRate}%</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500">총 작업시간</p>
+              <p className="text-xs text-gray-500">{localizedName({ locale: language, ko: "총 작업시간", ja: "総作業時間" })}</p>
                 <p className="text-base font-bold text-gray-800 mt-1">{item.workingHours}</p>
               </div>
             </div>
@@ -258,7 +258,7 @@ export default function ProductionResultModal({
 
             {item.defectBreakdown && item.defectBreakdown.length > 0 && (
               <div>
-                <h5 className="text-xs font-bold text-gray-700 mb-2">■ 불량 세부 원인 내역</h5>
+          <h5 className="text-xs font-bold text-gray-700 mb-2">{localizedName({ locale: language, ko: "■ 불량 세부 원인 내역", ja: "■ 不良原因の内訳" })}</h5>
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   {item.defectBreakdown.map((b) => (
                     <div key={b.type} className="bg-red-50 p-2 rounded border border-red-100 flex justify-between">
@@ -281,7 +281,7 @@ export default function ProductionResultModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  작업지시 선택 <span className="text-red-500">*</span>
+            {localizedName({ locale: language, ko: "작업지시 선택", ja: "作業指示選択" })} <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={selectedWorkOrderNo}
@@ -289,7 +289,7 @@ export default function ProductionResultModal({
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-mono"
                   required
                 >
-                  <option value="">-- 작업지시 선택 --</option>
+              <option value="">-- {localizedName({ locale: language, ko: "작업지시 선택", ja: "作業指示を選択" })} --</option>
                   {workOrders.map((w) => (
                     <option key={w.id} value={w.workOrderNo}>
                       [{w.workOrderNo}] {localizedName({ locale: language, ko: w.productName, ja: w.productNameJa })} ({w.orderedQuantity.toLocaleString()}{itemUnit})
@@ -375,7 +375,7 @@ export default function ProductionResultModal({
                   list="production-result-handler-options"
                   value={actualStartTime}
                   onChange={(e) => setActualStartTime(e.target.value)}
-                  placeholder="예: 2026-07-31 08:00"
+              placeholder={localizedName({ locale: language, ko: "예: 2026-07-31 08:00", ja: "例: 2026-07-31 08:00" })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-mono"
                   required
                 />
@@ -387,7 +387,7 @@ export default function ProductionResultModal({
                   type="text"
                   value={actualEndTime}
                   onChange={(e) => setActualEndTime(e.target.value)}
-                  placeholder="예: 2026-07-31 12:00"
+              placeholder={localizedName({ locale: language, ko: "예: 2026-07-31 12:00", ja: "例: 2026-07-31 12:00" })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-mono"
                   required
                 />
