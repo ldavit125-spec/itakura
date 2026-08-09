@@ -18,6 +18,7 @@ import QualityTabs from "./QualityTabs";
 
 import InspectionQueueTable from "./InspectionQueueTable";
 import InspectionAssignmentModal from "./InspectionAssignmentModal";
+import InspectionQueueCreateModal from "./InspectionQueueCreateModal";
 
 import IncomingInspectionTable from "./IncomingInspectionTable";
 import IncomingInspectionModal from "./IncomingInspectionModal";
@@ -72,6 +73,7 @@ export default function QualityClient() {
     summary,
     toast,
     closeToast,
+    createInspectionRequest,
     assignInspector,
     startQueueInspection,
     submitIncomingInspection,
@@ -87,6 +89,7 @@ export default function QualityClient() {
   } = useQuality();
 
   // 모달 상태 관리
+  const [createQueueModalOpen, setCreateQueueModalOpen] = useState(false);
   const [assignModal, setAssignModal] = useState<{ isOpen: boolean; item?: InspectionQueueItem }>({ isOpen: false });
 
   const [incomingModal, setIncomingModal] = useState({ isOpen: false });
@@ -132,6 +135,7 @@ export default function QualityClient() {
             queue={queue.filter((item) => !item.lineOrSupplier.includes("라인") || canAccessProductionLine(item.lineOrSupplier))}
             onOpenAssign={(item) => hasPermission("QUALITY_UPDATE") && setAssignModal({ isOpen: true, item })}
             onStartInspection={(id) => { if (hasPermission("QUALITY_UPDATE")) startQueueInspection(id); }}
+            onOpenCreate={() => hasPermission("QUALITY_CREATE") && setCreateQueueModalOpen(true)}
           />
         )}
 
@@ -228,6 +232,12 @@ export default function QualityClient() {
       </div>
 
       {/* 3. 각 탭 모달 */}
+      <InspectionQueueCreateModal
+        isOpen={createQueueModalOpen}
+        onClose={() => setCreateQueueModalOpen(false)}
+        onSubmit={createInspectionRequest}
+      />
+
       <InspectionAssignmentModal
         isOpen={assignModal.isOpen}
         item={assignModal.item}

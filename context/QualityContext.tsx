@@ -23,6 +23,7 @@ import {
   calculateQualityDefectRate,
 } from "@/lib/quality-calculations";
 import {
+  generateRequestNo,
   generateIQCNo,
   generatePQCNo,
   generateFQCNo,
@@ -60,6 +61,9 @@ interface QualityContextType {
   closeToast: () => void;
 
   // 탭 1: 검사 대기
+  createInspectionRequest: (
+    data: Omit<InspectionQueueItem, "id" | "requestNo" | "requestTime" | "status">
+  ) => boolean;
   assignInspector: (queueId: string, inspector: string) => void;
   startQueueInspection: (queueId: string) => boolean;
 
@@ -206,6 +210,29 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
   }, [queue, incoming, processList, finished, correctiveActions]);
 
   // ── 탭 1: 검사 대기 핸들러 ────────────────────────────────────
+  const createInspectionRequest = (
+    data: Omit<InspectionQueueItem, "id" | "requestNo" | "requestTime" | "status">
+  ): boolean => {
+    const seq = queue.length + 1;
+    const now = new Date();
+    const dateStr = now.toISOString().split("T")[0];
+    const requestNo = generateRequestNo(dateStr, seq);
+    const timeStr = now.toISOString().replace("T", " ").substring(0, 16);
+
+    const newItem: InspectionQueueItem = {
+      ...data,
+      id: `req-${Date.now()}`,
+      requestNo,
+      requestTime: timeStr,
+      status: "REQUESTED",
+    };
+
+    setQueue((prev) => [newItem, ...prev]);
+    persist(saveInspectionRequest(newItem));
+    showToast(`신규 검사 요청 [${requestNo}]가 등록되었습니다.`);
+    return true;
+  };
+
   const assignInspector = (queueId: string, inspector: string) => {
     const target = queue.find(q => q.id === queueId);
     setQueue((prev) =>
@@ -705,6 +732,7 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
         toast,
         showToast,
         closeToast,
+        createInspectionRequest,
         assignInspector,
         startQueueInspection,
         submitIncomingInspection,
