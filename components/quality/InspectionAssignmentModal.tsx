@@ -60,8 +60,8 @@ export default function InspectionAssignmentModal({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100 text-xs space-y-1">
-            <div><strong>{tr("검사 구분:", "検査区分:")}</strong> {item.category}</div>
-            <div><strong>{tr("대상:", "対象:")}</strong> [{item.targetNo}] {item.targetName}</div>
+            <div><strong>{tr("검사 구분:", "検査区分:")}</strong> {localizedName({ locale, ko: item.category })}</div>
+            <div><strong>{tr("대상:", "対象:")}</strong> [{item.targetNo}] {localizedName({ locale, ko: item.targetName })}</div>
             <div><strong>{tr("LOT 번호:", "LOT番号:")}</strong> {item.lotNo}</div>
           </div>
 
@@ -70,12 +70,12 @@ export default function InspectionAssignmentModal({
               {tr("담당 검사원 성명", "担当検査員氏名")} <span className="text-red-500">*</span>
             </label>
             <select
-              value={inspectorName}
+              value={localizedName({ locale, ko: inspectorName })}
               onChange={(e) => setInspectorName(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               required
             >
-              {inspectors.map((user) => <option key={user.id} value={user.name}>{user.name} ({user.department || tr("품질 담당", "品質担当")})</option>)}
+              {inspectors.map((user) => <option key={user.id} value={user.name}>{localizedName({ locale, ko: user.name })} ({localizedName({ locale, ko: user.department }) || tr("품질 담당", "品質担当")})</option>)}
             </select>
           </div>
 

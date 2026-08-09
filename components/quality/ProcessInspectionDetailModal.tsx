@@ -56,7 +56,7 @@ export default function ProcessInspectionDetailModal({
             </div>
             <div>
               <p className="text-xs text-gray-500 font-medium">{tr("담당 검사원", "担当検査員")}</p>
-              <p className="text-sm font-bold text-gray-900 mt-1">{item.inspector}</p>
+              <p className="text-sm font-bold text-gray-900 mt-1">{localizedName({ locale, ko: item.inspector })}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500 font-medium">{tr("검사일시", "検査日時")}</p>
@@ -76,20 +76,20 @@ export default function ProcessInspectionDetailModal({
             <div>
               <span className="text-gray-500 font-medium">{tr("제품:", "製品:")}</span>
               <span className="ml-2 font-bold text-gray-900">
-                [{item.productCode}] {item.productName}
+                [{item.productCode}] {localizedName({ locale, ko: item.productName })}
               </span>
             </div>
             <div>
               <span className="text-gray-500 font-medium">{tr("생산라인:", "生産ライン:")}</span>
-              <span className="ml-2 font-semibold text-gray-900">{item.productionLine}</span>
+              <span className="ml-2 font-semibold text-gray-900">{localizedName({ locale, ko: item.productionLine })}</span>
             </div>
             <div>
               <span className="text-gray-500 font-medium">{tr("검사 시점:", "検査時点:")}</span>
-              <span className="ml-2 text-gray-900">{item.inspectionTiming}</span>
+              <span className="ml-2 text-gray-900">{localizedName({ locale, ko: item.inspectionTiming })}</span>
             </div>
             <div>
               <span className="text-gray-500 font-medium">{tr("담당 작업자:", "担当作業者:")}</span>
-              <span className="ml-2 text-gray-900">{item.worker}</span>
+              <span className="ml-2 text-gray-900">{localizedName({ locale, ko: item.worker })}</span>
             </div>
           </div>
 
@@ -100,7 +100,7 @@ export default function ProcessInspectionDetailModal({
           {item.judgmentReason && (
             <div className="bg-purple-50/50 p-3 rounded-lg border border-purple-100 text-xs">
               <span className="font-bold text-purple-900">{tr("■ 판정 소견 및 의견: ", "■ 判定所見および意見: ")}</span>
-              <span className="text-gray-800">{item.judgmentReason}</span>
+              <span className="text-gray-800">{localizedName({ locale, ko: item.judgmentReason })}</span>
             </div>
           )}
 

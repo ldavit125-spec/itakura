@@ -81,7 +81,7 @@ export default function NonconformityDetailModal({
             </div>
             <div>
               <span className="text-gray-500 font-medium">{tr("대상명:", "対象名:")}</span>
-              <span className="ml-2 font-bold text-gray-900">{item.targetName}</span>
+              <span className="ml-2 font-bold text-gray-900">{localizedName({ locale, ko: item.targetName })}</span>
             </div>
             <div>
               <span className="text-gray-500 font-medium">{tr("LOT 번호:", "LOT番号:")}</span>
@@ -101,7 +101,7 @@ export default function NonconformityDetailModal({
             </div>
             <div>
               <span className="text-gray-500 font-medium">{tr("담당자:", "担当者:")}</span>
-              <span className="ml-2 text-gray-900 font-semibold">{item.handler}</span>
+              <span className="ml-2 text-gray-900 font-semibold">{localizedName({ locale, ko: item.handler })}</span>
             </div>
             <div>
               <span className="text-gray-500 font-medium">{tr("시정조치 번호:", "是正措置番号:")}</span>
@@ -114,7 +114,7 @@ export default function NonconformityDetailModal({
           <div>
             <h5 className="text-xs font-bold text-gray-800 mb-1">{tr("■ 상세 현상 및 내역", "■ 詳細現象および内容")}</h5>
             <p className="p-3 bg-gray-50 rounded border border-gray-200 text-xs text-gray-800 leading-relaxed">
-              {item.details}
+              {localizedName({ locale, ko: item.details })}
             </p>
           </div>
 
@@ -122,7 +122,7 @@ export default function NonconformityDetailModal({
             <div>
               <h5 className="text-xs font-bold text-gray-800 mb-1">{tr("■ 현장 임시조치", "■ 現場暫定措置")}</h5>
               <p className="p-3 bg-blue-50/50 rounded border border-blue-100 text-xs text-blue-900 leading-relaxed">
-                {item.interimAction}
+                {localizedName({ locale, ko: item.interimAction })}
               </p>
             </div>
           )}

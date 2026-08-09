@@ -48,8 +48,8 @@ export default function InspectionStatusHistory({ history }: InspectionStatusHis
                 <td className="px-3 py-2 whitespace-nowrap text-gray-600">{item.changeTime}</td>
                 <td className="px-3 py-2 text-gray-500">{item.previousStatus}</td>
                 <td className="px-3 py-2 font-bold text-blue-600">{item.newStatus}</td>
-                <td className="px-3 py-2 font-sans font-medium text-gray-800">{item.changedBy}</td>
-                <td className="px-3 py-2 font-sans text-gray-600">{item.reason || "-"}</td>
+                <td className="px-3 py-2 font-sans font-medium text-gray-800">{localizedName({ locale, ko: item.changedBy })}</td>
+                <td className="px-3 py-2 font-sans text-gray-600">{localizedName({ locale, ko: item.reason }) || "-"}</td>
               </tr>
             ))}
           </tbody>

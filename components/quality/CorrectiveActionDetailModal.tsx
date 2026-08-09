@@ -132,7 +132,7 @@ export default function CorrectiveActionDetailModal({
 
           <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs">
             <span className="font-bold text-gray-800">{tr("■ 문제 요약: ", "■ 問題要約: ")}</span>
-            <span className="text-gray-900 font-medium">{item.problemSummary}</span>
+            <span className="text-gray-900 font-medium">{localizedName({ locale, ko: item.problemSummary })}</span>
           </div>
 
           {/* 1. 원인 분석 및 시정조치 계획 수립 */}
@@ -140,7 +140,7 @@ export default function CorrectiveActionDetailModal({
             <h5 className="text-xs font-bold text-gray-800 flex items-center justify-between">
               <span>{tr("1. 원인 분석 (Root Cause Analysis) 및 조치 계획", "1. 原因分析（Root Cause Analysis）および措置計画")}</span>
               <span className="text-[11px] text-gray-500 font-normal">
-                {tr("담당자:", "担当者:")} <strong>{item.handler}</strong>
+                {tr("담당자:", "担当者:")} <strong>{localizedName({ locale, ko: item.handler })}</strong>
               </span>
             </h5>
 
@@ -165,7 +165,7 @@ export default function CorrectiveActionDetailModal({
                 <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("직접 원인 (Direct Cause)", "直接原因（Direct Cause）")}</label>
                 <input
                   type="text"
-                  value={directCause}
+                  value={localizedName({ locale, ko: directCause })}
                   onChange={(e) => setDirectCause(e.target.value)}
                   placeholder={tr("예: 온도센서 고장", "例: 温度センサー故障")}
                   className="w-full px-3 py-1.5 border border-gray-300 rounded text-xs"
@@ -177,7 +177,7 @@ export default function CorrectiveActionDetailModal({
               <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("근본 원인 (Root Cause)", "根本原因（Root Cause）")}</label>
               <textarea
                 rows={2}
-                value={rootCause}
+                value={localizedName({ locale, ko: rootCause })}
                 onChange={(e) => setRootCause(e.target.value)}
                 placeholder={tr("5-Why 등을 통해 도출된 근본 원인을 작성하세요...", "5-Whyなどで導出した根本原因を記載してください...")}
                 className="w-full px-3 py-1.5 border border-gray-300 rounded text-xs"
@@ -189,7 +189,7 @@ export default function CorrectiveActionDetailModal({
                 <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("시정조치 계획 (Action Plan)", "是正措置計画（Action Plan）")}</label>
                 <textarea
                   rows={2}
-                  value={actionPlan}
+                  value={localizedName({ locale, ko: actionPlan })}
                   onChange={(e) => setActionPlan(e.target.value)}
                   placeholder={tr("개선 및 즉각적 조치 내용을 작성하세요...", "改善および即時措置内容を記載してください...")}
                   className="w-full px-3 py-1.5 border border-gray-300 rounded text-xs"
@@ -200,7 +200,7 @@ export default function CorrectiveActionDetailModal({
                 <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("재발 방지 대책 (Preventive Measure)", "再発防止対策（Preventive Measure）")}</label>
                 <textarea
                   rows={2}
-                  value={preventiveMeasure}
+                  value={localizedName({ locale, ko: preventiveMeasure })}
                   onChange={(e) => setPreventiveMeasure(e.target.value)}
                   placeholder={tr("시스템적 재발 방지 대책을 작성하세요...", "体系的な再発防止対策を記載してください...")}
                   className="w-full px-3 py-1.5 border border-gray-300 rounded text-xs"
@@ -259,7 +259,7 @@ export default function CorrectiveActionDetailModal({
                 <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("검증자", "検証者")}</label>
                 <input
                   type="text"
-                  value={verifier}
+                  value={localizedName({ locale, ko: verifier })}
                   onChange={(e) => setVerifier(e.target.value)}
                   className="w-full px-3 py-1.5 border border-gray-300 rounded text-xs font-bold"
                   required
@@ -280,7 +280,7 @@ export default function CorrectiveActionDetailModal({
               <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("검증 내용 및 데이터 증빙 소견", "検証内容およびデータ根拠所見")}</label>
               <input
                 type="text"
-                value={verificationContent}
+                value={localizedName({ locale, ko: verificationContent })}
                 onChange={(e) => setVerificationContent(e.target.value)}
                 placeholder={tr("개선 조치 후 모니터링 데이터 및 효과 검증 소견을 입력하세요...", "改善措置後のモニタリングデータおよび効果検証所見を入力してください...")}
                 className="w-full px-3 py-1.5 border border-gray-300 rounded text-xs"

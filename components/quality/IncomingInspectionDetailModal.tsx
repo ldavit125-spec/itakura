@@ -57,7 +57,7 @@ export default function IncomingInspectionDetailModal({
             </div>
             <div>
               <p className="text-xs text-gray-500 font-medium">{tr("담당 검사원", "担当検査員")}</p>
-              <p className="text-sm font-bold text-gray-900 mt-1">{item.inspector}</p>
+              <p className="text-sm font-bold text-gray-900 mt-1">{localizedName({ locale, ko: item.inspector })}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500 font-medium">{tr("검사일시", "検査日時")}</p>
@@ -77,7 +77,7 @@ export default function IncomingInspectionDetailModal({
             <div>
               <span className="text-gray-500 font-medium">{tr("자재:", "原材料:")}</span>
               <span className="ml-2 font-bold text-gray-900">
-                [{item.materialCode}] {item.materialName}
+                [{item.materialCode}] {localizedName({ locale, ko: item.materialName })}
               </span>
             </div>
             <div>
@@ -86,7 +86,7 @@ export default function IncomingInspectionDetailModal({
             </div>
             <div>
               <span className="text-gray-500 font-medium">{tr("거래처:", "取引先:")}</span>
-              <span className="ml-2 text-gray-900">{item.supplierName}</span>
+              <span className="ml-2 text-gray-900">{localizedName({ locale, ko: item.supplierName })}</span>
             </div>
             <div>
               <span className="text-gray-500 font-medium">{tr("입고 수량:", "入庫数量:")}</span>
@@ -111,7 +111,7 @@ export default function IncomingInspectionDetailModal({
           {item.judgmentReason && (
             <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100 text-xs">
               <span className="font-bold text-blue-900">{tr("■ 판정 사유 및 의견: ", "■ 判定理由および意見: ")}</span>
-              <span className="text-gray-800">{item.judgmentReason}</span>
+              <span className="text-gray-800">{localizedName({ locale, ko: item.judgmentReason })}</span>
             </div>
           )}
 
