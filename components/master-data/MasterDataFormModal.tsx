@@ -18,6 +18,7 @@ import {
   SUPPLIER_TYPE_OPTIONS,
 } from "@/types/master-data";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedName } from "@/lib/i18n/localized";
 
 // ============================================================
 // 공통 폼 필드 컴포넌트
@@ -56,6 +57,16 @@ const SELECT_CLASS =
 
 const INPUT_ERROR_CLASS =
   "w-full px-3 py-2 text-sm border border-red-400 rounded-md focus:outline-none focus:ring-2 focus:ring-red-400";
+
+function localizedFormValue(
+  locale: "ko" | "ja",
+  currentValue: string,
+  originalValue?: string | null,
+  japaneseValue?: string | null
+): string {
+  if (locale !== "ja" || currentValue !== (originalValue ?? "")) return currentValue;
+  return localizedName({ locale, ko: currentValue, ja: japaneseValue });
+}
 
 // ── 저장/취소 버튼 공통 ────────────────────────────────────────
 
@@ -105,7 +116,7 @@ export function ProductFormModal({
   onSave,
   onClose,
 }: ProductFormModalProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [code, setCode] = useState(item?.code ?? "");
   const [name, setName] = useState(item?.name ?? "");
   const [nameJa, setNameJa] = useState(item?.nameJa ?? "");
@@ -166,7 +177,7 @@ export function ProductFormModal({
             <input
               id="product-form-name"
               type="text"
-              value={name}
+              value={localizedFormValue(locale, name, item?.name, item?.nameJa)}
               onChange={(e) => setName(e.target.value)}
               placeholder={t("master.placeholder.productName")}
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
@@ -207,7 +218,7 @@ export function ProductFormModal({
             <input
               id="product-form-unit"
               type="text"
-              value={unit}
+              value={localizedFormValue(locale, unit, item?.unit)}
               onChange={(e) => setUnit(e.target.value)}
               placeholder={t("master.placeholder.unitItem")}
               className={errors.unit ? INPUT_ERROR_CLASS : INPUT_CLASS}
@@ -217,7 +228,7 @@ export function ProductFormModal({
             <input
               id="product-form-line"
               type="text"
-              value={defaultLine}
+              value={localizedFormValue(locale, defaultLine, item?.defaultLine)}
               onChange={(e) => setDefaultLine(e.target.value)}
               placeholder={t("master.placeholder.defaultLine")}
               className={INPUT_CLASS}
@@ -259,7 +270,7 @@ export function MaterialFormModal({
   onSave,
   onClose,
 }: MaterialFormModalProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [code, setCode] = useState(item?.code ?? "");
   const [name, setName] = useState(item?.name ?? "");
   const [nameJa, setNameJa] = useState(item?.nameJa ?? "");
@@ -326,7 +337,7 @@ export function MaterialFormModal({
             <input
               id="material-form-name"
               type="text"
-              value={name}
+              value={localizedFormValue(locale, name, item?.name, item?.nameJa)}
               onChange={(e) => setName(e.target.value)}
               placeholder={t("master.placeholder.materialName")}
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
@@ -363,7 +374,7 @@ export function MaterialFormModal({
             <input
               id="material-form-unit"
               type="text"
-              value={unit}
+              value={localizedFormValue(locale, unit, item?.unit)}
               onChange={(e) => setUnit(e.target.value)}
               placeholder={t("master.placeholder.unitKg")}
               className={errors.unit ? INPUT_ERROR_CLASS : INPUT_CLASS}
@@ -385,7 +396,7 @@ export function MaterialFormModal({
             <input
               id="material-form-supplier"
               type="text"
-              value={defaultSupplier}
+              value={localizedFormValue(locale, defaultSupplier, item?.defaultSupplier)}
               onChange={(e) => setDefaultSupplier(e.target.value)}
               placeholder={t("master.placeholder.defaultSupplier")}
               className={INPUT_CLASS}
@@ -427,7 +438,7 @@ export function SupplierFormModal({
   onSave,
   onClose,
 }: SupplierFormModalProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [code, setCode] = useState(item?.code ?? "");
   const [name, setName] = useState(item?.name ?? "");
   const [nameJa, setNameJa] = useState(item?.nameJa ?? "");
@@ -482,7 +493,7 @@ export function SupplierFormModal({
             <input
               id="supplier-form-name"
               type="text"
-              value={name}
+              value={localizedFormValue(locale, name, item?.name, item?.nameJa)}
               onChange={(e) => setName(e.target.value)}
               placeholder={t("master.placeholder.supplierName")}
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
@@ -519,7 +530,7 @@ export function SupplierFormModal({
             <input
               id="supplier-form-contact"
               type="text"
-              value={contactPerson}
+              value={localizedFormValue(locale, contactPerson, item?.contactPerson)}
               onChange={(e) => setContactPerson(e.target.value)}
               placeholder={t("master.placeholder.manager")}
               className={INPUT_CLASS}
@@ -571,7 +582,7 @@ export function ProductionLineFormModal({
   onSave,
   onClose,
 }: ProductionLineFormModalProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [code, setCode] = useState(item?.code ?? "");
   const [name, setName] = useState(item?.name ?? "");
   const [nameJa, setNameJa] = useState(item?.nameJa ?? "");
@@ -635,7 +646,7 @@ export function ProductionLineFormModal({
             <input
               id="line-form-name"
               type="text"
-              value={name}
+              value={localizedFormValue(locale, name, item?.name, item?.nameJa)}
               onChange={(e) => setName(e.target.value)}
               placeholder={t("master.placeholder.lineName")}
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
@@ -678,7 +689,7 @@ export function ProductionLineFormModal({
             <input
               id="line-form-unit"
               type="text"
-              value={unit}
+              value={localizedFormValue(locale, unit, item?.unit)}
               onChange={(e) => setUnit(e.target.value)}
               placeholder={t("master.placeholder.unitItem")}
               className={errors.unit ? INPUT_ERROR_CLASS : INPUT_CLASS}
