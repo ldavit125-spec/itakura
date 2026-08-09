@@ -93,6 +93,19 @@ export default function FinishedGoodsInspectionTable({
             {t("action.reset")}
           </button>
         </div>
+
+        {/* 우측 신규 완제품검사 등록 버튼 */}
+        {onOpenCreate && (
+          <button
+            onClick={onOpenCreate}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span>{t("quality.btn.registerFinished")}</span>
+          </button>
+        )}
       </div>
 
       <div className="overflow-x-auto border border-gray-200 rounded-lg bg-white shadow-sm">

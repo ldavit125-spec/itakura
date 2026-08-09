@@ -147,6 +147,19 @@ export default function DefectHistoryTable({
             {t("action.reset")}
           </button>
         </div>
+
+        {/* 우측 신규 불량품 이력 등록 버튼 */}
+        {onCreate && (
+          <button
+            onClick={onCreate}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors shadow-sm whitespace-nowrap"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span>{t("quality.btn.registerDefect")}</span>
+          </button>
+        )}
       </div>
       <p className="text-xs text-gray-500">
         {t("quality.total")} {filtered.length}{t("quality.summary.unit")} · {t("quality.clickForDetail")}

@@ -139,9 +139,22 @@ export default function CorrectiveActionTable({
           </button>
         </div>
 
-        <div className="flex items-center gap-3 text-xs text-gray-500 font-medium whitespace-nowrap">
-          {t("quality.incompleteCA")}: <strong className="text-amber-600 ml-1">{correctiveActions.filter(c => c.caStatus !== "CLOSED").length}{t("quality.summary.unit")}</strong>
-        </div>
+        {/* 우측 신규 시정조치 등록 버튼 */}
+        {onCreate && (
+          <button
+            onClick={onCreate}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors shadow-sm whitespace-nowrap"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span>{t("quality.btn.registerCA")}</span>
+          </button>
+        )}
+      </div>
+
+      <div className="flex items-center gap-3 text-xs text-gray-500 font-medium mb-4 whitespace-nowrap">
+        {t("quality.incompleteCA")}: <strong className="text-amber-600 ml-1">{correctiveActions.filter(c => c.caStatus !== "CLOSED").length}{t("quality.summary.unit")}</strong>
       </div>
 
       <div className="overflow-x-auto border border-gray-200 rounded-lg bg-white shadow-sm">
