@@ -247,16 +247,16 @@ export default function InspectionQueueCreateModal({
           {/* 2. 대상 / LOT 선택* */}
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-1.5">
-              {category === "INCOMING" && "원재료 / 입고 LOT 선택 *"}
-              {category === "PROCESS" && "작업지시 / 생산 LOT 선택 *"}
-              {category === "FINISHED_GOODS" && "완제품 / 완제품 LOT 선택 *"}
+              {category === "INCOMING" && t("quality.modal.selectIncomingTarget")}
+              {category === "PROCESS" && t("quality.modal.selectProcessTarget")}
+              {category === "FINISHED_GOODS" && t("quality.modal.selectFinishedTarget")} <span className="text-red-500">*</span>
             </label>
             <select
               value={selectedTargetKey}
               onChange={(e) => handleSelectTarget(e.target.value)}
               className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-mono"
             >
-              <option value="">-- 검사 대상을 선택하세요 --</option>
+              <option value="">{t("quality.modal.selectTargetPlaceholder")}</option>
               {targetOptions.map((opt) => (
                 <option key={opt.key} value={opt.key}>
                   [{opt.targetNo}] {opt.targetName} - LOT: {opt.lotNo} ({opt.lineOrSupplier})
@@ -268,42 +268,42 @@ export default function InspectionQueueCreateModal({
           {/* 선택 결과 미리보기 & 직접 수정 필드 */}
           <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs">
             <div>
-              <label className="block text-[11px] font-semibold text-gray-500 mb-0.5">대상 번호 / 코드</label>
+              <label className="block text-[11px] font-semibold text-gray-500 mb-0.5">{t("quality.modal.targetNoCode")}</label>
               <input
                 type="text"
                 value={targetNo}
                 onChange={(e) => setTargetNo(e.target.value)}
-                placeholder="예: MAT-001 / WO-001"
+                placeholder={t("quality.modal.targetNoPlaceholder")}
                 className="w-full px-2.5 py-1.5 border border-gray-300 rounded bg-white font-mono text-xs focus:ring-1 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-gray-500 mb-0.5">대상명</label>
+              <label className="block text-[11px] font-semibold text-gray-500 mb-0.5">{t("quality.modal.targetName")}</label>
               <input
                 type="text"
                 value={targetName}
                 onChange={(e) => setTargetName(e.target.value)}
-                placeholder="예: 강력분 / 우유식빵"
+                placeholder={t("quality.modal.targetNamePlaceholder")}
                 className="w-full px-2.5 py-1.5 border border-gray-300 rounded bg-white text-xs focus:ring-1 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-gray-500 mb-0.5">LOT 번호 *</label>
+              <label className="block text-[11px] font-semibold text-gray-500 mb-0.5">{t("quality.modal.lotNo")} *</label>
               <input
                 type="text"
                 value={lotNo}
                 onChange={(e) => setLotNo(e.target.value)}
-                placeholder="예: INB-20260801-001"
+                placeholder={t("quality.modal.lotNoPlaceholder")}
                 className="w-full px-2.5 py-1.5 border border-gray-300 rounded bg-white font-mono text-xs text-blue-700 font-bold focus:ring-1 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-gray-500 mb-0.5">라인 / 공급사</label>
+              <label className="block text-[11px] font-semibold text-gray-500 mb-0.5">{t("quality.modal.lineOrSupplier")}</label>
               <input
                 type="text"
                 value={lineOrSupplier}
                 onChange={(e) => setLineOrSupplier(e.target.value)}
-                placeholder="예: 1라인 / (주)대한제분"
+                placeholder={t("quality.modal.lineOrSupplierPlaceholder")}
                 className="w-full px-2.5 py-1.5 border border-gray-300 rounded bg-white text-xs focus:ring-1 focus:ring-blue-500"
               />
             </div>
@@ -313,13 +313,13 @@ export default function InspectionQueueCreateModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">
-                요청자 <span className="text-red-500">*</span>
+                {t("quality.modal.requester")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={requester}
                 onChange={(e) => setRequester(e.target.value)}
-                placeholder="요청자 성명"
+                placeholder={t("quality.modal.requesterPlaceholder")}
                 className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
@@ -327,29 +327,29 @@ export default function InspectionQueueCreateModal({
 
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">
-                우선순위 <span className="text-red-500">*</span>
+                {t("quality.modal.priority")} <span className="text-red-500">*</span>
               </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as PriorityLevel)}
                 className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
-                <option value="URGENT">🔴 긴급 (URGENT)</option>
-                <option value="HIGH">🟠 높음 (HIGH)</option>
-                <option value="NORMAL">🔵 보통 (NORMAL)</option>
-                <option value="LOW">⚪ 낮음 (LOW)</option>
+                <option value="URGENT">🔴 {t("quality.priority.urgent")} (URGENT)</option>
+                <option value="HIGH">🟠 {t("quality.priority.high")} (HIGH)</option>
+                <option value="NORMAL">🔵 {t("quality.priority.normal")} (NORMAL)</option>
+                <option value="LOW">⚪ {t("quality.priority.low")} (LOW)</option>
               </select>
             </div>
           </div>
 
           {/* 4. 비고 */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 mb-1">비고 (특이사항)</label>
+            <label className="block text-xs font-bold text-gray-700 mb-1">{t("quality.modal.notes")}</label>
             <textarea
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="검사 요청 관련 메모나 특별 지시사항을 입력하세요."
+              placeholder={t("quality.modal.notesPlaceholder")}
               className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
