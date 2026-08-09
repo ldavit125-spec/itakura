@@ -268,7 +268,7 @@ export default function ProductionPlanModal({
             {/* 계획 시작시간 */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                계획 시작시간 <span className="text-red-500">*</span>
+                {t("production.plan.startTime")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="time"
@@ -282,7 +282,7 @@ export default function ProductionPlanModal({
             {/* 계획 종료시간 */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                계획 종료시간 <span className="text-red-500">*</span>
+                {t("production.plan.endTime")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="time"

@@ -369,7 +369,7 @@ export default function ProductionResultModal({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">실제 시작시간</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">{t("production.result.actualStartTime")}</label>
                 <input
                   type="text"
                   list="production-result-handler-options"
@@ -382,7 +382,7 @@ export default function ProductionResultModal({
                 <datalist id="production-result-handler-options">{handlers.map((user) => <option key={user.id} value={user.name} />)}</datalist>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">실제 종료시간</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">{t("production.result.actualEndTime")}</label>
                 <input
                   type="text"
                   value={actualEndTime}
