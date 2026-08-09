@@ -238,7 +238,7 @@ export default function MaterialOutboundModal({
               <div>
                 <span className="font-medium text-gray-500">{localizedName({ locale: language, ko: "자재", ja: "資材" })}:</span>
                 <span className="ml-2 text-gray-900 font-semibold">
-                  [{item.materialCode}] {item.materialName}
+                  [{item.materialCode}] {localizedName({ locale: language, ko: item.materialName })}
                 </span>
               </div>
               <div>
@@ -255,7 +255,7 @@ export default function MaterialOutboundModal({
               </div>
               <div>
                 <span className="font-medium text-gray-500">{localizedName({ locale: language, ko: "생산라인", ja: "生産ライン" })}:</span>
-                <span className="ml-2 text-gray-900 font-semibold">{item.productionLine}</span>
+                <span className="ml-2 text-gray-900 font-semibold">{localizedName({ locale: language, ko: item.productionLine })}</span>
               </div>
               <div>
                 <span className="font-medium text-gray-500">{localizedName({ locale: language, ko: "작업지시 번호", ja: "作業指示番号" })}:</span>
@@ -263,14 +263,14 @@ export default function MaterialOutboundModal({
               </div>
               <div>
                 <span className="font-medium text-gray-500">{localizedName({ locale: language, ko: "담당자", ja: "担当者" })}:</span>
-                <span className="ml-2 text-gray-900">{item.handler}</span>
+                <span className="ml-2 text-gray-900">{localizedName({ locale: language, ko: item.handler })}</span>
               </div>
             </div>
 
             {item.remarks && (
               <div className="pt-2 border-t border-gray-100">
               <p className="font-medium text-gray-500">{localizedName({ locale: language, ko: "비고", ja: "備考" })}:</p>
-                <p className="mt-1 text-gray-700 bg-gray-50 p-2.5 rounded-md">{item.remarks}</p>
+                <p className="mt-1 text-gray-700 bg-gray-50 p-2.5 rounded-md">{localizedName({ locale: language, ko: item.remarks })}</p>
               </div>
             )}
 
