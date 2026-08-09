@@ -113,7 +113,7 @@ export default function TraceabilityClient() {
                   <option value="RAW_MATERIAL_LOT">{isJa ? "原材料LOT" : "원재료 LOT"}</option>
                   <option value="FINISHED_GOODS_LOT">{isJa ? "完成品LOT" : "완제품 LOT"}</option>
                   <option value="WORK_ORDER">{isJa ? "作業指示" : "작업지시"}</option>
-                  <option value="PRODUCTION_RESULT">{isJa ? "생산실적" : "생산실적"}</option>
+                  <option value="PRODUCTION_RESULT">{isJa ? "生産実績" : "생산실적"}</option>
                   <option value="NONCONFORMITY">{isJa ? "不適合" : "부적합"}</option>
                 </select>
 

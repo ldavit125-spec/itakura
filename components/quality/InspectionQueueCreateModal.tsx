@@ -121,7 +121,12 @@ export default function InspectionQueueCreateModal({
           lineOrSupplier: localizedName({ locale, ko: inv.supplierName || inv.supplier || "공급사" }),
         }));
       }
-      return DEFAULT_INCOMING_TARGETS.map((t, idx) => ({ ...t, key: `def-inc-${idx}` }));
+      return DEFAULT_INCOMING_TARGETS.map((t, idx) => ({
+        ...t,
+        key: `def-inc-${idx}`,
+        targetName: localizedName({ locale, ko: t.targetName }),
+        lineOrSupplier: localizedName({ locale, ko: t.lineOrSupplier }),
+      }));
     }
 
     if (category === "PROCESS") {
@@ -134,7 +139,12 @@ export default function InspectionQueueCreateModal({
           lineOrSupplier: localizedName({ locale, ko: wo.productionLine || "1라인" }),
         }));
       }
-      return DEFAULT_PROCESS_TARGETS.map((t, idx) => ({ ...t, key: `def-proc-${idx}` }));
+      return DEFAULT_PROCESS_TARGETS.map((t, idx) => ({
+        ...t,
+        key: `def-proc-${idx}`,
+        targetName: localizedName({ locale, ko: t.targetName }),
+        lineOrSupplier: localizedName({ locale, ko: t.lineOrSupplier }),
+      }));
     }
 
     // FINISHED_GOODS
@@ -147,7 +157,12 @@ export default function InspectionQueueCreateModal({
         lineOrSupplier: localizedName({ locale, ko: fg.productionLine || "1라인" }),
       }));
     }
-    return DEFAULT_FINISHED_TARGETS.map((t, idx) => ({ ...t, key: `def-fg-${idx}` }));
+    return DEFAULT_FINISHED_TARGETS.map((t, idx) => ({
+      ...t,
+      key: `def-fg-${idx}`,
+      targetName: localizedName({ locale, ko: t.targetName }),
+      lineOrSupplier: localizedName({ locale, ko: t.lineOrSupplier }),
+    }));
   };
 
   const targetOptions = getTargetOptions();

@@ -93,7 +93,7 @@ export default function DefectHistoryCreateModal({
                 <option value="">{tr("LOT 선택", "LOTを選択")}</option>
                 {fgLots.map((item) => (
                   <option key={item.id} value={item.fgLotNo}>
-                    {item.fgLotNo} · {item.productName}
+                    {item.fgLotNo} · {localizedName({ locale, ko: item.productName })}
                   </option>
                 ))}
               </select>
@@ -108,7 +108,7 @@ export default function DefectHistoryCreateModal({
               <input required list="defect-users" value={assignee} onChange={(e) => setAssignee(e.target.value)} className={input} />
             </Field>
             <datalist id="defect-users">
-              {activeUsers.map((user) => <option key={user.id} value={user.name} />)}
+              {activeUsers.map((user) => <option key={user.id} value={user.name} label={localizedName({ locale, ko: user.name })} />)}
             </datalist>
             <Field label={`${t("quality.col.defectType")} *`}>
               <select value={defectType} onChange={(e) => setDefectType(e.target.value as DefectType)} className={input}>
@@ -130,7 +130,7 @@ export default function DefectHistoryCreateModal({
             <div className="rounded-lg bg-gray-50 p-3 text-sm">
               <p className="text-gray-500">{t("quality.col.productName")} / {t("quality.col.defectRate")}</p>
               <p className="mt-1 font-bold">
-                {lot?.productName ?? tr("LOT를 선택하세요", "LOTを選択してください")}{" "}
+                {lot ? localizedName({ locale, ko: lot.productName }) : tr("LOT를 선택하세요", "LOTを選択してください")}{" "}
                 {lot && `· ${(defectQuantity / lot.totalQuantity * 100).toFixed(2)}%`}
               </p>
             </div>
