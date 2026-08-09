@@ -126,7 +126,40 @@ export default function QualityClient() {
           defectCount={defectSummary.totalCount}
         />
 
-        {/* 탭 1: 검사 대기 */}
+        {/* 탭 1: 검사 대기 (상단 바: 제목 + 검사 시작 버튼) */}
+        {activeTab === "inspection" && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-200 bg-gray-50 px-4 sm:px-6 py-3">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-bold text-gray-800">
+                {t("quality.tab.inspection")}
+              </h3>
+              <span className="px-2.5 py-0.5 text-xs font-extrabold rounded-full bg-blue-100 text-blue-700 border border-blue-200">
+                {queue.filter((q) => q.status !== "COMPLETED" && q.status !== "CANCELLED").length}건 대기
+              </span>
+            </div>
+            <div>
+              <button
+                onClick={() => {
+                  if (!hasPermission("QUALITY_UPDATE")) return;
+                  const pendingItem = queue.find((q) => q.status === "REQUESTED" || q.status === "ASSIGNED");
+                  if (pendingItem) {
+                    startQueueInspection(pendingItem.id);
+                  } else {
+                    const anyActive = queue.find((q) => q.status !== "COMPLETED" && q.status !== "CANCELLED");
+                    if (anyActive) startQueueInspection(anyActive.id);
+                  }
+                }}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{t("quality.btn.startInspection")}</span>
+              </button>
+            </div>
+          </div>
+        )}
         {activeTab === "inspection" && (
           <InspectionQueueTable
             queue={queue.filter((item) => !item.lineOrSupplier.includes("라인") || canAccessProductionLine(item.lineOrSupplier))}

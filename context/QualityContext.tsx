@@ -17,6 +17,7 @@ import type {
 import { fetchQualitySnapshot, saveCorrectiveAction, saveDefectHistory, saveFinishedInspection, saveIncomingInspection, saveInspectionRequest, saveNonconformity, saveProcessInspection } from "@/lib/supabase/quality";
 import { getDefectHistorySummary } from "@/lib/defect-history";
 
+import { useAdmin } from "./AdminContext";
 import {
   calculatePassRate,
   calculateQualityDefectRate,
@@ -99,6 +100,7 @@ interface QualityContextType {
 const QualityContext = createContext<QualityContextType | null>(null);
 
 export function QualityProvider({ children }: { children: React.ReactNode }) {
+  const { currentUser } = useAdmin();
   const { setInventories } = useMaterials();
   const { updateWorkOrderQualityStatus, updateFinishedGoodsLotQuality } =
     useProduction();
@@ -217,24 +219,28 @@ export function QualityProvider({ children }: { children: React.ReactNode }) {
     const target = queue.find((q) => q.id === queueId);
     if (!target) return false;
 
-    if (!target.inspector || target.inspector.trim() === "") {
-      showToast("담당 검사원이 배정되어 있어야 검사를 시작할 수 있습니다.", "error");
-      return false;
-    }
     if (target.status === "CANCELLED") {
       showToast("취소된 검사 요청은 시작할 수 없습니다.", "error");
       return false;
     }
 
+    const inspectorName = target.inspector && target.inspector.trim() !== "" ? target.inspector : (currentUser?.name || "품질담당자");
+
+    const updatedItem: InspectionQueueItem = {
+      ...target,
+      inspector: inspectorName,
+      status: "IN_PROGRESS",
+    };
+
     setQueue((prev) =>
-      prev.map((q) => (q.id === queueId ? { ...q, status: "IN_PROGRESS" } : q))
+      prev.map((q) => (q.id === queueId ? updatedItem : q))
     );
-    persist(saveInspectionRequest({ ...target, status: "IN_PROGRESS" }));
+    persist(saveInspectionRequest(updatedItem));
 
     // 해당 탭으로 자동 이동 안내
     setActiveTab("results");
 
-    showToast(`검사 [${target.requestNo}] 가 시작 상태(IN_PROGRESS)로 변경되었습니다.`);
+    showToast(`검사 [${target.requestNo}]가 시작되었습니다 (검사원: ${inspectorName}).`);
     return true;
   };
 
