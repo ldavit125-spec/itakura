@@ -588,6 +588,7 @@ export const ko = {
   // 버튼
   "quality.btn.assignInspector": "담당 배정",
   "quality.btn.startInspection": "검사 시작",
+  "quality.btn.newInspection": "신규 검사 등록",
   "quality.btn.registerIncoming": "원재료 입고검사 등록",
   "quality.btn.registerProcess": "공정검사 등록",
   "quality.btn.registerFinished": "완제품검사 등록",
@@ -1426,6 +1427,7 @@ export const ja: Partial<Record<TranslationKey, string>> = {
   // 버튼
   "quality.btn.assignInspector": "担当配定",
   "quality.btn.startInspection": "検査開始",
+  "quality.btn.newInspection": "新規検査登録",
   "quality.btn.registerIncoming": "原材料入荷検査登録",
   "quality.btn.registerProcess": "工程検査登録",
   "quality.btn.registerFinished": "完成品検査登録",

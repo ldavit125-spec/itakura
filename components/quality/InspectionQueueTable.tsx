@@ -197,7 +197,7 @@ export default function InspectionQueueTable({
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span>+ 신규 검사 등록</span>
+            <span>+ {t("quality.btn.newInspection")}</span>
           </button>
         )}
       </div>

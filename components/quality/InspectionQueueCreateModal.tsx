@@ -204,7 +204,7 @@ export default function InspectionQueueCreateModal({
         <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
           <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-            신규 검사 등록
+            {t("quality.btn.newInspection")}
           </h2>
           <button
             onClick={onClose}
@@ -220,13 +220,13 @@ export default function InspectionQueueCreateModal({
           {/* 1. 검사 구분* */}
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-1.5">
-              검사 구분 <span className="text-red-500">*</span>
+              {t("quality.col.category")} <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { value: "INCOMING", label: "원재료 입고검사" },
-                { value: "PROCESS", label: "공정검사" },
-                { value: "FINISHED_GOODS", label: "완제품검사" },
+                { value: "INCOMING", label: t("quality.category.incoming") },
+                { value: "PROCESS", label: t("quality.category.process") },
+                { value: "FINISHED_GOODS", label: t("quality.category.finishedGoods") },
               ].map((opt) => (
                 <button
                   key={opt.value}
@@ -361,13 +361,13 @@ export default function InspectionQueueCreateModal({
               onClick={onClose}
               className="px-4 py-2 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
             >
-              취소
+              {t("action.cancel")}
             </button>
             <button
               type="submit"
               className="px-4 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
             >
-              + 신규 검사 등록
+              + {t("quality.btn.newInspection")}
             </button>
           </div>
         </form>
