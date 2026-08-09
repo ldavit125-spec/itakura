@@ -2,6 +2,8 @@
 
 import React, { useEffect } from "react";
 import type { ProductionToastState } from "@/types/production";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedMessage } from "@/lib/i18n/localized";
 
 // ============================================================
 // 생산관리 알림 Toast 컴포넌트 (3초 후 자동 닫힘)
@@ -13,6 +15,7 @@ interface ProductionToastProps {
 }
 
 export default function ProductionToast({ toast, onClose }: ProductionToastProps) {
+  const { t, locale } = useLanguage();
   useEffect(() => {
     const timer = setTimeout(onClose, 3500);
     return () => clearTimeout(timer);
@@ -35,8 +38,8 @@ export default function ProductionToast({ toast, onClose }: ProductionToastProps
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
         )}
       </svg>
-      <span>{toast.message}</span>
-      <button onClick={onClose} className="ml-1 opacity-70 hover:opacity-100" aria-label="알림 닫기">
+      <span>{localizedMessage(locale, toast.message)}</span>
+      <button onClick={onClose} className="ml-1 opacity-70 hover:opacity-100" aria-label={t("toast.close")}>
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>

@@ -9,7 +9,7 @@ import { useShipments } from "@/context/ShipmentContext";
 import ShipmentStatusBadge, { SHIPMENT_STATUS_KEYS } from "./ShipmentStatusBadge";
 import type { Shipment, ShipmentStatus, ShipmentTab } from "@/types/shipment";
 import { getBusinessDate } from "@/lib/selectors/business-date";
-import { localizedName } from "@/lib/i18n/localized";
+import { localizedMessage, localizedName } from "@/lib/i18n/localized";
 import DateInput from "@/components/ui/DateInput";
 import { generateShipmentNumber } from "@/lib/shipment-selectors";
 
@@ -82,7 +82,7 @@ export default function ShipmentClient() {
         </nav>
       </div>
 
-      {message && <div className={`mx-5 mt-5 rounded-lg border px-4 py-3 text-sm font-semibold ${message.error ? "border-red-200 bg-red-50 text-red-700" : "border-emerald-200 bg-emerald-50 text-emerald-700"}`}>{message.key ? t(message.key, message.params) : message.text}</div>}
+      {message && <div className={`mx-5 mt-5 rounded-lg border px-4 py-3 text-sm font-semibold ${message.error ? "border-red-200 bg-red-50 text-red-700" : "border-emerald-200 bg-emerald-50 text-emerald-700"}`}>{message.key ? t(message.key, message.params) : localizedMessage(locale, message.text)}</div>}
 
       {tab === "register" && (
         <form onSubmit={submit} className="p-5">

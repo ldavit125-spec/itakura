@@ -42,6 +42,8 @@ import MaterialTransactionTable from "./MaterialTransactionTable";
 import MaterialShortageTable from "./MaterialShortageTable";
 import MaterialShortageRegistrationModal from "./MaterialShortageRegistrationModal";
 import MaterialToast from "./MaterialToast";
+import { useLanguage } from "@/context/LanguageContext";
+import { localizedMessage } from "@/lib/i18n/localized";
 
 // ============================================================
 // 자재관리 통합 클라이언트 컨테이너
@@ -49,6 +51,7 @@ import MaterialToast from "./MaterialToast";
 
 export default function MaterialClient() {
   const { hasPermission, currentUser } = useAdmin();
+  const { locale } = useLanguage();
   // ── 1. 메인 탭 상태 ──────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<MaterialTab>("inbound");
 
@@ -226,7 +229,7 @@ export default function MaterialClient() {
 
   // ── 8. 입고 취소 핸들러 (연동 처리) ───────────────────────────
   const handleCancelInbound = async (inbound: MaterialInbound) => {
-    if (!window.confirm(`입고 건 [${inbound.inboundNo}]을 취소하시겠습니까?\n취소 시 재고가 차감 처리됩니다.`)) {
+    if (!window.confirm(localizedMessage(locale, `입고 건 [${inbound.inboundNo}]을 취소하시겠습니까?\n취소 시 재고가 차감 처리됩니다.`))) {
       return;
     }
 
@@ -274,9 +277,10 @@ export default function MaterialClient() {
   // ── 10. 출고 취소 핸들러 (재고 복원 연동 처리) ────────────────
   const handleCancelOutbound = async (outbound: MaterialOutbound) => {
     if (
-      !window.confirm(
+      !window.confirm(localizedMessage(
+        locale,
         `출고 건 [${outbound.outboundNo}]을 취소하시겠습니까?\n취소 시 차감되었던 재고가 다시 복원됩니다.`
-      )
+      ))
     ) {
       return;
     }

@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import type { MaterialToastState } from "@/types/materials";
 import { useLanguage } from "@/context/LanguageContext";
+import { localizedMessage } from "@/lib/i18n/localized";
 
 // ============================================================
 // 자재관리 알림 Toast 컴포넌트 (3초 후 자동 닫힘)
@@ -14,7 +15,7 @@ interface MaterialToastProps {
 }
 
 export default function MaterialToast({ toast, onClose }: MaterialToastProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   useEffect(() => {
     const timer = setTimeout(onClose, 3000);
     return () => clearTimeout(timer);
@@ -44,7 +45,7 @@ export default function MaterialToast({ toast, onClose }: MaterialToastProps) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
         )}
       </svg>
-      <span>{t(toast.message)}</span>
+      <span>{localizedMessage(locale, toast.message)}</span>
       <button
         onClick={onClose}
         className="ml-1 opacity-70 hover:opacity-100 transition-opacity"
