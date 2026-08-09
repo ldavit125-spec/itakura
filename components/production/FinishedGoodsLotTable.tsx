@@ -70,7 +70,10 @@ export default function FinishedGoodsLotTable({
         </div>
 
         <div className="text-xs text-gray-500">
-          생산 확정 완료된 완제품 LOT: <strong className="text-blue-600">{filteredData.length}건</strong>
+          {t("production.fgLot.countLabel")}{" "}
+          <strong className="text-blue-600">
+            {filteredData.length}{t("unit.case")}
+          </strong>
         </div>
       </div>
 
@@ -79,17 +82,12 @@ export default function FinishedGoodsLotTable({
         <table className="w-full text-sm text-left text-gray-700 min-w-[1050px]">
           <thead className="text-xs uppercase bg-gray-50 text-gray-500 border-b border-gray-200">
             <tr>
-              <th className="px-4 py-3 font-semibold">{t("production.result.fgLot")}</th>
-              <th className="px-4 py-3 font-semibold">{t("production.result.number")}</th>
-              <th className="px-4 py-3 font-semibold">{t("production.workOrder.number")}</th>
-              <th className="px-4 py-3 font-semibold">{t("production.fgLot.manufactureDate")}</th>
-              <th className="px-4 py-3 font-semibold">{t("master.field.productCode")}</th>
+              <th className="px-4 py-3 font-semibold">{t("production.fgLot.number")}</th>
               <th className="px-4 py-3 font-semibold">{t("master.field.productName")}</th>
               <th className="px-4 py-3 font-semibold">{t("master.tab.lines")}</th>
-              <th className="px-4 py-3 font-semibold text-right">{t("production.result.totalQty")}</th>
-              <th className="px-4 py-3 font-semibold text-right text-green-700">{t("production.result.goodQty")}</th>
-              <th className="px-4 py-3 font-semibold">{t("production.fgLot.expirationDate")}</th>
-              <th className="px-4 py-3 font-semibold text-center">{t("production.result.qualityStatus")}</th>
+              <th className="px-4 py-3 font-semibold">{t("production.workOrder.number")}</th>
+              <th className="px-4 py-3 font-semibold text-right">{t("production.result.goodQty")}</th>
+              <th className="px-4 py-3 font-semibold">{t("production.plan.date")}</th>
               <th className="px-4 py-3 font-semibold text-center">{t("production.fgLot.shipmentStatus")}</th>
               <th className="px-4 py-3 font-semibold text-center">{t("production.plan.status")}</th>
             </tr>
@@ -97,53 +95,46 @@ export default function FinishedGoodsLotTable({
           <tbody className="divide-y divide-gray-200">
             {paginatedData.length === 0 ? (
               <tr>
-                <td colSpan={13} className="px-4 py-12 text-center text-gray-500">
+                <td colSpan={8} className="px-4 py-12 text-center text-gray-500">
                   {t("production.fgLot.empty")}
                 </td>
               </tr>
             ) : (
               paginatedData.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 font-mono font-bold text-blue-600 bg-blue-50/50 my-1 inline-block rounded">
+                  <td className="px-4 py-3 font-mono font-bold text-gray-900">
                     {item.fgLotNo}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-600">{item.resultNo}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-600">{item.workOrderNo}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{item.productionDate}</td>
-                  <td className="px-4 py-3 font-mono text-gray-600">{item.productCode}</td>
                   <td className="px-4 py-3 font-semibold text-gray-900">
                     {localizedName({ locale: language, ko: item.productName, ja: item.productNameJa })}
                   </td>
                   <td className="px-4 py-3 font-medium text-gray-800">
                     {localizedName({ locale: language, ko: item.productionLine, ja: item.lineNameJa })}
                   </td>
-                  <td className="px-4 py-3 text-right font-bold text-gray-900">
-                    {item.totalQuantity.toLocaleString()} {localizedName({ locale: language, ko: item.unit })}
+                  <td className="px-4 py-3 font-mono text-xs text-gray-600">
+                    {item.workOrderNo}
                   </td>
-                  <td className="px-4 py-3 text-right font-extrabold text-green-600">
+                  <td className="px-4 py-3 text-right font-extrabold text-blue-700">
                     {item.goodQuantity.toLocaleString()} {localizedName({ locale: language, ko: item.unit })}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs font-semibold whitespace-nowrap text-amber-700">
-                    {item.expirationDate}
+                  <td className="px-4 py-3 font-mono text-xs text-gray-600">
+                    {item.productionDate}
                   </td>
-                  <td className="px-4 py-3 text-center">
-                    <QualityStatusBadge status={item.qualityStatus} />
-                  </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-4 py-3 text-center font-bold">
                     {item.isReleaseAvailable ? (
-                      <span className="px-2 py-0.5 text-xs font-bold text-green-700 bg-green-100 rounded-full border border-green-200">
-                        {localizedName({ locale: language, ko: "출고 가능", ja: "出荷可能" })}
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
+                        {localizedName({ locale: language, ko: "출하 가능", ja: "出荷可能" })}
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 text-xs font-medium text-gray-500 bg-gray-100 rounded-full border border-gray-200">
-                        {localizedName({ locale: language, ko: "출고 불가 (검사 대기)", ja: "出荷不可 (検査待機)" })}
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+                        {localizedName({ locale: language, ko: "출하 불가 (검사 대기)", ja: "出荷不可 (検査待ち)" })}
                       </span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-center whitespace-nowrap">
                     <button
                       onClick={() => onOpenDetail(item)}
-                      className="px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                      className="px-2.5 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
                     >
                       {t("action.detail")}
                     </button>
@@ -159,7 +150,7 @@ export default function FinishedGoodsLotTable({
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-4 text-xs text-gray-600">
           <span>
-            {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, filteredData.length)} / 총 {filteredData.length}건
+            {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, filteredData.length)} / {t("quality.total")} {filteredData.length}{t("unit.case")}
           </span>
           <div className="flex items-center gap-1">
             <button

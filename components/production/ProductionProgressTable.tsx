@@ -75,7 +75,10 @@ export default function ProductionProgressTable({
         </div>
 
         <div className="text-xs text-gray-500 font-medium">
-          현재 가동/대기 작업: <strong className="text-blue-600">{filteredData.length}건</strong>
+          {t("production.progress.activeCount")}{" "}
+          <strong className="text-blue-600">
+            {filteredData.length}{t("unit.case")}
+          </strong>
         </div>
       </div>
 
@@ -88,9 +91,9 @@ export default function ProductionProgressTable({
               <th className="px-4 py-3 font-semibold">{t("master.field.productName")}</th>
               <th className="px-4 py-3 font-semibold">{t("master.tab.lines")}</th>
               <th className="px-4 py-3 font-semibold text-right">{t("production.workOrder.instructedQty")}</th>
-              <th className="px-4 py-3 font-semibold">예정 시작</th>
-              <th className="px-4 py-3 font-semibold">실제 시작</th>
-              <th className="px-4 py-3 font-semibold text-right">현재 생산량</th>
+              <th className="px-4 py-3 font-semibold">{t("production.progress.plannedStart")}</th>
+              <th className="px-4 py-3 font-semibold">{t("production.progress.actualStart")}</th>
+              <th className="px-4 py-3 font-semibold text-right">{t("production.progress.currentQty")}</th>
               <th className="px-4 py-3 font-semibold w-40">{t("production.plan.achievementRate")} (%)</th>
               <th className="px-4 py-3 font-semibold text-center">{t("production.workOrder.issueStatus")}</th>
               <th className="px-4 py-3 font-semibold text-center">{t("production.workOrder.status")}</th>

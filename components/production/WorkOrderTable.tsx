@@ -241,7 +241,7 @@ export default function WorkOrderTable({
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-4 text-xs text-gray-600">
           <span>
-            {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, filteredData.length)} / 총 {filteredData.length}건
+            {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, filteredData.length)} / {t("quality.total")} {filteredData.length}{t("unit.case")}
           </span>
           <div className="flex items-center gap-1">
             <button
