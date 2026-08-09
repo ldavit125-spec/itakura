@@ -275,8 +275,11 @@ export default function ProductionPlanModal({
                 {t("production.plan.startTime")} <span className="text-red-500">*</span>
               </label>
               <input
-                type="time"
+                type={language === "ja" ? "text" : "time"}
                 lang={language === "ja" ? "ja-JP" : "ko-KR"}
+                inputMode={language === "ja" ? "numeric" : undefined}
+                pattern={language === "ja" ? "([01][0-9]|2[0-3]):[0-5][0-9]" : undefined}
+                placeholder={language === "ja" ? "08:00" : undefined}
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
@@ -290,8 +293,11 @@ export default function ProductionPlanModal({
                 {t("production.plan.endTime")} <span className="text-red-500">*</span>
               </label>
               <input
-                type="time"
+                type={language === "ja" ? "text" : "time"}
                 lang={language === "ja" ? "ja-JP" : "ko-KR"}
+                inputMode={language === "ja" ? "numeric" : undefined}
+                pattern={language === "ja" ? "([01][0-9]|2[0-3]):[0-5][0-9]" : undefined}
+                placeholder={language === "ja" ? "12:00" : undefined}
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
