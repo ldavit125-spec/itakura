@@ -73,7 +73,7 @@ export default function ProductionProgressModal({
 
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">
-              현재 누적 생산량 ({localizedName({ locale: language, ko: item.unit })}) <span className="text-red-500">*</span>
+              {localizedName({ locale: language, ko: "현재 누적 생산량", ja: "現在の累積生産数量" })} ({localizedName({ locale: language, ko: item.unit })}) <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
