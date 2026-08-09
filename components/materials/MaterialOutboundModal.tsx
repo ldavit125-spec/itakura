@@ -361,7 +361,7 @@ export default function MaterialOutboundModal({
                       const isFefo = fefoRecommendedLot?.lotNo === lot.lotNo;
                       return (
                         <option key={lot.id} value={lot.lotNo}>
-                          {lot.lotNo} [가용: {lot.availableStock} {localizedName({ locale: language, ko: lot.unit })}] (유통기한: {lot.expirationDate})
+                          {lot.lotNo} [{localizedName({ locale: language, ko: "가용", ja: "使用可能" })}: {lot.availableStock} {localizedName({ locale: language, ko: lot.unit })}] ({localizedName({ locale: language, ko: "유통기한", ja: "賞味期限" })}: {lot.expirationDate})
                     {isFefo ? localizedName({ locale: language, ko: " ★ FEFO 추천", ja: " ★ FEFO推奨" }) : ""}
                         </option>
                       );
@@ -403,7 +403,7 @@ export default function MaterialOutboundModal({
             {activeSelectedLot && (
               <div className="text-xs text-gray-500 flex items-center justify-between px-1">
                 <span>{t("materials.inventory.location")}: <strong>{localizedName({ locale: language, ko: activeSelectedLot.location })}</strong></span>
-                <span>현재 가용 재고: <strong className="text-green-600">{activeSelectedLot.availableStock.toLocaleString()} {localizedName({ locale: language, ko: unit })}</strong></span>
+                <span>{localizedName({ locale: language, ko: "현재 가용 재고", ja: "現在の使用可能在庫" })}: <strong className="text-green-600">{activeSelectedLot.availableStock.toLocaleString()} {localizedName({ locale: language, ko: unit })}</strong></span>
               </div>
             )}
 

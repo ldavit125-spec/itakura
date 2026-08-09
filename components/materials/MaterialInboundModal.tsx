@@ -374,7 +374,7 @@ export default function MaterialInboundModal({
                 >
                   {INSPECTION_STATUS_OPTIONS.filter((o) => o.value !== "ALL").map((opt) => (
                     <option key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {t(opt.label)}
                     </option>
                   ))}
                 </select>
