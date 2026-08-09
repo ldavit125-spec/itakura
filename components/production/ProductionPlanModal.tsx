@@ -259,7 +259,11 @@ export default function ProductionPlanModal({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <span>
-                ⚠️ 계획 수량(<strong>{Number(plannedQuantity).toLocaleString()}{localizedName({ locale: language, ko: unit })}</strong>)이 선택한 {localizedName({ locale: language, ko: productionLine, ja: selectedLineObj?.nameJa })}의 최대 용량(<strong>{selectedLineObj?.maxCapacity.toLocaleString()}{localizedName({ locale: language, ko: unit })}</strong>)을 초과합니다.
+                {localizedName({
+                  locale: language,
+                  ko: `⚠️ 계획 수량(${Number(plannedQuantity).toLocaleString()}${localizedName({ locale: language, ko: unit })})이 선택한 ${productionLine}의 최대 용량(${selectedLineObj?.maxCapacity.toLocaleString()}${localizedName({ locale: language, ko: unit })})을 초과합니다.`,
+                  ja: `⚠️ 計画数量（${Number(plannedQuantity).toLocaleString()}${localizedName({ locale: language, ko: unit })}）が、選択した${localizedName({ locale: language, ko: productionLine, ja: selectedLineObj?.nameJa })}の最大容量（${selectedLineObj?.maxCapacity.toLocaleString()}${localizedName({ locale: language, ko: unit })}）を超えています。`,
+                })}
               </span>
             </div>
           )}
@@ -272,6 +276,7 @@ export default function ProductionPlanModal({
               </label>
               <input
                 type="time"
+                lang={language === "ja" ? "ja-JP" : "ko-KR"}
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
@@ -286,6 +291,7 @@ export default function ProductionPlanModal({
               </label>
               <input
                 type="time"
+                lang={language === "ja" ? "ja-JP" : "ko-KR"}
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
