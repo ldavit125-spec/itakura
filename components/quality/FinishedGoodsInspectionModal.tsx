@@ -198,7 +198,7 @@ export default function FinishedGoodsInspectionModal({
               >
                 {fgLots.map((f) => (
                   <option key={f.id} value={f.fgLotNo}>
-                      [{f.fgLotNo}] {f.productName} ({f.totalQuantity.toLocaleString()}{tr("개", "個")})
+                      [{f.fgLotNo}] {localizedName({ locale, ko: f.productName, ja: f.productNameJa })} ({f.totalQuantity.toLocaleString()}{tr("개", "個")})
                   </option>
                 ))}
               </select>
@@ -220,7 +220,7 @@ export default function FinishedGoodsInspectionModal({
               <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("생산 라인", "生産ライン")}</label>
               <input
                 type="text"
-                value={productionLine}
+                value={localizedName({ locale, ko: productionLine })}
                 readOnly
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs bg-gray-100 font-semibold"
               />
@@ -306,7 +306,7 @@ export default function FinishedGoodsInspectionModal({
               <label className="block text-xs font-bold text-gray-800 mb-1">{tr("담당 검사원 *", "担当検査員 *")}</label>
               <input
                 type="text"
-                value={inspector}
+                value={localizedName({ locale, ko: inspector })}
                 onChange={(e) => setInspector(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-bold"
                 required

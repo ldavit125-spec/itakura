@@ -92,6 +92,7 @@ export default function NonconformityModal({
               <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("발생일자 *", "発生日 *")}</label>
               <input
                 type="date"
+                lang={locale === "ja" ? "ja-JP" : "ko-KR"}
                 value={occurredDate}
                 onChange={(e) => setOccurredDate(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs bg-white"
@@ -130,7 +131,7 @@ export default function NonconformityModal({
               <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("대상명 *", "対象名 *")}</label>
               <input
                 type="text"
-                value={targetName}
+                value={localizedName({ locale, ko: targetName })}
                 onChange={(e) => setTargetName(e.target.value)}
                 placeholder={tr("예: 강력분 / 버터", "例: 強力粉／バター")}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold"
@@ -184,7 +185,7 @@ export default function NonconformityModal({
               >
                 {NONCONFORMITY_TYPE_OPTIONS.filter((o) => o.value !== "ALL").map((o) => (
                   <option key={o.value} value={o.value}>
-                    {o.label}
+                    {localizedName({ locale, ko: o.label })}
                   </option>
                 ))}
               </select>
@@ -212,7 +213,7 @@ export default function NonconformityModal({
               <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("담당자 *", "担当者 *")}</label>
               <input
                 type="text"
-                value={handler}
+                value={localizedName({ locale, ko: handler })}
                 onChange={(e) => setHandler(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-bold"
                 required

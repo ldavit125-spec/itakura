@@ -150,7 +150,7 @@ export default function IncomingInspectionModal({
               >
                 {materials.map((m) => (
                   <option key={m.code} value={m.code}>
-                    [{m.code}] {m.name} ({m.defaultSupplier})
+                    [{m.code}] {localizedName({ locale, ko: m.name, ja: m.nameJa })} ({localizedName({ locale, ko: m.defaultSupplier })})
                   </option>
                 ))}
               </select>
@@ -229,7 +229,7 @@ export default function IncomingInspectionModal({
               </label>
               <input
                 type="text"
-                value={inspector}
+                value={localizedName({ locale, ko: inspector })}
                 onChange={(e) => setInspector(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-bold"
                 required

@@ -44,17 +44,17 @@ export default function CorrectiveActionCreateModal({ isOpen, onClose, nonconfor
             <Field label={tr("연결 부적합 번호 *", "関連不適合番号 *")}>
               <select required value={ncNo} onChange={(event) => { setNcNo(event.target.value); const nc = nonconformities.find((item) => item.ncNo === event.target.value); if (nc) setProblemSummary(nc.details); }} className={input}>
                 <option value="">{tr("부적합 선택", "不適合を選択")}</option>
-                {nonconformities.map((nc) => <option key={nc.id} value={nc.ncNo}>{nc.ncNo} · {nc.targetName}</option>)}
+                {nonconformities.map((nc) => <option key={nc.id} value={nc.ncNo}>{nc.ncNo} · {localizedName({ locale, ko: nc.targetName })}</option>)}
               </select>
             </Field>
-            <Field label={tr("요청일 *", "依頼日 *")}><input required type="date" value={requestDate} onChange={(event) => setRequestDate(event.target.value)} className={input} /></Field>
+            <Field label={tr("요청일 *", "依頼日 *")}><input required type="date" lang={locale === "ja" ? "ja-JP" : "ko-KR"} value={requestDate} onChange={(event) => setRequestDate(event.target.value)} className={input} /></Field>
             <Field label={tr("담당 부서 *", "担当部署 *")}>
               <select value={department} onChange={(event) => setDepartment(event.target.value as DepartmentCode)} className={input}>
                 <option value="MATERIALS">{tr("자재", "資材")}</option><option value="PRODUCTION">{tr("생산", "生産")}</option><option value="QUALITY">{tr("품질", "品質")}</option><option value="FACILITY">{tr("설비", "設備")}</option><option value="HYGIENE">{tr("위생", "衛生")}</option>
               </select>
             </Field>
-            <Field label={tr("담당자 *", "担当者 *")}><input required list="ca-users" value={handler} onChange={(event) => setHandler(event.target.value)} className={input} /><datalist id="ca-users">{activeUsers.map((user) => <option key={user.id} value={user.name} />)}</datalist></Field>
-            <Field label={tr("완료 예정일 *", "完了予定日 *")}><input required type="date" value={dueDate} onChange={(event) => setDueDate(event.target.value)} className={input} /></Field>
+            <Field label={tr("담당자 *", "担当者 *")}><input required list="ca-users" value={localizedName({ locale, ko: handler })} onChange={(event) => setHandler(event.target.value)} className={input} /><datalist id="ca-users">{activeUsers.map((user) => <option key={user.id} value={localizedName({ locale, ko: user.name })} />)}</datalist></Field>
+            <Field label={tr("완료 예정일 *", "完了予定日 *")}><input required type="date" lang={locale === "ja" ? "ja-JP" : "ko-KR"} value={dueDate} onChange={(event) => setDueDate(event.target.value)} className={input} /></Field>
           </div>
           <Field label={tr("불량 내용 / 문제 요약 *", "不良内容／問題要約 *")}><textarea required rows={3} value={problemSummary} onChange={(event) => setProblemSummary(event.target.value)} className={input} placeholder={tr("시정조치가 필요한 불량 내용을 입력하세요.", "是正措置が必要な不良内容を入力してください。")}/></Field>
           <Field label={tr("임시 조치", "暫定措置")}><textarea rows={2} value={interimAction} onChange={(event) => setInterimAction(event.target.value)} className={input}/></Field>

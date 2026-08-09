@@ -68,17 +68,17 @@ export default function InspectionItemForm({
             {items.map((item, idx) => (
               <tr key={idx} className="hover:bg-gray-50">
                 <td className="px-3 py-2 font-semibold text-gray-900">
-                  {item.itemName}
+                  {localizedName({ locale, ko: item.itemName })}
                   {item.isMandatory && <span className="text-red-500 ml-1">*</span>}
                 </td>
-                <td className="px-3 py-2 text-gray-600 font-mono">{item.standardValue}</td>
+                <td className="px-3 py-2 text-gray-600 font-mono">{localizedName({ locale, ko: item.standardValue })}</td>
                 <td className="px-3 py-2">
                   {readOnly ? (
-                    <span className="font-mono text-gray-900">{item.measuredValue || "-"}</span>
+                    <span className="font-mono text-gray-900">{localizedName({ locale, ko: item.measuredValue }) || "-"}</span>
                   ) : (
                     <input
                       type="text"
-                      value={item.measuredValue}
+                      value={localizedName({ locale, ko: item.measuredValue })}
                       onChange={(e) => handleItemChange(idx, "measuredValue", e.target.value)}
                       placeholder={tr("측정값 입력", "測定値を入力")}
                       className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono"
@@ -118,7 +118,7 @@ export default function InspectionItemForm({
                 </td>
                 <td className="px-3 py-2">
                   {readOnly ? (
-                    <span className="text-gray-500">{item.notes || "-"}</span>
+                    <span className="text-gray-500">{localizedName({ locale, ko: item.notes }) || "-"}</span>
                   ) : (
                     <input
                       type="text"

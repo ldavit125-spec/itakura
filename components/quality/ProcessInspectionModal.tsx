@@ -157,7 +157,7 @@ export default function ProcessInspectionModal({
               >
                 {workOrders.map((w) => (
                   <option key={w.id} value={w.workOrderNo}>
-                    [{w.workOrderNo}] {w.productName} ({w.productionLine})
+                    [{w.workOrderNo}] {localizedName({ locale, ko: w.productName, ja: w.productNameJa })} ({localizedName({ locale, ko: w.productionLine, ja: w.lineNameJa })})
                   </option>
                 ))}
               </select>
@@ -186,7 +186,7 @@ export default function ProcessInspectionModal({
               <input
                 type="text"
                 list="process-worker-options"
-                value={inspectionTiming}
+                value={localizedName({ locale, ko: inspectionTiming })}
                 onChange={(e) => setInspectionTiming(e.target.value)}
                 placeholder={tr("예: 소성 중반 210℃ 구간", "例: 焼成中盤210℃区間")}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs"
@@ -200,7 +200,7 @@ export default function ProcessInspectionModal({
               <input
                 type="text"
                 list="process-inspector-options"
-                value={worker}
+                value={localizedName({ locale, ko: worker })}
                 onChange={(e) => setWorker(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs"
                 required
@@ -212,7 +212,7 @@ export default function ProcessInspectionModal({
               <label className="block text-xs font-semibold text-gray-700 mb-1">{tr("담당 검사원 *", "担当検査員 *")}</label>
               <input
                 type="text"
-                value={inspector}
+                value={localizedName({ locale, ko: inspector })}
                 onChange={(e) => setInspector(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-bold"
                 required
