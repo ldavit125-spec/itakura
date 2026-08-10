@@ -132,6 +132,10 @@ export function ProductFormModal({
   const displayedName = locale === "ja"
     ? (nameJa || localizedName({ locale, ko: name }))
     : name;
+  const activeCategory = locale === "ja" ? categoryJa : category;
+  const displayedCategory = locale === "ja"
+    ? (categoryJa || localizedName({ locale, ko: category }))
+    : category;
 
   const validate = (): boolean => {
     const next: Partial<Record<string, string>> = {};
@@ -140,7 +144,8 @@ export function ProductFormModal({
       next.code = "master.validation.duplicateCode";
     if (!(activeName.trim() || (locale === "ja" && item?.name?.trim())))
       next.name = "master.validation.productName";
-    if (!category.trim()) next.category = "master.validation.productCategory";
+    if (!(activeCategory.trim() || (locale === "ja" && item?.category?.trim())))
+      next.category = "master.validation.productCategory";
     if (!unit.trim()) next.unit = "master.validation.unit";
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -153,7 +158,7 @@ export function ProductFormModal({
       code: code.trim(),
       name: name.trim() || nameJa.trim(),
       nameJa: nameJa.trim() || undefined,
-      category: category.trim() as ProductCategory,
+      category: (category.trim() || categoryJa.trim()) as ProductCategory,
       categoryJa: categoryJa.trim() || undefined,
       unit: unit.trim(),
       defaultLine: defaultLine.trim(),
@@ -188,24 +193,14 @@ export function ProductFormModal({
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="master.field.productCategoryKo" required error={errors.category}>
+          <FormField label="master.field.productCategory" required error={errors.category}>
             <input
               id="product-form-category"
               type="text"
-              value={category}
-              onChange={(e) => setCategory(e.target.value as ProductCategory)}
+              value={displayedCategory}
+              onChange={(e) => locale === "ja" ? setCategoryJa(e.target.value) : setCategory(e.target.value as ProductCategory)}
               placeholder={t("master.placeholder.productCategory")}
               className={errors.category ? INPUT_ERROR_CLASS : INPUT_CLASS}
-            />
-          </FormField>
-          <FormField label="master.field.productCategoryJa">
-            <input
-              id="product-form-category-ja"
-              type="text"
-              value={categoryJa}
-              onChange={(e) => setCategoryJa(e.target.value)}
-              placeholder={t("master.placeholder.productCategoryJa")}
-              className={INPUT_CLASS}
             />
           </FormField>
           <FormField label="common.unit" required error={errors.unit}>
