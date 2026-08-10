@@ -128,13 +128,18 @@ export function ProductFormModal({
   const [defaultLine, setDefaultLine] = useState(item?.defaultLine ?? "");
   const [status, setStatus] = useState<ActiveStatus>(item?.status ?? "ACTIVE");
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
+  const activeName = locale === "ja" ? nameJa : name;
+  const displayedName = locale === "ja"
+    ? (nameJa || localizedName({ locale, ko: name }))
+    : name;
 
   const validate = (): boolean => {
     const next: Partial<Record<string, string>> = {};
     if (!code.trim()) next.code = "master.validation.productCode";
     else if (existingCodes.includes(code.trim()))
       next.code = "master.validation.duplicateCode";
-    if (!name.trim()) next.name = "master.validation.productName";
+    if (!(activeName.trim() || (locale === "ja" && item?.name?.trim())))
+      next.name = "master.validation.productName";
     if (!category.trim()) next.category = "master.validation.productCategory";
     if (!unit.trim()) next.unit = "master.validation.unit";
     setErrors(next);
@@ -146,7 +151,7 @@ export function ProductFormModal({
     if (!validate()) return;
     onSave({
       code: code.trim(),
-      name: name.trim(),
+      name: name.trim() || nameJa.trim(),
       nameJa: nameJa.trim() || undefined,
       category: category.trim() as ProductCategory,
       categoryJa: categoryJa.trim() || undefined,
@@ -173,26 +178,15 @@ export function ProductFormModal({
               className={errors.code ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="master.field.productNameKo" required error={errors.name}>
+          <FormField label="master.field.productName" required error={errors.name}>
             <input
               id="product-form-name"
               type="text"
-              value={localizedFormValue(locale, name, item?.name, item?.nameJa)}
-              onChange={(e) => setName(e.target.value)}
+              value={displayedName}
+              onChange={(e) => locale === "ja" ? setNameJa(e.target.value) : setName(e.target.value)}
               placeholder={t("master.placeholder.productName")}
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
-          </FormField>
-          <FormField label="master.field.productNameJa">
-            <input
-              id="product-form-name-ja"
-              type="text"
-              value={nameJa}
-              onChange={(e) => setNameJa(e.target.value)}
-              placeholder={t("master.placeholder.productNameJa")}
-              className={INPUT_CLASS}
-            />
-            <p className="mt-1 text-xs text-gray-400">{t("master.hint.fallbackName")}</p>
           </FormField>
           <FormField label="master.field.productCategoryKo" required error={errors.category}>
             <input
@@ -286,13 +280,18 @@ export function MaterialFormModal({
   );
   const [status, setStatus] = useState<ActiveStatus>(item?.status ?? "ACTIVE");
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
+  const activeName = locale === "ja" ? nameJa : name;
+  const displayedName = locale === "ja"
+    ? (nameJa || localizedName({ locale, ko: name }))
+    : name;
 
   const validate = (): boolean => {
     const next: Partial<Record<string, string>> = {};
     if (!code.trim()) next.code = "master.validation.materialCode";
     else if (existingCodes.includes(code.trim()))
       next.code = "master.validation.duplicateCode";
-    if (!name.trim()) next.name = "master.validation.materialName";
+    if (!(activeName.trim() || (locale === "ja" && item?.name?.trim())))
+      next.name = "master.validation.materialName";
     if (!unit.trim()) next.unit = "master.validation.unit";
     const stock = Number(safetyStock);
     if (isNaN(stock) || stock < 0)
@@ -306,7 +305,7 @@ export function MaterialFormModal({
     if (!validate()) return;
     onSave({
       code: code.trim(),
-      name: name.trim(),
+      name: name.trim() || nameJa.trim(),
       nameJa: nameJa.trim() || undefined,
       category,
       unit: unit.trim(),
@@ -337,24 +336,11 @@ export function MaterialFormModal({
             <input
               id="material-form-name"
               type="text"
-              value={localizedFormValue(locale, name, item?.name, item?.nameJa)}
-              onChange={(e) => setName(e.target.value)}
+              value={displayedName}
+              onChange={(e) => locale === "ja" ? setNameJa(e.target.value) : setName(e.target.value)}
               placeholder={t("master.placeholder.materialName")}
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
-          </FormField>
-          <FormField label="master.field.materialNameJa">
-            <input
-              id="material-form-name-ja"
-              type="text"
-              value={nameJa}
-              onChange={(e) => setNameJa(e.target.value)}
-              placeholder={t("master.placeholder.materialNameJa")}
-              className={INPUT_CLASS}
-            />
-            <p className="mt-1 text-[11px] text-gray-400">
-              {t("master.hint.fallbackName")}
-            </p>
           </FormField>
           <FormField label="master.field.materialCategory" required>
             <select
@@ -447,13 +433,18 @@ export function SupplierFormModal({
   const [phone, setPhone] = useState(item?.phone ?? "");
   const [status, setStatus] = useState<ActiveStatus>(item?.status ?? "ACTIVE");
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
+  const activeName = locale === "ja" ? nameJa : name;
+  const displayedName = locale === "ja"
+    ? (nameJa || localizedName({ locale, ko: name }))
+    : name;
 
   const validate = (): boolean => {
     const next: Partial<Record<string, string>> = {};
     if (!code.trim()) next.code = "master.validation.supplierCode";
     else if (existingCodes.includes(code.trim()))
       next.code = "master.validation.duplicateCode";
-    if (!name.trim()) next.name = "master.validation.supplierName";
+    if (!(activeName.trim() || (locale === "ja" && item?.name?.trim())))
+      next.name = "master.validation.supplierName";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -463,7 +454,7 @@ export function SupplierFormModal({
     if (!validate()) return;
     onSave({
       code: code.trim(),
-      name: name.trim(),
+      name: name.trim() || nameJa.trim(),
       nameJa: nameJa.trim() || undefined,
       type,
       contactPerson: contactPerson.trim(),
@@ -493,24 +484,11 @@ export function SupplierFormModal({
             <input
               id="supplier-form-name"
               type="text"
-              value={localizedFormValue(locale, name, item?.name, item?.nameJa)}
-              onChange={(e) => setName(e.target.value)}
+              value={displayedName}
+              onChange={(e) => locale === "ja" ? setNameJa(e.target.value) : setName(e.target.value)}
               placeholder={t("master.placeholder.supplierName")}
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
-          </FormField>
-          <FormField label="master.field.supplierNameJa">
-            <input
-              id="supplier-form-name-ja"
-              type="text"
-              value={nameJa}
-              onChange={(e) => setNameJa(e.target.value)}
-              placeholder={t("master.placeholder.supplierNameJa")}
-              className={INPUT_CLASS}
-            />
-            <p className="mt-1 text-[11px] text-gray-400">
-              {t("master.hint.fallbackName")}
-            </p>
           </FormField>
           <FormField label="master.field.supplierType" required>
             <select
@@ -595,13 +573,18 @@ export function ProductionLineFormModal({
   const [unit, setUnit] = useState(item?.unit ?? "개");
   const [status, setStatus] = useState<ActiveStatus>(item?.status ?? "ACTIVE");
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
+  const activeName = locale === "ja" ? nameJa : name;
+  const displayedName = locale === "ja"
+    ? (nameJa || localizedName({ locale, ko: name }))
+    : name;
 
   const validate = (): boolean => {
     const next: Partial<Record<string, string>> = {};
     if (!code.trim()) next.code = "master.validation.lineCode";
     else if (existingCodes.includes(code.trim()))
       next.code = "master.validation.duplicateCode";
-    if (!name.trim()) next.name = "master.validation.lineName";
+    if (!(activeName.trim() || (locale === "ja" && item?.name?.trim())))
+      next.name = "master.validation.lineName";
     if (!process.trim()) next.process = "master.validation.process";
     if (!unit.trim()) next.unit = "master.validation.unit";
     const cap = Number(maxCapacity);
@@ -616,7 +599,7 @@ export function ProductionLineFormModal({
     if (!validate()) return;
     onSave({
       code: code.trim(),
-      name: name.trim(),
+      name: name.trim() || nameJa.trim(),
       nameJa: nameJa.trim() || undefined,
       process: process.trim() as LineProcess,
       maxCapacity: Number(maxCapacity),
@@ -642,26 +625,15 @@ export function ProductionLineFormModal({
               className={errors.code ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
           </FormField>
-          <FormField label="master.field.lineNameKo" required error={errors.name}>
+          <FormField label="master.field.lineName" required error={errors.name}>
             <input
               id="line-form-name"
               type="text"
-              value={localizedFormValue(locale, name, item?.name, item?.nameJa)}
-              onChange={(e) => setName(e.target.value)}
+              value={displayedName}
+              onChange={(e) => locale === "ja" ? setNameJa(e.target.value) : setName(e.target.value)}
               placeholder={t("master.placeholder.lineName")}
               className={errors.name ? INPUT_ERROR_CLASS : INPUT_CLASS}
             />
-          </FormField>
-          <FormField label="master.field.lineNameJa">
-            <input
-              id="line-form-name-ja"
-              type="text"
-              value={nameJa}
-              onChange={(e) => setNameJa(e.target.value)}
-              placeholder={t("master.placeholder.lineNameJa")}
-              className={INPUT_CLASS}
-            />
-            <p className="mt-1 text-xs text-gray-400">{t("master.hint.fallbackName")}</p>
           </FormField>
           <FormField label="master.field.process" required error={errors.process}>
             <input
