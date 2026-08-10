@@ -11,7 +11,6 @@ import type { Shipment, ShipmentStatus, ShipmentTab } from "@/types/shipment";
 import { getBusinessDate } from "@/lib/selectors/business-date";
 import { localizedMessage, localizedName } from "@/lib/i18n/localized";
 import DateInput from "@/components/ui/DateInput";
-import { generateShipmentNumber } from "@/lib/shipment-selectors";
 
 const TABS: Array<{ id: ShipmentTab; labelKey: string }> = [
   { id: "register", labelKey: "shipment.tab.register" },
@@ -42,10 +41,6 @@ export default function ShipmentClient() {
   const selectedLot = lotAvailability.find((item) => item.lotNumber === lotNumber);
   const productJaByCode = useMemo(() => new Map(lotAvailability.map((lot) => [lot.productId, lot.productNameJa ?? null])), [lotAvailability]);
   const customerJaByName = useMemo(() => new Map(suppliers.map((supplier) => [supplier.name, supplier.nameJa ?? null])), [suppliers]);
-  const nextShipmentNumber = useMemo(
-    () => generateShipmentNumber(getBusinessDate(), shipments.length + 1),
-    [shipments.length],
-  );
 
   if (shipmentLoading) return <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500">{t("shipment.loading")}</div>;
   if (shipmentError) {
@@ -86,7 +81,7 @@ export default function ShipmentClient() {
 
       {tab === "register" && (
         <form onSubmit={submit} className="p-5">
-          <div className="mb-5 flex items-center justify-between"><div><h3 className="font-bold text-gray-900">{t("shipment.register.title")}</h3><p className="mt-1 text-xs text-gray-500">{t("shipment.register.description")}</p></div><button type="button" onClick={() => setMessage({ text: "", key: "shipment.message.numberGenerated", params: { shipmentNumber: nextShipmentNumber }, error: false })} className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100">{t("shipment.register.autoNumber")} · <span className="font-mono">{nextShipmentNumber}</span></button></div>
+          <div className="mb-5"><h3 className="font-bold text-gray-900">{t("shipment.register.title")}</h3><p className="mt-1 text-xs text-gray-500">{t("shipment.register.description")}</p></div>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <Field label={`${t("shipment.field.lotNumber")} *`}><select value={lotNumber} onChange={(e) => { e.currentTarget.setCustomValidity(""); setLotNumber(e.target.value); }} onInvalid={(e) => e.currentTarget.setCustomValidity(t("shipment.placeholder.selectLot"))} required className={inputClass}><option value="">{t("shipment.placeholder.selectLot")}</option>{lotAvailability.map((lot) => <option key={lot.lotNumber} value={lot.lotNumber}>{lot.lotNumber} · {displayName(locale, lot.productName, lot.productNameJa)} · {t("shipment.available")} {lot.availableQuantity.toLocaleString()}{t("unit.item")}</option>)}</select></Field>
             <Field label={`${t("shipment.field.quantity")} *`}><input type="number" min={1} max={selectedLot?.availableQuantity} value={quantity} onChange={(e) => setQuantity(e.target.value === "" ? "" : Number(e.target.value))} required className={inputClass} /></Field>
