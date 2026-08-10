@@ -101,7 +101,7 @@ export default function RecallImpactModal({
                         <td className="px-3 py-2 font-bold text-blue-600">{fg.fgLotNo}</td>
                         <td className="px-3 py-2 font-sans font-semibold text-gray-900">{displayFgProductName}</td>
                         <td className="px-3 py-2 text-right font-extrabold text-gray-900">
-                          {fg.quantity.toLocaleString()} {fg.unit}
+                          {fg.quantity.toLocaleString()} {localizedName({ locale, ko: fg.unit })}
                         </td>
                         <td className="px-3 py-2 text-center">
                           <span
