@@ -64,7 +64,11 @@ function localizedFormValue(
   originalValue?: string | null,
   japaneseValue?: string | null
 ): string {
-  if (locale !== "ja" || currentValue !== (originalValue ?? "")) return currentValue;
+  if (locale !== "ja") return currentValue;
+  if (originalValue == null && currentValue === "개") {
+    return localizedName({ locale, ko: currentValue });
+  }
+  if (currentValue !== (originalValue ?? "")) return currentValue;
   return localizedName({ locale, ko: currentValue, ja: japaneseValue });
 }
 
