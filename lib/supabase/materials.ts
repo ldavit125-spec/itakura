@@ -181,12 +181,12 @@ export async function createInboundBundle(
   payload: Omit<MaterialInbound, "id" | "inboundNo" | "lotNo" | "inboundStatus">,
   handlerName = "관리자",
 ): Promise<{ inboundNo: string; lotNo: string }> {
-  const { data: material } = await supabase
+  const { data: material, error: materialErr } = await supabase
     .from("materials")
     .select("id")
     .eq("code", payload.materialCode)
     .single();
-  throwIfError(null);
+  throwIfError(materialErr);
 
   let supplierId: string | null = null;
   if (payload.supplierName) {
@@ -202,10 +202,14 @@ export async function createInboundBundle(
   const dateSeq = payload.inboundDate.replace(/-/g, "").slice(2);
   const lotNo = `LOT-${dateSeq}-${codeSeq}`;
   const inboundNo = `IN-${dateSeq}-${Math.floor(100 + Math.random() * 900)}`;
+  const recordId = Date.now();
+  const inboundId = `inb-${recordId}`;
+  const inventoryId = `inv-${recordId}`;
 
   const { data: inbound, error: inboundErr } = await supabase
     .from("material_inbounds")
     .insert({
+      id: inboundId,
       inbound_no: inboundNo,
       inbound_date: payload.inboundDate,
       material_id: material?.id,
@@ -226,8 +230,9 @@ export async function createInboundBundle(
   const { data: inventory, error: invErr } = await supabase
     .from("material_inventory_lots")
     .insert({
+      id: inventoryId,
       material_id: material?.id,
-      inbound_id: inbound?.id,
+      inbound_id: inbound?.id ?? inboundId,
       lot_no: lotNo,
       current_stock: payload.quantity,
       available_stock: payload.quantity,
@@ -235,7 +240,6 @@ export async function createInboundBundle(
       unit: payload.unit,
       safety_stock: 100,
       location: "원료창고 A-01",
-      manufacture_date: payload.manufactureDate || null,
       expiration_date: payload.expirationDate,
       inventory_status: payload.inspectionStatus === "PASSED" ? "NORMAL" : "HOLD",
       inspection_status: payload.inspectionStatus,
@@ -246,10 +250,11 @@ export async function createInboundBundle(
   throwIfError(invErr);
 
   const { error: txnErr } = await supabase.from("material_transactions").insert({
+    id: `txn-${recordId}`,
     transaction_no: `TXN-${Date.now()}`,
     transaction_type: "INBOUND",
     material_id: material?.id,
-    inventory_lot_id: inventory?.id,
+    inventory_lot_id: inventory?.id ?? inventoryId,
     inbound_quantity: payload.quantity,
     outbound_quantity: 0,
     balance_after: payload.quantity,
