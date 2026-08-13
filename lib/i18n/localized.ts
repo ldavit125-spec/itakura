@@ -42,6 +42,8 @@ const DEFAULT_JA_FALLBACKS: Record<string, string> = {
   "후쿠오카 햄": "福岡ハム",
   "요코하마 푸드서비스": "横浜フードサービス",
   "도쿄 베이커리 유통": "東京ベーカリー流通",
+  "오사카 식품": "大阪食品",
+  오사카식품: "大阪食品",
 
   // 거래처 / 직원 담당자
   // 서비스 소유자 이름은 일본어 모드에서도 한글 원문을 유지한다.
@@ -384,7 +386,15 @@ function autoTransliterateHangul(text: string): string {
 */
 export function localizedName({ locale, ko, ja }: LocalizedNameOptions): string {
   if (locale === "ja") {
+    const normalizedKo = ko?.trim();
+    if (normalizedKo === "오사카 식품" || normalizedKo === "오사카식품") {
+      return "大阪食品";
+    }
     if (ja && ja.trim().length > 0) {
+      const normalizedJa = ja.trim().replace(/\s+/g, " ");
+      if (normalizedJa === "アサカ 食品" || normalizedJa === "アサカ食品") {
+        return "大阪食品";
+      }
       return ja.trim();
     }
     if (ko && DEFAULT_JA_FALLBACKS[ko.trim()]) {
