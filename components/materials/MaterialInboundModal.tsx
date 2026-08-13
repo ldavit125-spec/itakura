@@ -331,7 +331,7 @@ export default function MaterialInboundModal({
             <label className="block text-xs font-semibold text-gray-700 mb-1">{localizedName({ locale: language, ko: "단위", ja: "単位" })}</label>
                   <input
                     type="text"
-                    value={unit}
+                    value={localizedName({ locale: language, ko: unit })}
                     readOnly
                     className="w-full px-3 py-2 border border-gray-200 bg-gray-100 text-gray-600 rounded-lg text-sm"
                   />
