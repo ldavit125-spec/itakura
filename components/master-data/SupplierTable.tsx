@@ -17,19 +17,21 @@ interface SupplierTableProps {
   items: Supplier[];
   onAdd: () => void;
   onEdit: (item: Supplier) => void;
-  onToggleStatus: (id: string) => void;
+  onDeleteSelected: (ids: string[]) => Promise<boolean>;
 }
 
 export default function SupplierTable({
   items,
   onAdd,
   onEdit,
-  onToggleStatus,
+  onDeleteSelected,
 }: SupplierTableProps) {
   const { t, language } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -47,6 +49,11 @@ export default function SupplierTable({
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const pageIds = paginated.map((item) => item.id);
+  const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
+  const togglePage = () => setSelectedIds((current) => allPageSelected ? current.filter((id) => !pageIds.includes(id)) : Array.from(new Set([...current, ...pageIds])));
+  const toggleItem = (id: string) => setSelectedIds((current) => current.includes(id) ? current.filter((itemId) => itemId !== id) : [...current, id]);
+  const deleteSelected = async () => { setIsDeleting(true); const deleted = await onDeleteSelected(selectedIds); if (deleted) setSelectedIds([]); setIsDeleting(false); };
 
   const handleSearch = (value: string) => {
     setSearch(value);
@@ -91,6 +98,8 @@ export default function SupplierTable({
             <option value="ALL">{t("common.all")}</option><option value="ACTIVE">{t("status.active")}</option><option value="INACTIVE">{t("status.inactive")}</option>
           </select>
         </div>
+        <div className="flex gap-2">
+        <button type="button" onClick={() => void deleteSelected()} disabled={selectedIds.length === 0 || isDeleting} className="px-4 py-2 border border-red-200 bg-red-50 text-red-600 text-sm font-medium rounded-md hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed">{t("master.deleteSelected")}{selectedIds.length > 0 ? ` (${selectedIds.length})` : ""}</button>
         <button
           id="supplier-add-btn"
           onClick={onAdd}
@@ -101,6 +110,7 @@ export default function SupplierTable({
           </svg>
           {t("action.newRegister")}
         </button>
+        </div>
       </div>
 
       {/* 테이블 */}
@@ -108,19 +118,21 @@ export default function SupplierTable({
         <table className="w-full min-w-[980px] text-sm table-fixed">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
+              <th className="w-12 px-4 py-3 text-center"><input type="checkbox" aria-label={t("master.selectAll")} checked={allPageSelected} onChange={togglePage} /></th>
               {[["master.field.supplierCode","text-left w-28"],["master.field.supplierName","text-left"],["master.field.supplierType","text-left w-24"],["master.field.manager","text-left w-24"],["master.field.contact","text-left w-36"],["master.field.useStatus","text-center w-28 whitespace-nowrap"],["common.work","text-center w-44 whitespace-nowrap"]].map(([key, align]) => <th key={key} className={`${align} px-4 py-3 font-medium text-gray-600`}>{t(key)}</th>)}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {paginated.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-12 text-gray-400 text-sm">
+                <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">
                   {t("empty.search")}
                 </td>
               </tr>
             ) : (
               paginated.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 text-center"><input type="checkbox" aria-label={t("master.selectItem", { name: item.name })} checked={selectedIds.includes(item.id)} onChange={() => toggleItem(item.id)} /></td>
                   <td className="px-4 py-3 font-mono text-xs text-gray-600">{item.code}</td>
                   <td className="px-4 py-3 font-medium text-gray-900">{localizedName({ locale: language, ko: item.name, ja: item.nameJa })}</td>
                   <td className="px-4 py-3 text-gray-600">{t(SUPPLIER_TYPE_LABELS[item.type])}</td>
@@ -136,16 +148,6 @@ export default function SupplierTable({
                         className="text-xs px-3 py-1.5 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition-colors whitespace-nowrap"
                       >
                         {t("action.edit")}
-                      </button>
-                      <button
-                        onClick={() => onToggleStatus(item.id)}
-                        className={`text-xs px-3 py-1.5 border rounded-md transition-colors whitespace-nowrap ${
-                          item.status === "ACTIVE"
-                            ? "border-red-200 text-red-600 hover:bg-red-50"
-                            : "border-green-200 text-green-600 hover:bg-green-50"
-                        }`}
-                      >
-                        {t(item.status === "ACTIVE" ? "action.stopUsing" : "status.active")}
                       </button>
                     </div>
                   </td>

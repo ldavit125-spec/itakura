@@ -19,6 +19,7 @@ import {
   saveProduct,
   saveProductionLine,
   saveSupplier,
+  deleteMasterData,
   updateMasterDataStatus,
 } from "@/lib/supabase/master-data";
 
@@ -176,6 +177,22 @@ export default function MasterDataClient() {
     }
   };
 
+  const handleDelete = async (
+    table: "products" | "materials" | "suppliers" | "production_lines",
+    ids: string[],
+  ) => {
+    if (!window.confirm(t("master.confirmDelete", { count: ids.length }))) return false;
+    try {
+      await deleteMasterData(table, ids);
+      await refreshMasterData();
+      showToast(t("master.toast.deleted", { count: ids.length }), "success");
+      return true;
+    } catch {
+      showToast(t("master.toast.deleteFailed"), "error");
+      return false;
+    }
+  };
+
   // ── 코드 목록 (중복 체크용, 편집 중인 항목 제외) ─────────────
   const productCodes = (editId?: string) =>
     products.filter((p) => p.id !== editId).map((p) => p.code);
@@ -220,7 +237,7 @@ export default function MasterDataClient() {
               onEdit={(item) =>
                 setModal({ type: "product", mode: "edit", item })
               }
-              onToggleStatus={handleProductToggle}
+              onDeleteSelected={(ids) => handleDelete("products", ids)}
             />
           )}
           {activeTab === "material" && (
@@ -230,7 +247,7 @@ export default function MasterDataClient() {
               onEdit={(item) =>
                 setModal({ type: "material", mode: "edit", item })
               }
-              onToggleStatus={handleMaterialToggle}
+              onDeleteSelected={(ids) => handleDelete("materials", ids)}
             />
           )}
           {activeTab === "supplier" && (
@@ -240,7 +257,7 @@ export default function MasterDataClient() {
               onEdit={(item) =>
                 setModal({ type: "supplier", mode: "edit", item })
               }
-              onToggleStatus={handleSupplierToggle}
+              onDeleteSelected={(ids) => handleDelete("suppliers", ids)}
             />
           )}
           {activeTab === "line" && (
@@ -250,7 +267,7 @@ export default function MasterDataClient() {
               onEdit={(item) =>
                 setModal({ type: "line", mode: "edit", item })
               }
-              onToggleStatus={handleLineToggle}
+              onDeleteSelected={(ids) => handleDelete("production_lines", ids)}
             />
           )}
         </div>
