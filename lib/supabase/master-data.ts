@@ -237,16 +237,3 @@ export async function updateMasterDataStatus(
   const { error } = await supabase.from(table).update({ status }).eq("id", id);
   throwIfError(error);
 }
-
-export async function deleteMasterData(
-  table: "products" | "materials" | "suppliers" | "production_lines",
-  ids: string[],
-) {
-  if (ids.length === 0) return;
-  const { error } = await supabase.from(table).delete().in("id", ids);
-  if (error) {
-    const deleteError = new Error(error.message) as Error & { code?: string };
-    deleteError.code = error.code;
-    throw deleteError;
-  }
-}

@@ -19,7 +19,6 @@ import {
   saveProduct,
   saveProductionLine,
   saveSupplier,
-  deleteMasterData,
   updateMasterDataStatus,
 } from "@/lib/supabase/master-data";
 
@@ -177,22 +176,18 @@ export default function MasterDataClient() {
     }
   };
 
-  const handleDelete = async (
+  const handleDeactivate = async (
     table: "products" | "materials" | "suppliers" | "production_lines",
     ids: string[],
   ) => {
-    if (!window.confirm(t("master.confirmDelete", { count: ids.length }))) return false;
+    if (!window.confirm(t("master.confirmDeactivate", { count: ids.length }))) return false;
     try {
-      await deleteMasterData(table, ids);
+      await Promise.all(ids.map((id) => updateMasterDataStatus(table, id, "INACTIVE")));
       await refreshMasterData();
-      showToast(t("master.toast.deleted", { count: ids.length }), "success");
+      showToast(t("master.toast.deactivated", { count: ids.length }), "success");
       return true;
-    } catch (error) {
-      const code = error instanceof Error && "code" in error ? String(error.code) : "";
-      showToast(
-        t(code === "23503" ? "master.toast.deleteReferenced" : code === "42501" ? "master.toast.deleteDenied" : "master.toast.deleteFailed"),
-        "error",
-      );
+    } catch {
+      showToast(t("master.toast.deactivateFailed"), "error");
       return false;
     }
   };
@@ -241,7 +236,7 @@ export default function MasterDataClient() {
               onEdit={(item) =>
                 setModal({ type: "product", mode: "edit", item })
               }
-              onDeleteSelected={(ids) => handleDelete("products", ids)}
+              onDeactivateSelected={(ids) => handleDeactivate("products", ids)}
             />
           )}
           {activeTab === "material" && (
@@ -251,7 +246,7 @@ export default function MasterDataClient() {
               onEdit={(item) =>
                 setModal({ type: "material", mode: "edit", item })
               }
-              onDeleteSelected={(ids) => handleDelete("materials", ids)}
+              onDeactivateSelected={(ids) => handleDeactivate("materials", ids)}
             />
           )}
           {activeTab === "supplier" && (
@@ -261,7 +256,7 @@ export default function MasterDataClient() {
               onEdit={(item) =>
                 setModal({ type: "supplier", mode: "edit", item })
               }
-              onDeleteSelected={(ids) => handleDelete("suppliers", ids)}
+              onDeactivateSelected={(ids) => handleDeactivate("suppliers", ids)}
             />
           )}
           {activeTab === "line" && (
@@ -271,7 +266,7 @@ export default function MasterDataClient() {
               onEdit={(item) =>
                 setModal({ type: "line", mode: "edit", item })
               }
-              onDeleteSelected={(ids) => handleDelete("production_lines", ids)}
+              onDeactivateSelected={(ids) => handleDeactivate("production_lines", ids)}
             />
           )}
         </div>

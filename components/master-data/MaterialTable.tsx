@@ -17,21 +17,21 @@ interface MaterialTableProps {
   items: Material[];
   onAdd: () => void;
   onEdit: (item: Material) => void;
-  onDeleteSelected: (ids: string[]) => Promise<boolean>;
+  onDeactivateSelected: (ids: string[]) => Promise<boolean>;
 }
 
 export default function MaterialTable({
   items,
   onAdd,
   onEdit,
-  onDeleteSelected,
+  onDeactivateSelected,
 }: MaterialTableProps) {
   const { t, language } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -52,7 +52,7 @@ export default function MaterialTable({
   const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
   const togglePage = () => setSelectedIds((current) => allPageSelected ? current.filter((id) => !pageIds.includes(id)) : Array.from(new Set([...current, ...pageIds])));
   const toggleItem = (id: string) => setSelectedIds((current) => current.includes(id) ? current.filter((itemId) => itemId !== id) : [...current, id]);
-  const deleteSelected = async () => { setIsDeleting(true); const deleted = await onDeleteSelected(selectedIds); if (deleted) setSelectedIds([]); setIsDeleting(false); };
+  const deactivateSelected = async () => { setIsUpdating(true); const updated = await onDeactivateSelected(selectedIds); if (updated) setSelectedIds([]); setIsUpdating(false); };
 
   const handleSearch = (value: string) => {
     setSearch(value);
@@ -98,7 +98,7 @@ export default function MaterialTable({
           </select>
         </div>
         <div className="flex gap-2">
-        <button type="button" onClick={() => void deleteSelected()} disabled={selectedIds.length === 0 || isDeleting} className="px-4 py-2 border border-red-200 bg-red-50 text-red-600 text-sm font-medium rounded-md hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed">{t("master.deleteSelected")}{selectedIds.length > 0 ? ` (${selectedIds.length})` : ""}</button>
+        <button type="button" onClick={() => void deactivateSelected()} disabled={selectedIds.length === 0 || isUpdating} className="px-4 py-2 border border-amber-200 bg-amber-50 text-amber-700 text-sm font-medium rounded-md hover:bg-amber-100 disabled:opacity-40 disabled:cursor-not-allowed">{t("master.deactivateSelected")}{selectedIds.length > 0 ? ` (${selectedIds.length})` : ""}</button>
         <button
           id="material-add-btn"
           onClick={onAdd}
