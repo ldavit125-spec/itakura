@@ -244,5 +244,9 @@ export async function deleteMasterData(
 ) {
   if (ids.length === 0) return;
   const { error } = await supabase.from(table).delete().in("id", ids);
-  throwIfError(error);
+  if (error) {
+    const deleteError = new Error(error.message) as Error & { code?: string };
+    deleteError.code = error.code;
+    throw deleteError;
+  }
 }

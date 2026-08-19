@@ -187,8 +187,12 @@ export default function MasterDataClient() {
       await refreshMasterData();
       showToast(t("master.toast.deleted", { count: ids.length }), "success");
       return true;
-    } catch {
-      showToast(t("master.toast.deleteFailed"), "error");
+    } catch (error) {
+      const code = error instanceof Error && "code" in error ? String(error.code) : "";
+      showToast(
+        t(code === "23503" ? "master.toast.deleteReferenced" : code === "42501" ? "master.toast.deleteDenied" : "master.toast.deleteFailed"),
+        "error",
+      );
       return false;
     }
   };
