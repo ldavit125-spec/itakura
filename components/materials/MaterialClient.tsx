@@ -205,7 +205,7 @@ export default function MaterialClient() {
     };
 
     try {
-      const { inboundNo } = await createInboundBundle(formData, currentUser.name);
+      const { inboundNo } = await createInboundBundle(formData, currentUser.name, receivingRequestId);
       await refreshMaterials();
       setReceivingRequestId(null);
       setInboundModal({ isOpen: false, mode: "create" });
@@ -340,7 +340,7 @@ export default function MaterialClient() {
     }));
 
     try {
-      await createPurchaseRequests(materialCodes, currentUser.name);
+      await createPurchaseRequests(newRequests);
       await refreshMaterials();
       showToast(`${materialCodes.length}건의 부족 자재를 발주 요청했습니다.`);
     } catch (error) {

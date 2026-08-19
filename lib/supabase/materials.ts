@@ -68,6 +68,17 @@ export async function fetchMaterialsSnapshot(): Promise<MaterialsSnapshot> {
   const workOrderById = new Map((workOrders.data ?? []).map((row) => [row.id, row.work_order_no]));
   const inboundById = new Map((inbounds.data ?? []).map((row) => [row.id, row.inbound_no]));
   const inventoryById = new Map((inventories.data ?? []).map((row) => [row.id, row]));
+  const latestBalanceByInventoryId = new Map<string, number>();
+
+  // Transactions are fetched newest first. The first balance for each LOT is
+  // therefore the ledger's current balance and is the source of truth shown
+  // in the inventory screen. LOTs without a transaction keep their stored
+  // inventory balance for backward compatibility.
+  for (const row of transactions.data ?? []) {
+    if (row.inventory_lot_id && !latestBalanceByInventoryId.has(row.inventory_lot_id)) {
+      latestBalanceByInventoryId.set(row.inventory_lot_id, Number(row.balance_after));
+    }
+  }
 
   return {
     inbounds: (inbounds.data ?? []).map((row) => {
@@ -95,20 +106,35 @@ export async function fetchMaterialsSnapshot(): Promise<MaterialsSnapshot> {
     inventories: (inventories.data ?? []).map((row) => {
       const material = materialById.get(row.material_id);
       const supplier = row.supplier_id ? supplierById.get(row.supplier_id) : undefined;
+      const currentStock = latestBalanceByInventoryId.get(row.id) ?? Number(row.current_stock);
+      const isInspectionHold = row.inspection_status !== "PASSED";
+      const availableStock = isInspectionHold ? 0 : currentStock;
+      const holdStock = isInspectionHold ? currentStock : 0;
+      const safetyStock = Number(row.safety_stock);
+      const inventoryStatus = isInspectionHold
+        ? "HOLD"
+        : row.inventory_status === "EXPIRED"
+          ? "EXPIRED"
+          : currentStock < safetyStock * 0.5
+            ? "CRITICAL"
+            : currentStock < safetyStock
+              ? "LOW"
+              : "NORMAL";
+
       return {
         id: row.id,
         materialCode: material?.code ?? "",
         materialName: material?.name ?? "",
         materialNameJa: material?.name_ja ?? null,
         lotNo: row.lot_no,
-        currentStock: Number(row.current_stock),
-        availableStock: Number(row.available_stock),
-        holdStock: Number(row.hold_stock),
+        currentStock,
+        availableStock,
+        holdStock,
         unit: row.unit,
-        safetyStock: Number(row.safety_stock),
+        safetyStock,
         location: row.location,
         expirationDate: row.expiration_date,
-        inventoryStatus: row.inventory_status,
+        inventoryStatus,
         inspectionStatus: row.inspection_status,
         supplierName: supplier?.name ?? "",
         supplierNameJa: supplier?.name_ja ?? null,
@@ -180,6 +206,7 @@ export async function fetchMaterialsSnapshot(): Promise<MaterialsSnapshot> {
 export async function createInboundBundle(
   payload: Omit<MaterialInbound, "id" | "inboundNo" | "lotNo" | "inboundStatus">,
   handlerName = "관리자",
+  purchaseRequestId?: string | null,
 ): Promise<{ inboundNo: string; lotNo: string }> {
   const { data: material, error: materialErr } = await supabase
     .from("materials")
@@ -263,6 +290,14 @@ export async function createInboundBundle(
     remarks: `자재 입고 (${inboundNo})`,
   });
   throwIfError(txnErr);
+
+  if (purchaseRequestId) {
+    const { error: requestErr } = await supabase
+      .from("material_purchase_requests")
+      .update({ status: "RECEIVED", received_inbound_id: inbound?.id ?? inboundId })
+      .eq("id", purchaseRequestId);
+    throwIfError(requestErr);
+  }
 
   return { inboundNo, lotNo };
 }
@@ -428,27 +463,27 @@ export async function cancelOutboundBundle(
   }
 }
 
-export async function createPurchaseRequests(materialCodes: string[], requester = "관리자") {
-  for (const code of materialCodes) {
-    const { data: material } = await supabase
+export async function createPurchaseRequests(requests: MaterialPurchaseRequest[]) {
+  for (const request of requests) {
+    const { data: material, error: materialErr } = await supabase
       .from("materials")
-      .select("id, name, default_supplier_id")
-      .eq("code", code)
+      .select("id, default_supplier_id")
+      .eq("code", request.materialCode)
       .single();
+    throwIfError(materialErr);
 
-    if (material) {
-      const requestNo = `PR-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
-      await supabase.from("material_purchase_requests").insert({
-        request_no: requestNo,
-        request_date: new Date().toISOString().split("T")[0],
-        material_id: material.id,
-        supplier_id: material.default_supplier_id,
-        requested_quantity: 500,
-        unit: "kg",
-        status: "REQUESTED",
-        requester_name: requester,
-      });
-    }
+    const { error: requestErr } = await supabase.from("material_purchase_requests").insert({
+      id: request.id,
+      request_no: request.requestNo,
+      request_date: request.requestDate,
+      material_id: material?.id,
+      supplier_id: material?.default_supplier_id ?? null,
+      requested_quantity: request.requestedQuantity,
+      unit: request.unit,
+      status: "REQUESTED",
+      requester_name: request.requester,
+    });
+    throwIfError(requestErr);
   }
 }
 
